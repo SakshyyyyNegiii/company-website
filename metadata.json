@@ -1,0 +1,6 @@
+{
+  "name": "Bitso Innovations",
+  "description": "Engineering smarter systems for businesses ready to scale, automate, and compete. Modern, responsive platform for enterprise software, cloud AI, and omni-channel retail digitization.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
