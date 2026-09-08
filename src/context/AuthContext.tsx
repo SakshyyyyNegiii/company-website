@@ -8,9 +8,9 @@ import {
   signOut,
   updateProfile,
 } from 'firebase/auth';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp, collection, query, where, onSnapshot } from 'firebase/firestore';
 import { auth, db, googleProvider, handleFirestoreError, OperationType } from '../lib/firebase';
-import { UserProfile } from '../types';
+import { UserProfile, Appointment } from '../types';
 
 interface AuthContextType {
   currentUser: User | null;
@@ -19,6 +19,7 @@ interface AuthContextType {
   isAuthModalOpen: boolean;
   authModalMode: 'signin' | 'signup';
   authPromptMessage: string;
+  appointmentsCount: number;
   openAuthModal: (mode?: 'signin' | 'signup', promptMessage?: string) => void;
   closeAuthModal: () => void;
   signInWithEmail: (email: string, pass: string) => Promise<void>;
@@ -44,6 +45,45 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Appointments history drawer management
   const [isAppointmentsDrawerOpen, setIsAppointmentsDrawerOpen] = useState(false);
+  const [appointmentsCount, setAppointmentsCount] = useState<number>(0);
+
+  // Sync appointments count for current user
+  useEffect(() => {
+    if (!currentUser) {
+      setAppointmentsCount(0);
+      return;
+    }
+
+    // Check offline cache count first
+    try {
+      const raw = localStorage.getItem('bitso_offline_appointments');
+      if (raw) {
+        const localList: Appointment[] = JSON.parse(raw);
+        const userAppts = localList.filter(
+          (a) => a.userId === currentUser.uid || (currentUser.email && a.userEmail === currentUser.email)
+        );
+        setAppointmentsCount(userAppts.length);
+      }
+    } catch {
+      // ignore
+    }
+
+    try {
+      const q = query(collection(db, 'appointments'), where('userId', '==', currentUser.uid));
+      const unsubscribe = onSnapshot(
+        q,
+        (snapshot) => {
+          setAppointmentsCount(snapshot.size);
+        },
+        () => {
+          // If firestore listener fails, keep local count
+        }
+      );
+      return () => unsubscribe();
+    } catch {
+      // fallback
+    }
+  }, [currentUser]);
 
   const openAuthModal = (mode: 'signin' | 'signup' = 'signin', promptMessage: string = '') => {
     setAuthModalMode(mode);
@@ -74,25 +114,33 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           uid: user.uid,
           email: user.email || '',
           displayName: additionalData?.displayName || user.displayName || 'Client Partner',
+          photoURL: user.photoURL || undefined,
           phone: additionalData?.phone || user.phoneNumber || '',
           role: 'client',
         };
         await setDoc(userDocRef, {
           ...newProfile,
           createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
         });
         setUserProfile(newProfile);
       } else {
         const data = snap.data() as UserProfile;
+        // Update photoURL if changed or missing
+        if (user.photoURL && data.photoURL !== user.photoURL) {
+          await setDoc(userDocRef, { photoURL: user.photoURL, updatedAt: serverTimestamp() }, { merge: true });
+          data.photoURL = user.photoURL;
+        }
         setUserProfile(data);
       }
     } catch (err) {
-      console.warn('Could not sync user document to Firestore:', err);
+      handleFirestoreError(err, OperationType.WRITE, `users/${user.uid}`);
       // Fallback local profile representation
       setUserProfile({
         uid: user.uid,
         email: user.email || '',
         displayName: additionalData?.displayName || user.displayName || 'Client Partner',
+        photoURL: user.photoURL || undefined,
         phone: additionalData?.phone || '',
         role: 'client',
       });
@@ -149,6 +197,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         isAuthModalOpen,
         authModalMode,
         authPromptMessage,
+        appointmentsCount,
         openAuthModal,
         closeAuthModal,
         signInWithEmail,
@@ -172,6 +221,7 @@ const defaultAuthFallback: AuthContextType = {
   isAuthModalOpen: false,
   authModalMode: 'signin',
   authPromptMessage: '',
+  appointmentsCount: 0,
   openAuthModal: () => {},
   closeAuthModal: () => {},
   signInWithEmail: async () => {},

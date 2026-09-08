@@ -57,6 +57,7 @@ export interface UserProfile {
   uid: string;
   email: string;
   displayName: string;
+  photoURL?: string;
   phone?: string;
   role?: string;
   createdAt?: string | number;

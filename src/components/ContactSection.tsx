@@ -34,7 +34,14 @@ interface ContactSectionProps {
 export const ContactSection: React.FC<ContactSectionProps> = ({
   initialServiceSelection = '',
 }) => {
-  const { currentUser, userProfile, openAuthModal, openAppointmentsDrawer } = useAuth();
+  const {
+    currentUser,
+    userProfile,
+    openAuthModal,
+    openAppointmentsDrawer,
+    signInWithGooglePopup,
+    signOutUser,
+  } = useAuth();
 
   const nameId = useId();
   const phoneId = useId();
@@ -170,11 +177,63 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
     }
   };
 
-  const openWhatsApp = (phoneNum: string) => {
+  const openWhatsApp = (phoneNum: string, customMessage?: string) => {
     const text = encodeURIComponent(
-      `Hello Bitso Innovations! I am interested in exploring digital transformation for my business (${formData.businessName || 'Retail Enterprise'}).`
+      customMessage ||
+        `Hello Bitso Innovations! I booked transformation audit session ${submittedApptId ? `(Ref: ${submittedApptId})` : ''} for ${formData.businessName || 'Retail Enterprise'}.`
     );
     window.open(`https://wa.me/91${phoneNum.replace(/\s/g, '')}?text=${text}`, '_blank');
+  };
+
+  const createGoogleCalendarUrl = () => {
+    const title = encodeURIComponent(
+      `Bitso Innovations - Digital Transformation Audit (${formData.businessName || 'Enterprise'})`
+    );
+    const details = encodeURIComponent(
+      `Transformation Strategy Audit Session with Bitso Innovations.\nBooking Ref: ${submittedApptId || 'N/A'}\nRequirement: ${formData.interest}\nFormat: ${meetingType === 'video' ? 'Google Meet Video' : meetingType === 'phone' ? 'Direct Phone Call' : 'In-Person (Delhi HQ)'}\nContact: ${formData.fullName} (${formData.phone})\nStatus: Confirmed in Bitso Client Portal`
+    );
+    const location = encodeURIComponent(
+      meetingType === 'in-person' ? COMPANY_INFO.contact.fullAddress : 'Google Meet Video'
+    );
+
+    const dateClean = preferredDate.replace(/-/g, '');
+    const timeTag = timeSlot.includes('11:00')
+      ? 'T053000Z/T063000Z'
+      : timeSlot.includes('03:00')
+      ? 'T093000Z/T103000Z'
+      : 'T113000Z/T123000Z';
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}&dates=${dateClean}${timeTag}`;
+  };
+
+  const downloadIcsFile = () => {
+    const dateClean = preferredDate.replace(/-/g, '');
+    const timeTagStart = timeSlot.includes('11:00') ? '053000Z' : timeSlot.includes('03:00') ? '093000Z' : '113000Z';
+    const timeTagEnd = timeSlot.includes('11:00') ? '063000Z' : timeSlot.includes('03:00') ? '103000Z' : '123000Z';
+
+    const icsContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Bitso Innovations//Transformation Audit//EN',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      'BEGIN:VEVENT',
+      `SUMMARY:Bitso Innovations Transformation Audit (${formData.businessName || 'Retail'})`,
+      `DESCRIPTION:Audit Ref: ${submittedApptId || ''}\\nService: ${formData.interest}\\nFormat: ${meetingType}\\nPhone: ${formData.phone}`,
+      `LOCATION:${meetingType === 'in-person' ? COMPANY_INFO.contact.fullAddress : 'Google Meet Video'}`,
+      `DTSTART:${dateClean}T${timeTagStart}`,
+      `DTEND:${dateClean}T${timeTagEnd}`,
+      'STATUS:CONFIRMED',
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ].join('\r\n');
+
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.setAttribute('download', `bitso-audit-${submittedApptId || 'appointment'}.ics`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -373,96 +432,186 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
 
               {/* Authentication Status Callout */}
               {!currentUser ? (
-                <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-cyan-950/70 to-slate-950 border border-cyan-500/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-cyan-900/60 border border-cyan-500/40 flex items-center justify-center text-cyan-300 shrink-0 mt-0.5">
-                      <Lock className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-bold text-white flex items-center gap-2">
-                        <span>Sign In or Sign Up Before Booking</span>
-                        <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold">
-                          Required
-                        </span>
+                <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-slate-900 via-cyan-950/40 to-slate-900 border border-cyan-500/40 shadow-xl">
+                  <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div className="flex items-start gap-3.5">
+                      <div className="w-10 h-10 rounded-xl bg-cyan-950 border border-cyan-500/40 flex items-center justify-center text-cyan-300 shrink-0 mt-0.5 shadow-sm">
+                        <Lock className="w-5 h-5" />
                       </div>
-                      <p className="text-xs text-slate-300 mt-0.5 leading-relaxed">
-                        Sign in or create an account to secure your consultation appointment and save your enterprise inquiry data.
-                      </p>
+                      <div>
+                        <div className="text-sm font-bold text-white flex items-center gap-2">
+                          <span>Authenticate to Book & Save Audit</span>
+                          <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold">
+                            Firebase Auth
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                          Sign in with Google or Email to link your transformation consultation directly to your enterprise client portal.
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
-                    <button
-                      type="button"
-                      onClick={() => openAuthModal('signin', 'Please sign in to book your consultation appointment and store your project inquiry.')}
-                      className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-slate-950 bg-gradient-to-r from-cyan-400 to-emerald-400 hover:brightness-110 active:scale-95 transition-all shadow-md cursor-pointer"
-                    >
-                      <LogIn className="w-3.5 h-3.5" />
-                      <span>Sign In</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => openAuthModal('signup', 'Create a free client partner account to book appointments and track audits.')}
-                      className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-200 bg-slate-950 hover:bg-slate-800 border border-slate-700 transition-all cursor-pointer"
-                    >
-                      <UserPlus className="w-3.5 h-3.5" />
-                      <span>Sign Up</span>
-                    </button>
+
+                    <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                      {/* Fast Google Auth */}
+                      <button
+                        type="button"
+                        onClick={() => signInWithGooglePopup()}
+                        className="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-900 bg-white hover:bg-slate-100 active:scale-95 transition-all shadow-md cursor-pointer whitespace-nowrap"
+                      >
+                        <svg className="w-4 h-4" viewBox="0 0 24 24">
+                          <path
+                            fill="#4285F4"
+                            d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"
+                          />
+                          <path
+                            fill="#34A853"
+                            d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"
+                          />
+                          <path
+                            fill="#FBBC05"
+                            d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.97 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
+                          />
+                          <path
+                            fill="#EA4335"
+                            d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+                          />
+                        </svg>
+                        <span>Continue with Google</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => openAuthModal('signin', 'Please sign in to book your consultation appointment and store your project inquiry.')}
+                        className="flex-1 md:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-200 bg-slate-900 hover:bg-slate-800 border border-slate-700 transition-all cursor-pointer"
+                      >
+                        <LogIn className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>Sign In</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               ) : (
-                <div className="mb-6 p-4 rounded-2xl bg-slate-950 border border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-xl bg-emerald-950 border border-emerald-500/40 flex items-center justify-center text-emerald-300 font-bold font-mono">
-                      {(userProfile?.displayName || currentUser.displayName || currentUser.email || 'U')[0].toUpperCase()}
-                    </div>
+                <div className="mb-6 p-4 rounded-2xl bg-slate-950 border border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs shadow-inner">
+                  <div className="flex items-center gap-3">
+                    {userProfile?.photoURL || currentUser.photoURL ? (
+                      <img
+                        src={userProfile?.photoURL || currentUser.photoURL || ''}
+                        alt="User Avatar"
+                        className="w-9 h-9 rounded-xl object-cover border border-cyan-500/40 shrink-0"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      <div className="w-9 h-9 rounded-xl bg-emerald-950 border border-emerald-500/40 flex items-center justify-center text-emerald-300 font-bold font-mono text-sm shrink-0">
+                        {(userProfile?.displayName || currentUser.displayName || currentUser.email || 'U')[0].toUpperCase()}
+                      </div>
+                    )}
                     <div>
-                      <div className="font-bold text-white flex items-center gap-1.5">
+                      <div className="font-bold text-white flex items-center gap-2">
                         <span>{userProfile?.displayName || currentUser.displayName || 'Client Partner'}</span>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                          Authenticated
+                        <span className="inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-950 border border-emerald-500/40 text-emerald-300 font-bold">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                          Firestore Synced
                         </span>
                       </div>
-                      <span className="text-slate-400">{currentUser.email}</span>
+                      <span className="text-slate-400 text-[11px]">{currentUser.email}</span>
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={openAppointmentsDrawer}
-                    className="inline-flex items-center gap-1.5 text-cyan-400 hover:text-cyan-300 font-bold transition-colors cursor-pointer"
-                  >
-                    <CalendarCheck className="w-4 h-4" />
-                    <span>View My Appointments</span>
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={openAppointmentsDrawer}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-950/70 border border-cyan-500/40 text-cyan-300 hover:text-white font-bold transition-all cursor-pointer"
+                    >
+                      <CalendarCheck className="w-3.5 h-3.5" />
+                      <span>My Appointments</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => signOutUser()}
+                      className="text-xs text-slate-400 hover:text-rose-300 underline cursor-pointer"
+                    >
+                      Switch Account
+                    </button>
+                  </div>
                 </div>
               )}
 
               {submitted ? (
                 <div className="py-10 px-4 text-center animate-in zoom-in-95 duration-200">
-                  <div className="w-20 h-20 rounded-full bg-emerald-950 border border-emerald-400/50 flex items-center justify-center mx-auto mb-5 text-emerald-400 shadow-xl">
+                  <div className="w-20 h-20 rounded-full bg-emerald-950 border border-emerald-400/50 flex items-center justify-center mx-auto mb-5 text-emerald-400 shadow-xl shadow-emerald-950/50">
                     <CheckCircle2 className="w-10 h-10" />
                   </div>
-                  <span className="inline-block text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider mb-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40">
-                    {isSavedLocallyOnly ? 'Appointment Confirmed • Ref: ' : 'Saved to Cloud Database • Ref: '} {submittedApptId?.slice(0, 12)}
-                  </span>
-                  <h4 className="text-3xl font-bold font-display text-white mb-3">
-                    Appointment Booked Successfully!
+                  
+                  <div className="inline-flex items-center gap-2 mb-3 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-xs font-mono font-bold text-emerald-300">
+                    <span>{isSavedLocallyOnly ? 'Confirmed • Ref:' : 'Saved to Cloud Database • Ref:'}</span>
+                    <span className="text-white">{submittedApptId}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleCopy(submittedApptId || '', 'appt-id')}
+                      className="p-1 hover:text-white text-emerald-400 cursor-pointer"
+                      title="Copy reference code"
+                    >
+                      {copiedIndex === 'appt-id' ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : <Copy className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+
+                  <h4 className="text-3xl sm:text-4xl font-black font-display text-white mb-3">
+                    Consultation Confirmed!
                   </h4>
                   <p className="text-base text-slate-200 max-w-lg mx-auto leading-relaxed">
                     Thank you, <span className="text-cyan-300 font-bold">{formData.fullName}</span>. Your transformation audit session is scheduled for <span className="text-white font-bold">{preferredDate}</span> ({timeSlot}).
                   </p>
 
-                  <div className="mt-6 max-w-md mx-auto p-4 rounded-2xl bg-slate-950 border border-slate-800 text-xs text-left space-y-2">
+                  <div className="mt-6 max-w-md mx-auto p-5 rounded-2xl bg-slate-950 border border-slate-800 text-xs text-left space-y-2.5 shadow-inner">
                     <div className="flex justify-between text-slate-400">
                       <span>Requirement:</span>
                       <span className="text-white font-semibold">{formData.interest}</span>
                     </div>
                     <div className="flex justify-between text-slate-400">
                       <span>Meeting Format:</span>
-                      <span className="text-white font-semibold capitalize">{meetingType === 'video' ? 'Google Meet / Zoom Video' : meetingType === 'phone' ? 'Direct Phone Call' : 'In-Person (Delhi)'}</span>
+                      <span className="text-white font-semibold capitalize">{meetingType === 'video' ? 'Google Meet / Zoom Video' : meetingType === 'phone' ? 'Direct Phone Call' : 'In-Person (Delhi HQ)'}</span>
                     </div>
                     <div className="flex justify-between text-slate-400">
                       <span>Contact Phone:</span>
                       <span className="text-white font-mono">{formData.phone}</span>
+                    </div>
+                    <div className="flex justify-between text-slate-400">
+                      <span>Client Portal Status:</span>
+                      <span className="text-emerald-400 font-mono font-bold">Synchronized in Firestore</span>
+                    </div>
+                  </div>
+
+                  {/* Calendar Integration & Quick Actions */}
+                  <div className="mt-7 pt-6 border-t border-slate-800/80 max-w-xl mx-auto">
+                    <div className="text-xs font-mono uppercase text-slate-400 font-semibold mb-3 tracking-wider">
+                      Add to Your Calendar & Connect
+                    </div>
+                    <div className="flex flex-wrap justify-center gap-3">
+                      <a
+                        href={createGoogleCalendarUrl()}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-cyan-500/40 text-cyan-300 hover:text-white font-bold text-xs transition-all shadow-md cursor-pointer"
+                      >
+                        <CalendarCheck className="w-4 h-4 text-cyan-400" />
+                        <span>Add to Google Calendar</span>
+                      </a>
+                      <button
+                        type="button"
+                        onClick={downloadIcsFile}
+                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 hover:text-white font-bold text-xs transition-all shadow-md cursor-pointer"
+                      >
+                        <Clock className="w-4 h-4 text-slate-400" />
+                        <span>Download .ICS Invite</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => openWhatsApp(COMPANY_INFO.contact.phones[0])}
+                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 font-bold text-xs transition-all shadow-md cursor-pointer"
+                      >
+                        <MessageCircle className="w-4 h-4 text-emerald-400" />
+                        <span>WhatsApp Founder</span>
+                      </button>
                     </div>
                   </div>
 
@@ -470,9 +619,9 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                     <button
                       type="button"
                       onClick={openAppointmentsDrawer}
-                      className="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm font-bold text-white transition-all cursor-pointer flex items-center gap-2"
+                      className="px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-400 via-sky-400 to-emerald-400 hover:brightness-110 text-sm font-bold text-slate-950 transition-all cursor-pointer flex items-center gap-2 shadow-lg shadow-cyan-950/40"
                     >
-                      <CalendarCheck className="w-4 h-4 text-cyan-400" />
+                      <CalendarCheck className="w-4 h-4" />
                       <span>View in My Appointments</span>
                     </button>
                     <button
@@ -481,14 +630,6 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                       className="px-5 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-sm font-semibold text-slate-300 transition-all cursor-pointer"
                     >
                       Book Another Slot
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => openWhatsApp(COMPANY_INFO.contact.phones[0])}
-                      className="px-6 py-3 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-sm font-bold text-slate-950 transition-all cursor-pointer shadow-lg flex items-center gap-2"
-                    >
-                      <MessageCircle className="w-4 h-4" />
-                      <span>WhatsApp Founder</span>
                     </button>
                   </div>
                 </div>

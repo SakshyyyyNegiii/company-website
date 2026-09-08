@@ -1,22 +1,18 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
+import firebaseConfig from '../../firebase-applet-config.json';
 
-// Your web app's Firebase configuration provided by user
-export const firebaseConfig = {
-  apiKey: "AIzaSyB1Cf8vzzfEXmf5wq6ZiR3SaBsaqpS4TOI",
-  authDomain: "bitso-innovations.firebaseapp.com",
-  projectId: "bitso-innovations",
-  storageBucket: "bitso-innovations.firebasestorage.app",
-  messagingSenderId: "897775011391",
-  appId: "1:897775011391:web:fa7c2730240c36ef7d9a8a"
-};
-
-// Initialize Firebase
+// Initialize Firebase with provisioned applet configuration
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+export const db = firebaseConfig.firestoreDatabaseId
+  ? getFirestore(app, firebaseConfig.firestoreDatabaseId)
+  : getFirestore(app);
 export const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({
+  prompt: 'select_account',
+});
 
 export enum OperationType {
   CREATE = 'create',

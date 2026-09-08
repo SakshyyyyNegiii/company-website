@@ -28,9 +28,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenConsultation }) => {
   const {
     currentUser,
     userProfile,
+    appointmentsCount,
     openAuthModal,
     openAppointmentsDrawer,
     signOutUser,
+    signInWithGooglePopup,
   } = useAuth();
 
   useEffect(() => {
@@ -112,18 +114,32 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenConsultation }) => {
                       className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-cyan-300 bg-cyan-950/70 hover:bg-cyan-900/80 border border-cyan-500/40 rounded-xl transition-all shadow-sm cursor-pointer"
                       title="View your booked transformation appointments"
                     >
-                      <CalendarCheck className="w-3.5 h-3.5" />
+                      <CalendarCheck className="w-3.5 h-3.5 text-cyan-400" />
                       <span>My Appointments</span>
+                      {appointmentsCount > 0 && (
+                        <span className="ml-0.5 px-1.5 py-0.2 rounded-full bg-cyan-400 text-slate-950 font-black text-[10px]">
+                          {appointmentsCount}
+                        </span>
+                      )}
                     </button>
 
                     <button
                       type="button"
                       onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                      className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-xs font-semibold text-slate-200 transition-all cursor-pointer"
+                      className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-xs font-semibold text-slate-200 transition-all cursor-pointer"
                     >
-                      <div className="w-6 h-6 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 flex items-center justify-center font-mono font-bold text-xs">
-                        {(userProfile?.displayName || currentUser.displayName || currentUser.email || 'U')[0].toUpperCase()}
-                      </div>
+                      {userProfile?.photoURL || currentUser.photoURL ? (
+                        <img
+                          src={userProfile?.photoURL || currentUser.photoURL || ''}
+                          alt={userProfile?.displayName || currentUser.displayName || 'User'}
+                          className="w-6 h-6 rounded-lg object-cover border border-cyan-400/50"
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        <div className="w-6 h-6 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 flex items-center justify-center font-mono font-bold text-xs">
+                          {(userProfile?.displayName || currentUser.displayName || currentUser.email || 'U')[0].toUpperCase()}
+                        </div>
+                      )}
                       <span className="max-w-[100px] truncate text-slate-200">
                         {userProfile?.displayName || currentUser.displayName || 'Client'}
                       </span>
@@ -132,10 +148,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenConsultation }) => {
 
                   {/* Dropdown Menu */}
                   {userDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-56 bg-slate-900 border border-slate-800 rounded-2xl p-2 shadow-2xl z-50 animate-in fade-in zoom-in-95">
+                    <div className="absolute right-0 mt-2 w-60 bg-slate-900 border border-slate-800 rounded-2xl p-2.5 shadow-2xl z-50 animate-in fade-in zoom-in-95">
                       <div className="px-3 py-2 border-b border-slate-800 text-xs text-slate-400">
-                        <div className="font-bold text-white truncate">
-                          {userProfile?.displayName || currentUser.displayName || 'Client Partner'}
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-bold text-white truncate max-w-[130px]">
+                            {userProfile?.displayName || currentUser.displayName || 'Client Partner'}
+                          </span>
+                          <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400 font-mono">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                            Synced
+                          </span>
                         </div>
                         <div className="truncate text-[11px] text-slate-400">{currentUser.email}</div>
                       </div>
@@ -145,10 +167,17 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenConsultation }) => {
                           setUserDropdownOpen(false);
                           openAppointmentsDrawer();
                         }}
-                        className="w-full mt-1 px-3 py-2 text-left text-xs font-semibold text-slate-200 hover:text-cyan-300 hover:bg-slate-800 rounded-xl flex items-center gap-2"
+                        className="w-full mt-1.5 px-3 py-2 text-left text-xs font-semibold text-slate-200 hover:text-cyan-300 hover:bg-slate-800 rounded-xl flex items-center justify-between"
                       >
-                        <CalendarCheck className="w-3.5 h-3.5 text-cyan-400" />
-                        <span>Booked Appointments</span>
+                        <div className="flex items-center gap-2">
+                          <CalendarCheck className="w-3.5 h-3.5 text-cyan-400" />
+                          <span>Booked Appointments</span>
+                        </div>
+                        {appointmentsCount > 0 && (
+                          <span className="px-1.5 py-0.5 rounded-md bg-cyan-950 border border-cyan-500/40 text-cyan-300 text-[10px] font-bold font-mono">
+                            {appointmentsCount}
+                          </span>
+                        )}
                       </button>
                       <button
                         type="button"
@@ -178,20 +207,41 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenConsultation }) => {
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
+                  {/* Quick Google Sign In */}
+                  <button
+                    type="button"
+                    onClick={() => signInWithGooglePopup()}
+                    className="inline-flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-200 hover:text-white bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 hover:border-cyan-500/40 rounded-xl transition-all cursor-pointer shadow-sm"
+                    title="Sign in quickly with your Google Account"
+                  >
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
+                      <path
+                        fill="#4285F4"
+                        d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"
+                      />
+                      <path
+                        fill="#34A853"
+                        d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"
+                      />
+                      <path
+                        fill="#FBBC05"
+                        d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.97 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
+                      />
+                      <path
+                        fill="#EA4335"
+                        d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+                      />
+                    </svg>
+                    <span>Google Sign In</span>
+                  </button>
+
                   <button
                     type="button"
                     onClick={() => openAuthModal('signin')}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-200 hover:text-white bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 rounded-xl transition-all cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-300 hover:text-white bg-slate-950 hover:bg-slate-900 border border-slate-800 rounded-xl transition-all cursor-pointer"
                   >
                     <LogIn className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>Sign In</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => openAuthModal('signup')}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-cyan-300 hover:text-cyan-200 bg-cyan-950/70 hover:bg-cyan-900 border border-cyan-500/40 rounded-xl transition-all cursor-pointer"
-                  >
-                    <span>Sign Up</span>
+                    <span>Email</span>
                   </button>
                 </div>
               )}
@@ -251,35 +301,70 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenConsultation }) => {
                       setMobileMenuOpen(false);
                       openAppointmentsDrawer();
                     }}
-                    className="w-full py-2 px-3 text-xs font-bold text-cyan-300 bg-cyan-950/60 border border-cyan-500/30 rounded-xl flex items-center justify-center gap-2"
+                    className="w-full py-2.5 px-3 text-xs font-bold text-cyan-300 bg-cyan-950/60 border border-cyan-500/30 rounded-xl flex items-center justify-center gap-2"
                   >
-                    <CalendarCheck className="w-3.5 h-3.5" />
+                    <CalendarCheck className="w-3.5 h-3.5 text-cyan-400" />
                     <span>View My Appointments</span>
+                    {appointmentsCount > 0 && (
+                      <span className="px-1.5 py-0.2 rounded-full bg-cyan-400 text-slate-950 font-black text-[10px]">
+                        {appointmentsCount}
+                      </span>
+                    )}
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-2">
                   <button
                     type="button"
                     onClick={() => {
                       setMobileMenuOpen(false);
-                      openAuthModal('signin');
+                      signInWithGooglePopup();
                     }}
-                    className="py-2 px-3 text-xs font-bold text-slate-200 bg-slate-950 border border-slate-700 rounded-xl flex items-center justify-center gap-1.5"
+                    className="w-full py-2.5 px-3 text-xs font-bold text-slate-200 bg-slate-950 hover:bg-slate-800 border border-slate-700/80 rounded-xl flex items-center justify-center gap-2.5 shadow-sm"
                   >
-                    <LogIn className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>Sign In</span>
+                    <svg className="w-4 h-4" viewBox="0 0 24 24">
+                      <path
+                        fill="#4285F4"
+                        d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"
+                      />
+                      <path
+                        fill="#34A853"
+                        d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"
+                      />
+                      <path
+                        fill="#FBBC05"
+                        d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.97 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
+                      />
+                      <path
+                        fill="#EA4335"
+                        d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+                      />
+                    </svg>
+                    <span>Continue with Google</span>
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      openAuthModal('signup');
-                    }}
-                    className="py-2 px-3 text-xs font-bold text-cyan-300 bg-cyan-950 border border-cyan-500/40 rounded-xl flex items-center justify-center"
-                  >
-                    <span>Create Account</span>
-                  </button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        openAuthModal('signin');
+                      }}
+                      className="py-2 px-3 text-xs font-bold text-slate-200 bg-slate-900 border border-slate-700 rounded-xl flex items-center justify-center gap-1.5"
+                    >
+                      <LogIn className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Sign In</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        openAuthModal('signup');
+                      }}
+                      className="py-2 px-3 text-xs font-bold text-cyan-300 bg-cyan-950 border border-cyan-500/40 rounded-xl flex items-center justify-center"
+                    >
+                      <span>Create Account</span>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
