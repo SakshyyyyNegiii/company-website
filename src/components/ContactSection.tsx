@@ -237,19 +237,19 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
   };
 
   return (
-    <section id="contact" className="py-20 md:py-28 bg-slate-950 relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header from Slide 7 */}
-        <div className="max-w-3xl mb-14 sm:mb-16">
-          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-cyan-950/80 border border-cyan-500/40 text-xs font-bold text-cyan-300 mb-4 uppercase tracking-wider shadow-sm">
+    <section id="contact" className="w-full min-h-[calc(100vh-5rem)] flex flex-col justify-center py-6 sm:py-10 bg-slate-950 relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        {/* Section Header */}
+        <div className="max-w-3xl mb-8 sm:mb-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-500/40 text-xs font-bold text-cyan-300 mb-2 uppercase tracking-wider shadow-sm">
             <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Direct Engagement & Transformation Inquiry</span>
+            <span>Slide 06 • Consultation Booking & Client Portal</span>
           </div>
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black font-display text-white tracking-tight leading-[1.08]">
-            Ready to Transform?
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black font-display text-white tracking-tight">
+            Schedule Your Strategic Consultation
           </h2>
-          <p className="mt-5 text-lg sm:text-xl text-slate-200 leading-relaxed">
-            Whether you&apos;re a regional retailer, enterprise operator, or strategic investor — Bitso Innovations has the architecture, the team, and the vision to take your business into the digital future. Reach out today and let&apos;s engineer your competitive advantage.
+          <p className="mt-2 text-sm sm:text-base text-slate-300 leading-relaxed">
+            Whether you are a brick-and-mortar retail operator, enterprise distributor, or regional supermarket — book a 1-on-1 strategy session directly with our leadership team.
           </p>
         </div>
 

@@ -4,6 +4,8 @@ import {
   DigitalLoopStep,
   RoadmapMilestone,
   CorePillar,
+  PortfolioItem,
+  SlideId,
 } from '../types';
 
 export const COMPANY_INFO = {
@@ -291,5 +293,151 @@ export const CORE_PILLARS: CorePillar[] = [
     description: 'Round-the-clock technical excellence and true partnership — we don\'t just deliver, we stay and scale with you.',
     highlight: 'Dedicated response engineering SLA',
     iconName: 'Headphones',
+  },
+];
+
+export const PORTFOLIO_ITEMS: PortfolioItem[] = [
+  {
+    id: 'portfolio-grocery',
+    title: 'Omni-Channel Retail Grocery Chain',
+    category: 'retail',
+    categoryLabel: 'Retail & E-commerce',
+    clientType: 'Multi-Outlet Supermarket (14 Stores, Delhi NCR)',
+    summary: 'Synchronized physical shelf inventory with online catalog and 45-min local delivery.',
+    challenge: 'Disconnected inventory between physical stores and phone orders caused an 18% stockout rate and frustrated customers.',
+    solution: 'Engineered real-time Cloud POS sync, automated WhatsApp instant catalog ordering, and hyper-local runner dispatch.',
+    results: [
+      '+34% overall monthly sales volume increase',
+      'Zero inventory mismatch between physical shelves and app',
+      '99.8% order fulfillment rate within 45 minutes',
+    ],
+    techStack: ['React', 'Node.js', 'Cloud POS Sync', 'Hyper-Local Logistics API', 'UPI Payments'],
+    metrics: { value: '+34%', label: 'Sales Growth in 90 Days' },
+    badge: 'Live Case Study',
+  },
+  {
+    id: 'portfolio-fashion',
+    title: 'Fashion & Apparel Retail Network',
+    category: 'retail',
+    categoryLabel: 'Retail & E-commerce',
+    clientType: 'Apparel Brand (6 Outlets & Pan-India Webstore)',
+    summary: 'Sub-3-second mobile storefront with automated WhatsApp retention and VIP loyalty tiers.',
+    challenge: 'High cart abandonment, fragmented customer data across outlets, and lack of customer retention channels.',
+    solution: 'Designed an ultra-fast headless webstore paired with POS customer loyalty sync and automated WhatsApp promotional broadcasts.',
+    results: [
+      '+48% repeat customer purchase rate within 6 months',
+      'Average mobile load time dropped from 4.8s to 1.6s',
+      '4.2x ROI achieved on digital platform rollout',
+    ],
+    techStack: ['Next.js', 'Tailwind CSS', 'AWS Cloud', 'WhatsApp Cloud API', 'Stripe & Razorpay'],
+    metrics: { value: '+48%', label: 'Repeat Customer Retention' },
+    badge: 'Enterprise Deployment',
+  },
+  {
+    id: 'portfolio-wholesale',
+    title: 'B2B Wholesale & Distribution ERP',
+    category: 'erp',
+    categoryLabel: 'Enterprise ERP',
+    clientType: 'Regional FMCG Distributor (Delhi NCR & UP)',
+    summary: 'Automated GST-compliant invoicing, credit limit controls, and multi-warehouse inventory ledger.',
+    challenge: 'Manual phone/paper invoicing caused delayed cash collections, errors in tax compliance, and stock reconciliation lag.',
+    solution: 'Deployed custom enterprise ERP with automated invoice dispatch, ledger accounting, and dealer self-service reorder portal.',
+    results: [
+      '65% faster payment reconciliation cycle',
+      '100% automated GST e-way bill & invoice generation',
+      'Real-time cashflow visibility across 3 major warehouses',
+    ],
+    techStack: ['TypeScript', 'Node.js', 'PostgreSQL', 'Docker', 'GST API Integration'],
+    metrics: { value: '65%', label: 'Faster Payment Cycles' },
+    badge: 'Custom ERP',
+  },
+  {
+    id: 'portfolio-logistics',
+    title: 'Hyper-Local Courier Routing Mesh',
+    category: 'logistics',
+    categoryLabel: 'Logistics & Fleet',
+    clientType: 'Express Neighborhood Delivery Fleet (80+ Riders)',
+    summary: 'Proprietary batch routing algorithm connecting store counters to nearest on-demand riders.',
+    challenge: 'Heavy commission payouts to third-party delivery apps eroded merchant profit margins to near zero.',
+    solution: 'Architected private dispatch engine with geofenced order allocation, live GPS rider telemetry, and automated customer SMS alerts.',
+    results: [
+      '42% reduction in per-delivery logistics overhead',
+      'Sub-hour transit times guaranteed across all city clusters',
+      'Zero reliance on aggregator commissions',
+    ],
+    techStack: ['WebSockets', 'Redis Geo', 'Map Telemetry', 'Flutter Rider App', 'Node Microservices'],
+    metrics: { value: '42%', label: 'Logistics Cost Savings' },
+    badge: 'Proprietary Tech',
+  },
+  {
+    id: 'portfolio-pharmacy',
+    title: 'Smart Pharmacy & Healthcare Inventory Network',
+    category: 'ai',
+    categoryLabel: 'AI & Automation',
+    clientType: 'Healthcare Retail Chain (22 Branches)',
+    summary: 'AI-driven predictive demand forecasting and automated supplier purchase order replenishment.',
+    challenge: 'High cost of expired stock write-offs and frequent stockouts of emergency critical medications.',
+    solution: 'Implemented predictive AI model analyzing seasonal prescription trends with automated batch expiry alerts and inter-store balance transfers.',
+    results: [
+      '80% reduction in expired inventory financial write-offs',
+      'Zero stockouts of essential life-saving medicine categories',
+      'Automated supplier reorders completed without human intervention',
+    ],
+    techStack: ['Python AI Engine', 'FastAPI', 'Cloud Database', 'Automated Webhooks', 'Tableau/BI'],
+    metrics: { value: '80%', label: 'Reduction in Waste' },
+    badge: 'AI Predictive Engine',
+  },
+];
+
+export interface SlideMeta {
+  id: SlideId;
+  number: string;
+  label: string;
+  shortLabel: string;
+  tagline: string;
+}
+
+export const SLIDES_META: SlideMeta[] = [
+  {
+    id: 'home',
+    number: '01',
+    label: 'Home',
+    shortLabel: 'Home',
+    tagline: 'Innovative Solutions. Digital Future.',
+  },
+  {
+    id: 'about',
+    number: '02',
+    label: 'About Us',
+    shortLabel: 'About',
+    tagline: 'Leadership, Mission & 5-Year Roadmap',
+  },
+  {
+    id: 'services',
+    number: '03',
+    label: 'Services',
+    shortLabel: 'Services',
+    tagline: 'Full-Stack Software, Cloud & AI',
+  },
+  {
+    id: 'why-us',
+    number: '04',
+    label: 'Why Choose Us',
+    shortLabel: 'Why Us',
+    tagline: 'Digital Loop, Features & ROI Engine',
+  },
+  {
+    id: 'portfolio',
+    number: '05',
+    label: 'Portfolio',
+    shortLabel: 'Portfolio',
+    tagline: 'Proven Deployments & Case Studies',
+  },
+  {
+    id: 'contact',
+    number: '06',
+    label: 'Contact Us',
+    shortLabel: 'Contact',
+    tagline: 'Book Consultation & Client Portal',
   },
 ];

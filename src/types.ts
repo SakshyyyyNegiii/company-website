@@ -81,3 +81,20 @@ export interface Appointment {
   createdAt?: any;
   updatedAt?: any;
 }
+
+export interface PortfolioItem {
+  id: string;
+  title: string;
+  category: 'retail' | 'erp' | 'logistics' | 'ai';
+  categoryLabel: string;
+  clientType: string;
+  summary: string;
+  challenge: string;
+  solution: string;
+  results: string[];
+  techStack: string[];
+  metrics: { value: string; label: string };
+  badge: string;
+}
+
+export type SlideId = 'home' | 'about' | 'services' | 'why-us' | 'portfolio' | 'contact';

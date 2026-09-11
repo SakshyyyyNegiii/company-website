@@ -13,14 +13,21 @@ import {
   CalendarCheck,
   Sparkles,
 } from 'lucide-react';
-import { COMPANY_INFO } from '../data/content';
+import { COMPANY_INFO, SLIDES_META } from '../data/content';
 import { useAuth } from '../context/AuthContext';
+import { SlideId } from '../types';
 
 interface NavbarProps {
+  currentSlide: SlideId;
+  onSelectSlide: (slideId: SlideId) => void;
   onOpenConsultation: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onOpenConsultation }) => {
+export const Navbar: React.FC<NavbarProps> = ({
+  currentSlide,
+  onSelectSlide,
+  onOpenConsultation,
+}) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
@@ -43,13 +50,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenConsultation }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navLinks = [
-    { name: 'Services', href: '#services' },
-    { name: 'Retail Digitization', href: '#retail' },
-    { name: 'Digital Loop & ROI', href: '#roi' },
-    { name: 'Roadmap', href: '#roadmap' },
-    { name: 'Why Partner', href: '#why-us' },
-    { name: 'Contact', href: '#contact' },
+  const navLinks: { id: SlideId; name: string; number: string }[] = [
+    { id: 'home', name: 'Home', number: '01' },
+    { id: 'about', name: 'About Us', number: '02' },
+    { id: 'services', name: 'Services', number: '03' },
+    { id: 'why-us', name: 'Why Choose Us', number: '04' },
+    { id: 'portfolio', name: 'Portfolio', number: '05' },
+    { id: 'contact', name: 'Contact Us', number: '06' },
   ];
 
   return (
@@ -64,12 +71,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenConsultation }) => {
         <span className="truncate text-slate-200 text-xs sm:text-sm font-medium">
           E-commerce Platform Transformation for Brick-and-Mortar Retail Stores
         </span>
-        <a
-          href="#retail"
-          className="hidden md:inline-flex items-center gap-1 text-cyan-300 hover:text-cyan-200 font-semibold text-xs sm:text-sm underline underline-offset-4 ml-1 transition-colors"
+        <button
+          type="button"
+          onClick={() => onSelectSlide('services')}
+          className="hidden md:inline-flex items-center gap-1 text-cyan-300 hover:text-cyan-200 font-semibold text-xs sm:text-sm underline underline-offset-4 ml-1 transition-colors cursor-pointer"
         >
-          Explore Platform <ArrowUpRight className="w-3.5 h-3.5" />
-        </a>
+          Explore Solutions <ArrowUpRight className="w-3.5 h-3.5" />
+        </button>
       </div>
 
       {/* Main Sticky Navigation */}
@@ -84,22 +92,34 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenConsultation }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             {/* Brand Logo */}
-            <a href="#" className="flex items-center focus:outline-none focus:ring-2 focus:ring-cyan-500/50 rounded-xl p-1 transition-transform hover:scale-[1.02]">
+            <button
+              type="button"
+              onClick={() => onSelectSlide('home')}
+              className="flex items-center focus:outline-none focus:ring-2 focus:ring-cyan-500/50 rounded-xl p-1 transition-transform hover:scale-[1.02] cursor-pointer text-left"
+            >
               <BrandLogo size="md" />
-            </a>
+            </button>
 
             {/* Desktop Navigation Links */}
-            <nav className="hidden lg:flex items-center gap-7">
-              {navLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  className="text-[15px] font-semibold text-slate-200 hover:text-cyan-300 transition-colors duration-150 py-2 relative group"
-                >
-                  {link.name}
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-cyan-400 to-emerald-400 transition-all duration-250 group-hover:w-full rounded-full" />
-                </a>
-              ))}
+            <nav className="hidden lg:flex items-center gap-2">
+              {navLinks.map((link) => {
+                const isActive = currentSlide === link.id;
+                return (
+                  <button
+                    key={link.id}
+                    type="button"
+                    onClick={() => onSelectSlide(link.id)}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
+                      isActive
+                        ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/40 shadow-sm shadow-cyan-950/50'
+                        : 'text-slate-300 hover:text-white hover:bg-slate-900/60'
+                    }`}
+                  >
+                    <span className="font-mono text-[10px] text-cyan-400/80">{link.number}</span>
+                    <span>{link.name}</span>
+                  </button>
+                );
+              })}
             </nav>
 
             {/* Desktop Right Action Buttons */}
@@ -370,16 +390,27 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenConsultation }) => {
             </div>
 
             <div className="space-y-1 pb-4 border-b border-slate-800/80">
-              {navLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block px-3 py-3 text-base font-medium text-slate-200 hover:text-cyan-400 hover:bg-slate-900/60 rounded-lg transition-colors"
-                >
-                  {link.name}
-                </a>
-              ))}
+              {navLinks.map((link) => {
+                const isActive = currentSlide === link.id;
+                return (
+                  <button
+                    key={link.id}
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      onSelectSlide(link.id);
+                    }}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors cursor-pointer text-left ${
+                      isActive
+                        ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/40'
+                        : 'text-slate-200 hover:text-cyan-400 hover:bg-slate-900/60'
+                    }`}
+                  >
+                    <span>{link.name}</span>
+                    <span className="font-mono text-xs text-slate-500">{link.number}</span>
+                  </button>
+                );
+              })}
             </div>
 
             <div className="pt-4 space-y-3">
