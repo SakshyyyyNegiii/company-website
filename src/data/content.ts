@@ -70,7 +70,7 @@ export const CORE_SERVICES: ServiceItem[] = [
     bulletPoints: [
       'Scalable web architectures tailored for sub-second page loads',
       'Lightning-fast Core Web Vitals optimization for superior Google rankings',
-      'Heavy conversion rate optimization (CRO) frameworks for maximum ROI',
+      'Heavy conversion rate optimization (CRO) frameworks driving direct sales lift',
     ],
     clientBenefit: 'Sub-second response times & high-converting sales funnels',
     iconName: 'Globe',
@@ -314,6 +314,7 @@ export const PORTFOLIO_ITEMS: PortfolioItem[] = [
     techStack: ['React', 'Node.js', 'Cloud POS Sync', 'Hyper-Local Logistics API', 'UPI Payments'],
     metrics: { value: '+34%', label: 'Sales Growth in 90 Days' },
     badge: 'Live Case Study',
+    imageUrl: '/images/smart_retail_store_1788799895410.jpg',
   },
   {
     id: 'portfolio-fashion',
@@ -327,11 +328,12 @@ export const PORTFOLIO_ITEMS: PortfolioItem[] = [
     results: [
       '+48% repeat customer purchase rate within 6 months',
       'Average mobile load time dropped from 4.8s to 1.6s',
-      '4.2x ROI achieved on digital platform rollout',
+      '4.2x capital efficiency gained on digital platform rollout',
     ],
     techStack: ['Next.js', 'Tailwind CSS', 'AWS Cloud', 'WhatsApp Cloud API', 'Stripe & Razorpay'],
     metrics: { value: '+48%', label: 'Repeat Customer Retention' },
     badge: 'Enterprise Deployment',
+    imageUrl: '/images/fashion_store_pos_1789233230487.jpg',
   },
   {
     id: 'portfolio-wholesale',
@@ -350,6 +352,7 @@ export const PORTFOLIO_ITEMS: PortfolioItem[] = [
     techStack: ['TypeScript', 'Node.js', 'PostgreSQL', 'Docker', 'GST API Integration'],
     metrics: { value: '65%', label: 'Faster Payment Cycles' },
     badge: 'Custom ERP',
+    imageUrl: '/images/enterprise_erp_1789233248383.jpg',
   },
   {
     id: 'portfolio-logistics',
@@ -368,6 +371,7 @@ export const PORTFOLIO_ITEMS: PortfolioItem[] = [
     techStack: ['WebSockets', 'Redis Geo', 'Map Telemetry', 'Flutter Rider App', 'Node Microservices'],
     metrics: { value: '42%', label: 'Logistics Cost Savings' },
     badge: 'Proprietary Tech',
+    imageUrl: '/images/hyperlocal_logistics_1788799912853.jpg',
   },
   {
     id: 'portfolio-pharmacy',
@@ -386,6 +390,7 @@ export const PORTFOLIO_ITEMS: PortfolioItem[] = [
     techStack: ['Python AI Engine', 'FastAPI', 'Cloud Database', 'Automated Webhooks', 'Tableau/BI'],
     metrics: { value: '80%', label: 'Reduction in Waste' },
     badge: 'AI Predictive Engine',
+    imageUrl: '/images/smart_pharmacy_1789233270875.jpg',
   },
 ];
 
@@ -424,7 +429,7 @@ export const SLIDES_META: SlideMeta[] = [
     number: '04',
     label: 'Why Choose Us',
     shortLabel: 'Why Us',
-    tagline: 'Digital Loop, Features & ROI Engine',
+    tagline: '5-Step Digital Loop & Competitive Moats',
   },
   {
     id: 'portfolio',

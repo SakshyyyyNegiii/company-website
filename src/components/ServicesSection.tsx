@@ -70,7 +70,7 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({ onSelectServic
             <div className="relative rounded-3xl overflow-hidden border border-slate-800 bg-slate-900/80 p-5 shadow-2xl backdrop-blur-md group">
               <div className="relative h-36 rounded-2xl overflow-hidden mb-4 border border-slate-700/70">
                 <img
-                  src="/src/assets/images/hero_liquid_ribbon_1788799877334.jpg"
+                  src="/images/hero_liquid_ribbon_1788799877334.jpg"
                   alt="Enterprise Cloud and AI Digital Catalyst"
                   className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                   referrerPolicy="no-referrer"

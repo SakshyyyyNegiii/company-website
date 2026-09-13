@@ -16,18 +16,19 @@ import {
   Layers,
   Activity,
   X,
+  Clock,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { FAQS_DATA, FaqItem } from '../data/faqs';
 
 interface FaqAccordionProps {
   onOpenConsultation: (topic?: string) => void;
-  onNavigateROI: () => void;
+  onNavigateToLoop?: () => void;
 }
 
 export const FaqAccordion: React.FC<FaqAccordionProps> = ({
   onOpenConsultation,
-  onNavigateROI,
+  onNavigateToLoop,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -40,7 +41,7 @@ export const FaqAccordion: React.FC<FaqAccordionProps> = ({
     { id: 'scalability', label: 'Scalability & Cloud', icon: Cpu },
     { id: 'migration', label: 'Zero-Downtime Migration', icon: RefreshCw },
     { id: 'security', label: 'Security & Compliance', icon: Lock },
-    { id: 'roi', label: 'ROI & Timelines', icon: Zap },
+    { id: 'timelines', label: 'Timelines & Rollout', icon: Clock },
     { id: 'integrations', label: 'Hardware & Logistics', icon: Layers },
   ];
 
@@ -87,8 +88,8 @@ export const FaqAccordion: React.FC<FaqAccordionProps> = ({
         return <RefreshCw className="w-4 h-4 text-emerald-400" />;
       case 'security':
         return <Lock className="w-4 h-4 text-amber-400" />;
-      case 'roi':
-        return <Zap className="w-4 h-4 text-sky-400" />;
+      case 'timelines':
+        return <Clock className="w-4 h-4 text-sky-400" />;
       case 'integrations':
         return <Layers className="w-4 h-4 text-indigo-400" />;
       default:
@@ -431,13 +432,15 @@ export const FaqAccordion: React.FC<FaqAccordionProps> = ({
         </div>
 
         <div className="flex items-center gap-2.5 shrink-0">
-          <button
-            type="button"
-            onClick={onNavigateROI}
-            className="px-4 py-2 rounded-xl text-xs font-bold text-slate-300 hover:text-white bg-slate-950 border border-slate-800 hover:border-slate-700 cursor-pointer transition-colors"
-          >
-            Calculate Store ROI
-          </button>
+          {onNavigateToLoop && (
+            <button
+              type="button"
+              onClick={onNavigateToLoop}
+              className="px-4 py-2 rounded-xl text-xs font-bold text-slate-300 hover:text-white bg-slate-950 border border-slate-800 hover:border-slate-700 cursor-pointer transition-colors"
+            >
+              Explore 5-Step Loop
+            </button>
+          )}
           <button
             type="button"
             onClick={() => onOpenConsultation('Custom Legacy Architecture Review')}

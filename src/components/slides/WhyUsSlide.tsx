@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   Sparkles,
   Store,
@@ -6,18 +7,25 @@ import {
   ShoppingBag,
   Truck,
   Users,
-  Calculator,
   ShieldCheck,
-  TrendingUp,
   ArrowRight,
   CheckCircle2,
   Lock,
   Zap,
   HelpCircle,
+  Repeat,
+  Play,
+  Pause,
+  ChevronLeft,
+  ChevronRight,
+  Server,
+  Activity,
+  RotateCw,
 } from 'lucide-react';
 import { DIGITAL_LOOP_STEPS } from '../../data/content';
 import { SlideId } from '../../types';
 import { FaqAccordion } from '../FaqAccordion';
+import { api, DigitalLoopTelemetryResponse } from '../../lib/api';
 
 interface WhyUsSlideProps {
   onOpenConsultation: (topic?: string) => void;
@@ -28,28 +36,47 @@ export const WhyUsSlide: React.FC<WhyUsSlideProps> = ({
   onOpenConsultation,
   onNavigate,
 }) => {
-  const [activeTab, setActiveTab] = useState<'roi' | 'loop' | 'features' | 'faq'>('roi');
+  const [activeTab, setActiveTab] = useState<'loop' | 'features' | 'faq'>('loop');
   const [activeStepIndex, setActiveStepIndex] = useState<number>(0);
+  const [isLoopAutoCycle, setIsLoopAutoCycle] = useState<boolean>(true);
 
-  // ROI Calculator Parameters
-  const [monthlyRevenue, setMonthlyRevenue] = useState<number>(1500000); // 15 Lakhs
-  const [storesCount, setStoresCount] = useState<number>(3);
-  const [courierDeliveries, setCourierDeliveries] = useState<number>(60);
+  // Backend telemetry state
+  const [telemetry, setTelemetry] = useState<DigitalLoopTelemetryResponse | null>(null);
 
-  // Dynamic Financial Calculations
-  const annualRevenue = monthlyRevenue * 12;
-  const estimatedLaborWasteMonthly = Math.round(monthlyRevenue * 0.045);
-  const estimatedAnnualLaborSavings = estimatedLaborWasteMonthly * 12;
-  const annualCourierSavings = courierDeliveries * 30 * 12 * 35; // Rs. 35 saved per delivery batch
-  const totalAnnualSavings = estimatedAnnualLaborSavings + annualCourierSavings;
-  const estimatedTransformationInvestment = Math.max(150000, storesCount * 75000);
-  const paybackMonths = Math.max(1.2, Math.round((estimatedTransformationInvestment / (totalAnnualSavings / 12)) * 10) / 10);
-  const threeYearNetRoi = Math.round(((totalAnnualSavings * 3 - estimatedTransformationInvestment) / estimatedTransformationInvestment) * 100);
+  // Poll backend loop telemetry
+  useEffect(() => {
+    let mounted = true;
+    const fetchLoopTelemetry = async () => {
+      try {
+        const data = await api.getDigitalLoopTelemetry();
+        if (mounted) setTelemetry(data);
+      } catch (e) {
+        // Fallback silently
+      }
+    };
+    fetchLoopTelemetry();
+    const interval = setInterval(fetchLoopTelemetry, 8000);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, []);
 
-  const formatCurrencyINR = (num: number) => {
-    if (num >= 10000000) return `₹${(num / 10000000).toFixed(2)} Cr`;
-    if (num >= 100000) return `₹${(num / 100000).toFixed(1)} Lakh`;
-    return `₹${num.toLocaleString('en-IN')}`;
+  // Auto-Cycle Loop Effect
+  useEffect(() => {
+    if (!isLoopAutoCycle || activeTab !== 'loop') return;
+    const timer = setInterval(() => {
+      setActiveStepIndex((prev) => (prev + 1) % DIGITAL_LOOP_STEPS.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [isLoopAutoCycle, activeTab]);
+
+  const cycleNextStep = () => {
+    setActiveStepIndex((prev) => (prev + 1) % DIGITAL_LOOP_STEPS.length);
+  };
+
+  const cyclePrevStep = () => {
+    setActiveStepIndex((prev) => (prev - 1 + DIGITAL_LOOP_STEPS.length) % DIGITAL_LOOP_STEPS.length);
   };
 
   const getLoopIcon = (step: string) => {
@@ -85,22 +112,11 @@ export const WhyUsSlide: React.FC<WhyUsSlideProps> = ({
               Why Choose Bitso Innovations
             </h2>
             <p className="text-sm sm:text-base text-slate-300 mt-1 max-w-2xl">
-              Mathematical ROI modeling, closed-loop commerce, and zero-compromise enterprise engineering.
+              5-step closed-loop commerce, proprietary retail features, and battle-tested enterprise engineering.
             </p>
           </div>
 
           <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-900/90 border border-slate-800 self-start md:self-auto shrink-0 text-xs overflow-x-auto max-w-full">
-            <button
-              type="button"
-              onClick={() => setActiveTab('roi')}
-              className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer shrink-0 ${
-                activeTab === 'roi'
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              Interactive ROI Engine
-            </button>
             <button
               type="button"
               onClick={() => setActiveTab('loop')}
@@ -138,232 +154,207 @@ export const WhyUsSlide: React.FC<WhyUsSlideProps> = ({
           </div>
         </div>
 
-        {/* Tab 1: Interactive Real-Time ROI Engine */}
-        {activeTab === 'roi' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center animate-in fade-in duration-300">
-            {/* Left Column: Sliders */}
-            <div className="lg:col-span-6 bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xl space-y-5">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                <div className="flex items-center gap-2 text-sm font-bold text-white">
-                  <Calculator className="w-4 h-4 text-emerald-400" />
-                  <span>Configure Your Business Metrics</span>
-                </div>
-                <span className="text-[11px] font-mono text-cyan-300 bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-500/30">
-                  Real-Time Model
+        {/* Dynamic Tabbed Content with Motion */}
+        <AnimatePresence mode="wait">
+          {/* Tab 1: 5-Step Digital Loop */}
+          {activeTab === 'loop' && (
+          <motion.div
+            key="loop"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25 }}
+            className="space-y-5"
+          >
+            {/* Top Loop Controller Bar */}
+            <div className="flex flex-wrap items-center justify-between gap-3 p-3 sm:px-5 sm:py-2.5 rounded-2xl bg-slate-900/90 border border-slate-800">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping" />
+                <span className="text-xs font-mono font-bold text-cyan-300">
+                  Continuous Omnichannel Lifecycle
                 </span>
-              </div>
-
-              {/* Slider 1: Monthly Revenue */}
-              <div className="space-y-2">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-slate-300 font-medium">Monthly Retail Revenue</span>
-                  <span className="font-mono font-bold text-white text-sm bg-slate-950 px-2.5 py-1 rounded border border-slate-800">
-                    {formatCurrencyINR(monthlyRevenue)}
+                {telemetry && (
+                  <span className="hidden sm:inline-block text-[11px] font-mono text-emerald-400 bg-emerald-950/70 px-2 py-0.5 rounded border border-emerald-500/30">
+                    Cycle #{telemetry.cycleCount} Active
                   </span>
-                </div>
-                <input
-                  type="range"
-                  min={300000}
-                  max={10000000}
-                  step={100000}
-                  value={monthlyRevenue}
-                  onChange={(e) => setMonthlyRevenue(Number(e.target.value))}
-                  className="w-full accent-cyan-400 cursor-pointer h-2 bg-slate-800 rounded-lg"
-                />
-                <div className="flex justify-between text-[10px] text-slate-500 font-mono">
-                  <span>₹3 Lakh</span>
-                  <span>₹50 Lakh</span>
-                  <span>₹1 Crore</span>
-                </div>
+                )}
               </div>
 
-              {/* Slider 2: Stores Count */}
-              <div className="space-y-2">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-slate-300 font-medium">Physical Store Locations</span>
-                  <span className="font-mono font-bold text-white text-sm bg-slate-950 px-2.5 py-1 rounded border border-slate-800">
-                    {storesCount} Store{storesCount > 1 ? 's' : ''}
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min={1}
-                  max={25}
-                  step={1}
-                  value={storesCount}
-                  onChange={(e) => setStoresCount(Number(e.target.value))}
-                  className="w-full accent-emerald-400 cursor-pointer h-2 bg-slate-800 rounded-lg"
-                />
-                <div className="flex justify-between text-[10px] text-slate-500 font-mono">
-                  <span>1 Store</span>
-                  <span>10 Stores</span>
-                  <span>25 Stores</span>
-                </div>
-              </div>
-
-              {/* Slider 3: Courier Deliveries */}
-              <div className="space-y-2">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-slate-300 font-medium">Daily Delivery Orders</span>
-                  <span className="font-mono font-bold text-white text-sm bg-slate-950 px-2.5 py-1 rounded border border-slate-800">
-                    {courierDeliveries} Orders / Day
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min={10}
-                  max={300}
-                  step={10}
-                  value={courierDeliveries}
-                  onChange={(e) => setCourierDeliveries(Number(e.target.value))}
-                  className="w-full accent-sky-400 cursor-pointer h-2 bg-slate-800 rounded-lg"
-                />
-                <div className="flex justify-between text-[10px] text-slate-500 font-mono">
-                  <span>10/day</span>
-                  <span>150/day</span>
-                  <span>300/day</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Column: Dynamic Projected Impact Card */}
-            <div className="lg:col-span-6 bg-gradient-to-br from-slate-900 via-slate-900 to-cyan-950/40 border border-emerald-500/40 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-400">
-                  Projected Annual Commercial Gains
-                </span>
-                <span className="text-xs text-slate-300 font-semibold bg-emerald-950/80 px-2.5 py-1 rounded-full border border-emerald-500/30">
-                  Payback: ~{paybackMonths} Months
-                </span>
-              </div>
-
-              <div>
-                <span className="text-3xl sm:text-4xl font-black font-display text-white block">
-                  {formatCurrencyINR(totalAnnualSavings)}
-                </span>
-                <span className="text-xs text-emerald-300 font-bold block mt-1">
-                  Estimated Total Annual Overhead & Courier Recapture
-                </span>
-              </div>
-
-              {/* Metrics Grid */}
-              <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-800">
-                <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800">
-                  <span className="text-xs text-slate-400 block">Labor & POS Savings</span>
-                  <span className="text-base sm:text-lg font-bold font-mono text-white mt-0.5 block">
-                    {formatCurrencyINR(estimatedAnnualLaborSavings)}
-                  </span>
-                  <span className="text-[10px] text-slate-500">Recaptured manual overhead</span>
-                </div>
-
-                <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800">
-                  <span className="text-xs text-slate-400 block">3-Year Net ROI</span>
-                  <span className="text-base sm:text-lg font-bold font-mono text-cyan-300 mt-0.5 block">
-                    +{threeYearNetRoi}%
-                  </span>
-                  <span className="text-[10px] text-slate-500">Based on standard scale rate</span>
-                </div>
-              </div>
-
-              <div className="pt-2 flex flex-wrap items-center justify-between gap-3">
+              {/* Loop Controls: Prev, Next, and Auto-Cycle Toggle */}
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => onOpenConsultation('ROI & Custom Enterprise Transformation Audit')}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-xs font-bold text-slate-950 bg-gradient-to-r from-cyan-400 to-emerald-400 hover:brightness-110 active:scale-95 transition-all cursor-pointer shadow-md"
+                  onClick={() => setIsLoopAutoCycle((p) => !p)}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    isLoopAutoCycle
+                      ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/50'
+                      : 'bg-slate-800 text-slate-400 hover:text-white'
+                  }`}
+                  title={isLoopAutoCycle ? 'Pause auto-cycle loop' : 'Start auto-cycling stages (4.5s)'}
                 >
-                  <span>Lock in This ROI Audit</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  {isLoopAutoCycle ? <Pause className="w-3 h-3 text-cyan-400" /> : <Play className="w-3 h-3" />}
+                  <span>{isLoopAutoCycle ? 'Auto-Cycle Active' : 'Auto-Cycle Paused'}</span>
                 </button>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1 border-l border-slate-800 pl-2">
                   <button
                     type="button"
-                    onClick={() => setActiveTab('faq')}
-                    className="text-xs text-cyan-400 hover:text-cyan-300 underline cursor-pointer flex items-center gap-1"
+                    onClick={cyclePrevStep}
+                    className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-all cursor-pointer"
+                    title="Previous Stage (loops to 05 if at 01)"
                   >
-                    <HelpCircle className="w-3.5 h-3.5" />
-                    <span>Scalability & FAQ →</span>
+                    <ChevronLeft className="w-4 h-4" />
                   </button>
+                  <span className="text-xs font-mono font-bold text-slate-300 px-1">
+                    {currentLoopStep.step}/05
+                  </span>
                   <button
                     type="button"
-                    onClick={() => onNavigate('portfolio')}
-                    className="text-xs text-slate-400 hover:text-white underline cursor-pointer"
+                    onClick={cycleNextStep}
+                    className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-all cursor-pointer"
+                    title="Next Stage (loops to 01 if at 05)"
                   >
-                    Case Studies →
+                    <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
               </div>
             </div>
-          </div>
-        )}
 
-        {/* Tab 2: 5-Step Digital Loop */}
-        {activeTab === 'loop' && (
-          <div className="space-y-6 animate-in fade-in duration-300">
-            {/* Step Navigation Bar */}
+            {/* Step Navigation Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
               {DIGITAL_LOOP_STEPS.map((step, idx) => {
                 const isActive = activeStepIndex === idx;
+                const stageTelemetry = telemetry?.stages.find((s) => s.step === step.step);
                 return (
                   <button
                     key={step.step}
                     type="button"
-                    onClick={() => setActiveStepIndex(idx)}
-                    className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                    onClick={() => {
+                      setActiveStepIndex(idx);
+                      setIsLoopAutoCycle(false);
+                    }}
+                    className={`p-3 rounded-2xl border text-left transition-all cursor-pointer relative overflow-hidden ${
                       isActive
-                        ? 'bg-cyan-950/60 border-cyan-500/60 shadow-lg'
-                        : 'bg-slate-900/80 border-slate-800 hover:border-slate-700'
+                        ? 'bg-cyan-950/70 border-cyan-500/70 shadow-lg ring-1 ring-cyan-500/40'
+                        : 'bg-slate-900/80 border-slate-800 hover:border-slate-700 hover:bg-slate-900'
                     }`}
                   >
+                    {isActive && (
+                      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-400 to-emerald-400 animate-pulse" />
+                    )}
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-[10px] font-mono font-bold text-cyan-400">{step.step}</span>
                       {getLoopIcon(step.step)}
                     </div>
                     <div className="text-xs font-bold text-white truncate">{step.title}</div>
+                    <div className="text-[10px] text-slate-400 truncate mt-0.5">{step.tagline}</div>
+                    {stageTelemetry && (
+                      <div className="text-[9px] font-mono text-emerald-400 mt-1 flex items-center justify-between">
+                        <span>{stageTelemetry.latency}</span>
+                        <span className="text-slate-500">•</span>
+                        <span>{stageTelemetry.status}</span>
+                      </div>
+                    )}
                   </button>
                 );
               })}
             </div>
 
-            {/* Active Step Deep-Dive Card */}
-            <div className="p-6 sm:p-7 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-              <div className="md:col-span-8 space-y-3">
-                <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-cyan-400">
-                  <span>STAGE {currentLoopStep.step}</span>
-                  <span>•</span>
-                  <span>{currentLoopStep.tagline}</span>
+            {/* Active Step Deep-Dive Card with Circular Loop Navigation */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentLoopStep.step}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2 }}
+                className="p-6 sm:p-7 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl grid grid-cols-1 md:grid-cols-12 gap-6 items-center"
+              >
+                <div className="md:col-span-8 space-y-3">
+                  <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-cyan-400">
+                    <span>STAGE {currentLoopStep.step} OF 05</span>
+                    <span>•</span>
+                    <span>{currentLoopStep.tagline}</span>
+                  </div>
+                  <h3 className="text-2xl font-bold font-display text-white">
+                    {currentLoopStep.title}
+                  </h3>
+                  <p className="text-sm text-slate-300 leading-relaxed">
+                    {currentLoopStep.description}
+                  </p>
+                  
+                  {/* Step Cycle Actions */}
+                  <div className="pt-2 flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={cyclePrevStep}
+                      className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 hover:text-white transition-all cursor-pointer inline-flex items-center gap-1"
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                      <span>Previous Stage</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={cycleNextStep}
+                      className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-cyan-300 hover:text-white transition-all cursor-pointer inline-flex items-center gap-1"
+                    >
+                      <span>Next Stage</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
-                <h3 className="text-2xl font-bold font-display text-white">
-                  {currentLoopStep.title}
-                </h3>
-                <p className="text-sm text-slate-300 leading-relaxed">
-                  {currentLoopStep.description}
-                </p>
-              </div>
 
-              <div className="md:col-span-4 p-4 rounded-2xl bg-slate-950 border border-slate-800/90 text-center">
-                <span className="text-xs font-mono uppercase text-slate-400 block mb-1">
-                  Key Operational Metric
+                <div className="md:col-span-4 p-5 rounded-2xl bg-slate-950 border border-slate-800/90 text-center space-y-2">
+                  <span className="text-xs font-mono uppercase text-slate-400 block mb-1">
+                    Key Operational Metric
+                  </span>
+                  <span className="text-xl font-bold font-display text-emerald-300 block">
+                    {currentLoopStep.metrics}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => onOpenConsultation(`Integration: ${currentLoopStep.title}`)}
+                    className="w-full mt-2 py-2 px-3 rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 text-slate-950 font-bold text-xs hover:brightness-110 active:scale-95 transition-all cursor-pointer inline-flex items-center justify-center gap-1.5"
+                  >
+                    <span>Incorporate into My Business</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Closed-Loop Continuity Connector */}
+            <div className="p-4 rounded-2xl bg-slate-950/90 border border-cyan-500/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2.5 text-slate-300">
+                <RotateCw className="w-4 h-4 text-cyan-400 animate-spin" style={{ animationDuration: '8s' }} />
+                <span>
+                  <strong className="text-white">Closed-Loop Reinforcement:</strong> Stage 05 (Automated Retention & Loyalty) automatically recirculates customer repurchase data back into Stage 01 (Storefront & Omnichannel Footfall).
                 </span>
-                <span className="text-lg font-bold font-display text-emerald-300 block">
-                  {currentLoopStep.metrics}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => onOpenConsultation(`Integration: ${currentLoopStep.title}`)}
-                  className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-cyan-400 hover:text-cyan-300"
-                >
-                  <span>Incorporate into My Business</span>
-                  <ArrowRight className="w-3 h-3" />
-                </button>
               </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveStepIndex(0);
+                  setIsLoopAutoCycle(true);
+                }}
+                className="shrink-0 px-3 py-1 rounded-lg bg-cyan-950 border border-cyan-500/40 text-cyan-300 font-bold text-xs hover:bg-cyan-900 transition-colors cursor-pointer"
+              >
+                Restart Cycle at Stage 01 ↻
+              </button>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Tab 3: Architectural Edge */}
         {activeTab === 'features' && (
-          <div className="space-y-5 animate-in fade-in duration-300">
+          <motion.div
+            key="features"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25 }}
+            className="space-y-5"
+          >
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               <div className="p-6 rounded-3xl bg-slate-900/90 border border-slate-800 hover:border-cyan-500/40 transition-colors shadow-lg">
                 <div className="w-10 h-10 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-cyan-400 mb-4">
@@ -425,18 +416,27 @@ export const WhyUsSlide: React.FC<WhyUsSlideProps> = ({
                 Browse Scalability FAQ & Architecture Diagram →
               </button>
             </div>
-          </div>
+          </motion.div>
         )}
 
-        {/* Tab 4: Interactive Scalability & Transformation FAQ Accordion */}
+        {/* Tab 3: Interactive Scalability & Transformation FAQ Accordion */}
         {activeTab === 'faq' && (
-          <FaqAccordion
-            onOpenConsultation={(topic) =>
-              onOpenConsultation(topic || 'Scalability & Digital Transformation Consultation')
-            }
-            onNavigateROI={() => setActiveTab('roi')}
-          />
+          <motion.div
+            key="faq"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25 }}
+          >
+            <FaqAccordion
+              onOpenConsultation={(topic) =>
+                onOpenConsultation(topic || 'Scalability & Digital Transformation Consultation')
+              }
+              onNavigateToLoop={() => setActiveTab('loop')}
+            />
+          </motion.div>
         )}
+      </AnimatePresence>
       </div>
     </div>
   );

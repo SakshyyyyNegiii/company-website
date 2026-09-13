@@ -99,7 +99,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenConsultation }) => {
               {/* Card Header with Graphic Banner */}
               <div className="relative h-44 -mx-6 -mt-6 sm:-mx-8 sm:-mt-8 mb-7 overflow-hidden rounded-t-3xl">
                 <img
-                  src="/src/assets/images/hero_liquid_ribbon_1788799877334.jpg"
+                  src="/images/hero_liquid_ribbon_1788799877334.jpg"
                   alt="Bitso Innovations Digital Systems Architecture"
                   className="w-full h-full object-cover object-center transform hover:scale-105 transition-transform duration-700"
                   referrerPolicy="no-referrer"

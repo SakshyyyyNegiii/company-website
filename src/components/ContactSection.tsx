@@ -26,6 +26,7 @@ import { InquiryFormData } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { api } from '../lib/api';
 
 interface ContactSectionProps {
   initialServiceSelection?: string;
@@ -115,15 +116,6 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
 
     if (!formData.fullName || !formData.phone) return;
 
-    // Check if user is authenticated
-    if (!currentUser) {
-      openAuthModal(
-        'signin',
-        'Please sign in or create an account before submitting your consultation appointment. This ensures your project data and transformation audit are securely linked to your account.'
-      );
-      return;
-    }
-
     const generatedId = `APPT-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
     try {
@@ -131,9 +123,9 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
       setIsSavedLocallyOnly(false);
 
       const apptData = {
-        userId: currentUser.uid,
+        userId: currentUser ? currentUser.uid : 'guest-lead',
         userName: formData.fullName,
-        userEmail: formData.email || currentUser.email || '',
+        userEmail: formData.email || (currentUser ? currentUser.email || '' : ''),
         userPhone: formData.phone,
         businessName: formData.businessName || 'Undisclosed Enterprise',
         businessType: formData.businessType,
@@ -147,11 +139,49 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
         createdAt: serverTimestamp(),
       };
 
+      // 1. Post to Express Backend API (/api/appointments & /api/contact)
       try {
-        const apptDoc = await addDoc(collection(db, 'appointments'), apptData);
-        setSubmittedApptId(apptDoc.id);
+        await api.bookAppointment({
+          userId: apptData.userId,
+          userName: apptData.userName,
+          userEmail: apptData.userEmail,
+          userPhone: apptData.userPhone,
+          businessName: apptData.businessName,
+          businessType: apptData.businessType,
+          storesCount: apptData.storesCount,
+          interest: apptData.interest,
+          preferredDate: apptData.preferredDate,
+          timeSlot: apptData.timeSlot,
+          meetingType: apptData.meetingType,
+          message: apptData.message,
+        });
+      } catch (backendErr) {
+        console.warn('Backend API notification:', backendErr);
+      }
+
+      // 2. Dual-Sync to Cloud Firestore if user is authenticated or guest inquiry
+      let firestoreId = generatedId;
+      try {
+        if (currentUser) {
+          const apptDoc = await addDoc(collection(db, 'appointments'), apptData);
+          firestoreId = apptDoc.id;
+        } else {
+          // Store guest lead in Firestore inquiries collection
+          const inquiryDoc = await addDoc(collection(db, 'inquiries'), {
+            name: formData.fullName,
+            phone: formData.phone,
+            email: formData.email || '',
+            company: formData.businessName || '',
+            service: formData.interest,
+            notes: `Preferred Date: ${preferredDate}, Slot: ${timeSlot}. Message: ${formData.message || 'N/A'}`,
+            status: 'new',
+            createdAt: serverTimestamp(),
+          });
+          firestoreId = inquiryDoc.id;
+        }
+        setSubmittedApptId(firestoreId);
       } catch (firestoreErr) {
-        handleFirestoreError(firestoreErr, OperationType.CREATE, 'appointments');
+        handleFirestoreError(firestoreErr, OperationType.CREATE, currentUser ? 'appointments' : 'inquiries');
         // Store in localStorage as robust fallback so user's effort is NEVER lost
         const fallbackAppt = {
           ...apptData,
@@ -837,25 +867,19 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                     className="w-full py-4 px-7 rounded-2xl font-bold text-base text-slate-950 bg-gradient-to-r from-cyan-400 via-sky-400 to-emerald-400 hover:brightness-110 active:scale-[0.99] transition-all shadow-xl shadow-cyan-950/40 flex items-center justify-center gap-3 cursor-pointer mt-3 disabled:opacity-60"
                   >
                     {saving ? (
-                      <span>Securing Appointment in Firestore...</span>
-                    ) : !currentUser ? (
-                      <>
-                        <Lock className="w-5 h-5 text-slate-950" />
-                        <span>Sign In / Register to Book Appointment</span>
-                        <ArrowRight className="w-5 h-5" />
-                      </>
+                      <span>Syncing with Express Backend & Cloud Database...</span>
                     ) : (
                       <>
                         <CalendarCheck className="w-5 h-5 text-slate-950" />
                         <span>Confirm Consultation Appointment</span>
-                        <Send className="w-5 h-5" />
+                        <Send className="w-5 h-5 text-slate-950" />
                       </>
                     )}
                   </button>
 
                   <p className="text-xs text-slate-400 text-center mt-2.5 font-medium flex items-center justify-center gap-2">
                     <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Direct founding team response. Appointments encrypted & stored in Firebase.</span>
+                    <span>Direct founding team response • Dual-synced with Express API & Google Firestore.</span>
                   </p>
                 </form>
               )}

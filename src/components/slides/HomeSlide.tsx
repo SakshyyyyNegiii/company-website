@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'motion/react';
 import {
   ArrowRight,
   Sparkles,
@@ -33,12 +34,22 @@ export const HomeSlide: React.FC<HomeSlideProps> = ({
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center relative z-10">
             {/* Left Column: Core Messaging */}
-            <div className="lg:col-span-7 flex flex-col items-start text-left">
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, ease: 'easeOut' }}
+              className="lg:col-span-7 flex flex-col items-start text-left"
+            >
               {/* Specialized Tech Pill */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-cyan-500/40 text-xs font-bold text-cyan-300 shadow-md shadow-cyan-950/40 mb-6 backdrop-blur-md">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3 }}
+                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-cyan-500/40 text-xs font-bold text-cyan-300 shadow-md shadow-cyan-950/40 mb-6 backdrop-blur-md"
+              >
                 <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
                 <span className="tracking-wide uppercase">AI • Software • Digital Solutions</span>
-              </div>
+              </motion.div>
 
               {/* Main Headline */}
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black font-display tracking-tight text-white leading-[1.06] mb-5">
@@ -56,7 +67,10 @@ export const HomeSlide: React.FC<HomeSlideProps> = ({
               </p>
 
               {/* Flagship Transformation Focus Card */}
-              <div className="w-full bg-slate-900/90 backdrop-blur-md border border-cyan-500/30 rounded-2xl p-5 sm:p-6 mb-8 shadow-xl hover:border-cyan-500/50 transition-all duration-300 group">
+              <motion.div
+                whileHover={{ scale: 1.01 }}
+                className="w-full bg-slate-900/90 backdrop-blur-md border border-cyan-500/30 rounded-2xl p-5 sm:p-6 mb-8 shadow-xl hover:border-cyan-500/50 transition-all duration-300 group"
+              >
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-cyan-300 mb-1.5">
                   <span className="p-1 rounded-md bg-cyan-950 border border-cyan-500/40">
                     <Store className="w-3.5 h-3.5 text-cyan-400" />
@@ -69,7 +83,7 @@ export const HomeSlide: React.FC<HomeSlideProps> = ({
                 <p className="text-xs sm:text-sm text-slate-300 mt-1.5 leading-relaxed">
                   Empowering physical retail businesses to dominate local markets with synchronized cloud POS, instant digital storefronts, and automated hyper-local dispatch.
                 </p>
-              </div>
+              </motion.div>
 
               {/* Primary Call to Actions */}
               <div className="flex flex-wrap items-center gap-3.5 w-full sm:w-auto mb-8">
@@ -114,17 +128,22 @@ export const HomeSlide: React.FC<HomeSlideProps> = ({
                   <span>{COMPANY_INFO.contact.location}</span>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Right Column: Visual Showcase & Key Metrics Grid */}
-            <div className="lg:col-span-5">
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.15, ease: 'easeOut' }}
+              className="lg:col-span-5"
+            >
               <div className="relative bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-7 shadow-2xl backdrop-blur-md overflow-hidden">
                 <div className="absolute top-0 right-0 w-36 h-36 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
 
                 {/* Visual Architecture Image Banner */}
                 <div className="relative h-40 -mx-5 -mt-5 sm:-mx-7 sm:-mt-7 mb-6 overflow-hidden rounded-t-3xl">
                   <img
-                    src="/src/assets/images/hero_liquid_ribbon_1788799877334.jpg"
+                    src="/images/hero_liquid_ribbon_1788799877334.jpg"
                     alt="Bitso Innovations Systems Architecture"
                     className="w-full h-full object-cover object-center"
                     referrerPolicy="no-referrer"
@@ -162,23 +181,23 @@ export const HomeSlide: React.FC<HomeSlideProps> = ({
                   ))}
                 </div>
 
-                {/* Interactive Jump to ROI Calculator */}
+                {/* Interactive Jump to Closed-Loop Architecture */}
                 <div className="p-3 rounded-xl bg-slate-950/90 border border-slate-800 flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2 text-slate-300">
-                    <BarChart3 className="w-4 h-4 text-emerald-400" />
-                    <span>Calculate Your Annual Savings</span>
+                    <BarChart3 className="w-4 h-4 text-cyan-400" />
+                    <span>Closed-Loop Digital Architecture</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => onNavigate('why-us')}
                     className="text-cyan-400 hover:text-cyan-300 font-bold inline-flex items-center gap-1 cursor-pointer"
                   >
-                    <span>Run ROI Model</span>
+                    <span>Explore Digital Loop</span>
                     <ChevronRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>

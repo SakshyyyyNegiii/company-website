@@ -22,6 +22,8 @@ export default function App() {
   const [direction, setDirection] = useState<number>(0);
   const [selectedServiceForInquiry, setSelectedServiceForInquiry] = useState<string>('');
 
+  const [isAutoLooping, setIsAutoLooping] = useState<boolean>(false);
+
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
 
@@ -49,19 +51,27 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Continuous Circular Loops: Next wraps to 0, Prev wraps to last
   const nextSlide = () => {
     const currentIndex = SLIDE_ORDER.indexOf(currentSlide);
-    if (currentIndex < SLIDE_ORDER.length - 1) {
-      goToSlide(SLIDE_ORDER[currentIndex + 1]);
-    }
+    const nextIndex = (currentIndex + 1) % SLIDE_ORDER.length;
+    goToSlide(SLIDE_ORDER[nextIndex]);
   };
 
   const prevSlide = () => {
     const currentIndex = SLIDE_ORDER.indexOf(currentSlide);
-    if (currentIndex > 0) {
-      goToSlide(SLIDE_ORDER[currentIndex - 1]);
-    }
+    const prevIndex = (currentIndex - 1 + SLIDE_ORDER.length) % SLIDE_ORDER.length;
+    goToSlide(SLIDE_ORDER[prevIndex]);
   };
+
+  // Auto-Loop Slideshow Effect
+  useEffect(() => {
+    if (!isAutoLooping) return;
+    const timer = setInterval(() => {
+      nextSlide();
+    }, 9000);
+    return () => clearInterval(timer);
+  }, [isAutoLooping, currentSlide]);
 
   // Keyboard navigation (Arrow keys)
   useEffect(() => {
@@ -188,7 +198,7 @@ export default function App() {
               <WhyUsSlide
                 onNavigate={goToSlide}
                 onOpenConsultation={(topic) =>
-                  handleConsultationRequest(topic || 'Commercial ROI & Strategic Partnership')
+                  handleConsultationRequest(topic || 'Enterprise Transformation & Strategic Partnership')
                 }
               />
             )}
@@ -220,6 +230,8 @@ export default function App() {
         onNextSlide={nextSlide}
         onPrevSlide={prevSlide}
         onOpenConsultation={() => handleConsultationRequest()}
+        isAutoLooping={isAutoLooping}
+        onToggleAutoLoop={() => setIsAutoLooping((prev) => !prev)}
       />
 
       {/* Global Firebase Auth Modal & Appointments Drawer */}

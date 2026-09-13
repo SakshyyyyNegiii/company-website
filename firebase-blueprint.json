@@ -1,0 +1,142 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Registered user profile details",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Firebase Auth UID"
+        },
+        "email": {
+          "type": "string",
+          "description": "User email address"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "User full name"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Account registration timestamp"
+        }
+      },
+      "required": ["userId", "email"]
+    },
+    "Appointment": {
+      "title": "Appointment",
+      "description": "Client consultation and digital transformation audit appointment",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Associated user account UID or guest identifier"
+        },
+        "userName": {
+          "type": "string",
+          "description": "Client contact full name"
+        },
+        "userEmail": {
+          "type": "string",
+          "description": "Client contact email"
+        },
+        "userPhone": {
+          "type": "string",
+          "description": "Client contact phone number"
+        },
+        "businessName": {
+          "type": "string",
+          "description": "Business or retail store name"
+        },
+        "businessType": {
+          "type": "string",
+          "description": "Industry vertical (e.g. Retail, Grocery, Pharmacy, Enterprise)"
+        },
+        "storesCount": {
+          "type": "string",
+          "description": "Number of operating store outlets"
+        },
+        "interest": {
+          "type": "string",
+          "description": "Specific solution or service requested"
+        },
+        "preferredDate": {
+          "type": "string",
+          "description": "Requested appointment calendar date"
+        },
+        "timeSlot": {
+          "type": "string",
+          "description": "Requested meeting time slot"
+        },
+        "meetingType": {
+          "type": "string",
+          "description": "Video call, Phone call, or In-person HQ"
+        },
+        "message": {
+          "type": "string",
+          "description": "Additional project context and requirements"
+        },
+        "status": {
+          "type": "string",
+          "description": "Appointment status: pending, confirmed, completed, cancelled"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Booking submission timestamp"
+        }
+      },
+      "required": ["userName", "userPhone", "preferredDate", "timeSlot", "status"]
+    },
+    "Inquiry": {
+      "title": "Inquiry",
+      "description": "Direct enterprise inquiries, ROI requests, and service audit submissions",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Prospective client name"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Contact phone"
+        },
+        "email": {
+          "type": "string",
+          "description": "Contact email"
+        },
+        "company": {
+          "type": "string",
+          "description": "Company name"
+        },
+        "service": {
+          "type": "string",
+          "description": "Service or solution interested in"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Inquiry creation timestamp"
+        }
+      },
+      "required": ["name", "phone"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profiles indexed by authentication UID"
+    },
+    "/appointments/{appointmentId}": {
+      "schema": "Appointment",
+      "description": "Transformation audit and strategy consultation appointments"
+    },
+    "/inquiries/{inquiryId}": {
+      "schema": "Inquiry",
+      "description": "Direct enterprise inquiries and audit requests"
+    }
+  }
+}

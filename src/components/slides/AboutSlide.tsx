@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   Sparkles,
   Layers,
@@ -117,15 +118,23 @@ export const AboutSlide: React.FC<AboutSlideProps> = ({
           </div>
         </div>
 
-        {/* Dynamic Tabbed Content */}
-        {activeTab === 'leadership' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center animate-in fade-in duration-300">
+        {/* Dynamic Tabbed Content with Motion */}
+        <AnimatePresence mode="wait">
+          {activeTab === 'leadership' && (
+            <motion.div
+              key="leadership"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.25 }}
+              className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center"
+            >
             {/* Director Spotlight Card */}
             <div className="lg:col-span-5 bg-slate-900/90 border border-cyan-500/30 rounded-3xl p-6 sm:p-7 shadow-2xl relative overflow-hidden backdrop-blur-md">
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
                 <div className="relative w-36 h-36 sm:w-40 sm:h-40 rounded-2xl overflow-hidden border-2 border-cyan-400/50 shadow-xl shrink-0 group">
                   <img
-                    src="/src/assets/images/director_portrait_1788799927541.jpg"
+                    src="/images/director_portrait_1788799927541.jpg"
                     alt={`${COMPANY_INFO.leadership.name} - ${COMPANY_INFO.leadership.role}, Bitso Innovations`}
                     className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                     referrerPolicy="no-referrer"
@@ -184,9 +193,10 @@ export const AboutSlide: React.FC<AboutSlideProps> = ({
               {/* Quick Pillars Peek */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {CORE_PILLARS.map((pillar, idx) => (
-                  <div
+                  <button
                     key={idx}
-                    className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-cyan-500/40 transition-colors cursor-pointer"
+                    type="button"
+                    className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-cyan-500/40 transition-colors cursor-pointer text-left"
                     onClick={() => setActiveTab('pillars')}
                   >
                     <div className="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center mb-2">
@@ -194,7 +204,7 @@ export const AboutSlide: React.FC<AboutSlideProps> = ({
                     </div>
                     <div className="text-xs font-bold text-white truncate">{pillar.title}</div>
                     <div className="text-[11px] text-cyan-300 mt-0.5">{pillar.highlight}</div>
-                  </div>
+                  </button>
                 ))}
               </div>
 
@@ -216,128 +226,153 @@ export const AboutSlide: React.FC<AboutSlideProps> = ({
                 </button>
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
 
-        {/* Pillars Tab */}
-        {activeTab === 'pillars' && (
-          <div className="space-y-6 animate-in fade-in duration-300">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {CORE_PILLARS.map((pillar, idx) => (
-                <div
-                  key={idx}
-                  className="bg-slate-900/90 border border-slate-800 hover:border-cyan-500/50 rounded-3xl p-6 flex flex-col justify-between transition-all duration-200 hover:shadow-xl shadow-slate-950/50"
-                >
-                  <div>
-                    <div className="w-12 h-12 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center mb-4 shadow-inner">
-                      {getPillarIcon(pillar.iconName)}
+          {/* Pillars Tab */}
+          {activeTab === 'pillars' && (
+            <motion.div
+              key="pillars"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.25 }}
+              className="space-y-6"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                {CORE_PILLARS.map((pillar, idx) => (
+                  <motion.div
+                    key={idx}
+                    whileHover={{ y: -3, scale: 1.01 }}
+                    className="bg-slate-900/90 border border-slate-800 hover:border-cyan-500/50 rounded-3xl p-6 flex flex-col justify-between transition-all duration-200 hover:shadow-xl shadow-slate-950/50"
+                  >
+                    <div>
+                      <div className="w-12 h-12 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center mb-4 shadow-inner">
+                        {getPillarIcon(pillar.iconName)}
+                      </div>
+                      <h3 className="text-xl font-bold font-display text-white mb-2">
+                        {pillar.title}
+                      </h3>
+                      <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                        {pillar.description}
+                      </p>
                     </div>
-                    <h3 className="text-xl font-bold font-display text-white mb-2">
-                      {pillar.title}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                      {pillar.description}
-                    </p>
-                  </div>
 
-                  <div className="mt-5 pt-4 border-t border-slate-800/80">
-                    <span className="text-xs font-mono font-bold text-cyan-300 flex items-center gap-1.5">
-                      <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-                      {pillar.highlight}
+                    <div className="mt-5 pt-4 border-t border-slate-800/80">
+                      <span className="text-xs font-mono font-bold text-cyan-300 flex items-center gap-1.5">
+                        <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+                        {pillar.highlight}
+                      </span>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+
+              <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+                <span className="text-slate-300">
+                  Ready to review how our core pillars apply to your specific retail or enterprise workflow?
+                </span>
+                <button
+                  type="button"
+                  onClick={onOpenConsultation}
+                  className="px-4 py-2 rounded-xl bg-cyan-400 text-slate-950 font-bold hover:bg-cyan-300 transition-all cursor-pointer"
+                >
+                  Schedule Leadership Consultation
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Roadmap Tab */}
+          {activeTab === 'roadmap' && (
+            <motion.div
+              key="roadmap"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.25 }}
+              className="space-y-6"
+            >
+              {/* Phase Selector Tabs */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
+                {ROADMAP_MILESTONES.map((item, index) => {
+                  const isSelected = selectedPhase === index;
+                  return (
+                    <button
+                      key={item.yearRange}
+                      type="button"
+                      onClick={() => setSelectedPhase(index)}
+                      className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 ${
+                        isSelected
+                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 shadow-md'
+                          : 'bg-slate-900/90 text-slate-400 hover:text-slate-200 border border-slate-800'
+                      }`}
+                    >
+                      {getPhaseIcon(index)}
+                      <span>{item.phase} ({item.yearRange})</span>
+                      {item.status === 'active' && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Selected Phase Detail Card */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={selectedPhase}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.2 }}
+                  className="p-6 sm:p-7 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-4"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <span className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider">
+                        {currentMilestone.phase} • {currentMilestone.yearRange}
+                      </span>
+                      <h3 className="text-2xl font-bold font-display text-white mt-1">
+                        {currentMilestone.title}
+                      </h3>
+                    </div>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider border ${
+                        currentMilestone.status === 'active'
+                          ? 'bg-emerald-950 text-emerald-300 border-emerald-500/40'
+                          : 'bg-slate-950 text-slate-400 border-slate-800'
+                      }`}
+                    >
+                      {currentMilestone.status === 'active' ? '● Active Phase' : 'Upcoming Horizon'}
                     </span>
                   </div>
-                </div>
-              ))}
-            </div>
 
-            <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
-              <span className="text-slate-300">
-                Ready to review how our core pillars apply to your specific retail or enterprise workflow?
-              </span>
-              <button
-                type="button"
-                onClick={onOpenConsultation}
-                className="px-4 py-2 rounded-xl bg-cyan-400 text-slate-950 font-bold hover:bg-cyan-300 transition-all cursor-pointer"
-              >
-                Schedule Leadership Consultation
-              </button>
-            </div>
-          </div>
-        )}
+                  <p className="text-sm text-slate-200 leading-relaxed">
+                    {currentMilestone.description}
+                  </p>
 
-        {/* Roadmap Tab */}
-        {activeTab === 'roadmap' && (
-          <div className="space-y-6 animate-in fade-in duration-300">
-            {/* Phase Selector Tabs */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
-              {ROADMAP_MILESTONES.map((item, index) => {
-                const isSelected = selectedPhase === index;
-                return (
-                  <button
-                    key={item.yearRange}
-                    type="button"
-                    onClick={() => setSelectedPhase(index)}
-                    className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 ${
-                      isSelected
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 shadow-md'
-                        : 'bg-slate-900/90 text-slate-400 hover:text-slate-200 border border-slate-800'
-                    }`}
-                  >
-                    {getPhaseIcon(index)}
-                    <span>{item.phase} ({item.yearRange})</span>
-                    {item.status === 'active' && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Selected Phase Detail Card */}
-            <div className="p-6 sm:p-7 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <span className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider">
-                    {currentMilestone.phase} • {currentMilestone.yearRange}
-                  </span>
-                  <h3 className="text-2xl font-bold font-display text-white mt-1">
-                    {currentMilestone.title}
-                  </h3>
-                </div>
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider border ${
-                    currentMilestone.status === 'active'
-                      ? 'bg-emerald-950 text-emerald-300 border-emerald-500/40'
-                      : 'bg-slate-950 text-slate-400 border-slate-800'
-                  }`}
-                >
-                  {currentMilestone.status === 'active' ? '● Active Phase' : 'Upcoming Horizon'}
-                </span>
-              </div>
-
-              <p className="text-sm text-slate-200 leading-relaxed">
-                {currentMilestone.description}
-              </p>
-
-              <div className="pt-3 border-t border-slate-800/80">
-                <div className="text-xs font-mono uppercase text-slate-400 mb-2 font-semibold">
-                  Strategic Deliverables & Milestones
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {currentMilestone.deliverables.map((del, dIdx) => (
-                    <div
-                      key={dIdx}
-                      className="p-3 rounded-xl bg-slate-950 border border-slate-800/90 text-xs text-slate-300 flex items-start gap-2"
-                    >
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                      <span className="leading-snug">{del}</span>
+                  <div className="pt-3 border-t border-slate-800/80">
+                    <div className="text-xs font-mono uppercase text-slate-400 mb-2 font-semibold">
+                      Strategic Deliverables & Milestones
                     </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      {currentMilestone.deliverables.map((del, dIdx) => (
+                        <div
+                          key={dIdx}
+                          className="p-3 rounded-xl bg-slate-950 border border-slate-800/90 text-xs text-slate-300 flex items-start gap-2"
+                        >
+                          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                          <span className="leading-snug">{del}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

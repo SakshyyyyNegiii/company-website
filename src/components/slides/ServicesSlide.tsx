@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   Code2,
   Smartphone,
@@ -169,60 +170,72 @@ export const ServicesSlide: React.FC<ServicesSlideProps> = ({
           </button>
         </div>
 
-        {/* Services Grid (Clean, structured cards with benefits and direct booking) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 max-h-[62vh] overflow-y-auto pr-1">
-          {filteredServices.map((service) => (
-            <div
-              key={service.id}
-              className="bg-slate-900/90 border border-slate-800 hover:border-cyan-500/50 rounded-2xl p-5 flex flex-col justify-between transition-all duration-200 hover:shadow-xl shadow-slate-950/60 backdrop-blur-md group"
-            >
-              <div>
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center group-hover:border-cyan-500/40 transition-colors">
-                    {getServiceIcon(service.iconName)}
-                  </div>
-                  <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-md bg-slate-950 border border-slate-800 text-cyan-300 font-bold">
-                    {service.groupLabel}
-                  </span>
-                </div>
-
-                <h3 className="text-base sm:text-lg font-bold font-display text-white mb-2 group-hover:text-cyan-200 transition-colors">
-                  {service.title}
-                </h3>
-                <p className="text-xs text-slate-300 leading-relaxed mb-3">
-                  {service.description}
-                </p>
-
-                {/* Key Bullet Highlights */}
-                <div className="space-y-1.5 pt-2 border-t border-slate-800/80 mb-3">
-                  {service.bulletPoints.slice(0, 3).map((bp, bIdx) => (
-                    <div key={bIdx} className="flex items-start gap-1.5 text-[11px] text-slate-300">
-                      <Check className="w-3 h-3 text-emerald-400 shrink-0 mt-0.5" />
-                      <span className="leading-tight">{bp}</span>
+        {/* Services Grid with Smooth Category Transitions */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={selectedCategory + (searchQuery ? `-${searchQuery}` : '')}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 max-h-[62vh] overflow-y-auto pr-1"
+          >
+            {filteredServices.map((service, index) => (
+              <motion.div
+                key={service.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, delay: Math.min(index * 0.03, 0.2) }}
+                className="bg-slate-900/90 border border-slate-800 hover:border-cyan-500/50 rounded-2xl p-5 flex flex-col justify-between transition-all duration-200 hover:shadow-xl shadow-slate-950/60 backdrop-blur-md group"
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <div className="w-10 h-10 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center group-hover:border-cyan-500/40 transition-colors">
+                      {getServiceIcon(service.iconName)}
                     </div>
-                  ))}
+                    <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-md bg-slate-950 border border-slate-800 text-cyan-300 font-bold">
+                      {service.groupLabel}
+                    </span>
+                  </div>
+
+                  <h3 className="text-base sm:text-lg font-bold font-display text-white mb-2 group-hover:text-cyan-200 transition-colors">
+                    {service.title}
+                  </h3>
+                  <p className="text-xs text-slate-300 leading-relaxed mb-3">
+                    {service.description}
+                  </p>
+
+                  {/* Key Bullet Highlights */}
+                  <div className="space-y-1.5 pt-2 border-t border-slate-800/80 mb-3">
+                    {service.bulletPoints.slice(0, 3).map((bp, bIdx) => (
+                      <div key={bIdx} className="flex items-start gap-1.5 text-[11px] text-slate-300">
+                        <Check className="w-3 h-3 text-emerald-400 shrink-0 mt-0.5" />
+                        <span className="leading-tight">{bp}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              {/* Bottom Benefit & CTA */}
-              <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2">
-                <span className="text-[11px] font-mono font-bold text-emerald-300 truncate max-w-[170px]">
-                  {service.clientBenefit}
-                </span>
+                {/* Bottom Benefit & CTA */}
+                <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2">
+                  <span className="text-[11px] font-mono font-bold text-emerald-300 truncate max-w-[170px]">
+                    {service.clientBenefit}
+                  </span>
 
-                <button
-                  type="button"
-                  onClick={() => handleConsultService(service.title)}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-900 bg-cyan-400 hover:bg-cyan-300 active:scale-95 transition-all cursor-pointer shrink-0"
-                  title={`Book audit for ${service.title}`}
-                >
-                  <span>Book</span>
-                  <ArrowRight className="w-3 h-3" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+                  <button
+                    type="button"
+                    onClick={() => handleConsultService(service.title)}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-900 bg-cyan-400 hover:bg-cyan-300 active:scale-95 transition-all cursor-pointer shrink-0"
+                    title={`Book audit for ${service.title}`}
+                  >
+                    <span>Book</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { collection, query, where, orderBy, onSnapshot, updateDoc, doc } from 'firebase/firestore';
 import { Appointment } from '../types';
+import { api } from '../lib/api';
 import {
   X,
   Calendar,
@@ -20,6 +21,7 @@ import {
   ExternalLink,
   Copy,
   Check,
+  Server,
 } from 'lucide-react';
 import { COMPANY_INFO } from '../data/content';
 
@@ -33,6 +35,7 @@ export const AppointmentsDrawer: React.FC<AppointmentsDrawerProps> = ({ onBookNe
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'cancelled'>('all');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [backendSynced, setBackendSynced] = useState<boolean>(true);
 
   // Helper to load offline/cached appointments
   const loadLocalAppointments = () => {
@@ -62,6 +65,28 @@ export const AppointmentsDrawer: React.FC<AppointmentsDrawerProps> = ({ onBookNe
     let unsubPrimary: (() => void) | null = null;
     let unsubSecondary: (() => void) | null = null;
 
+    // Fetch from Backend API as well
+    const fetchFromBackend = async () => {
+      try {
+        const res = await api.getAppointments(currentUser.uid, currentUser.email || undefined);
+        if (res.appointments && Array.isArray(res.appointments)) {
+          setAppointments((prev) => {
+            const combined = [...prev];
+            res.appointments.forEach((srvAppt: any) => {
+              if (!combined.some((item) => item.id === srvAppt.id)) {
+                combined.push(srvAppt);
+              }
+            });
+            return combined;
+          });
+          setBackendSynced(true);
+        }
+      } catch (err) {
+        // Backend query optional fallback
+      }
+    };
+    fetchFromBackend();
+
     try {
       const appointmentsRef = collection(db, 'appointments');
       // Query appointments for this user
@@ -89,7 +114,16 @@ export const AppointmentsDrawer: React.FC<AppointmentsDrawerProps> = ({ onBookNe
               combined.push(loc);
             }
           });
-          setAppointments(combined);
+          setAppointments((prev) => {
+            // Merge with backend fetched records
+            const merged = [...combined];
+            prev.forEach((p) => {
+              if (!merged.some((m) => m.id === p.id)) {
+                merged.push(p);
+              }
+            });
+            return merged;
+          });
           setLoading(false);
         },
         (error) => {
@@ -365,14 +399,22 @@ export const AppointmentsDrawer: React.FC<AppointmentsDrawerProps> = ({ onBookNe
                     )}
                   </div>
 
-                  <a
-                    href="#contact"
-                    onClick={closeAppointmentsDrawer}
-                    className="text-xs text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1 shrink-0"
+                  <button
+                    type="button"
+                    onClick={() => {
+                      closeAppointmentsDrawer();
+                      if (onBookNew) {
+                        onBookNew();
+                      } else {
+                        const el = document.getElementById('contact');
+                        if (el) el.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    }}
+                    className="text-xs text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1 shrink-0 cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Book New</span>
-                  </a>
+                  </button>
                 </div>
 
                 {filteredAppointments.length === 0 ? (

@@ -1,6 +1,6 @@
 export interface FaqItem {
   id: string;
-  category: 'scalability' | 'migration' | 'security' | 'roi' | 'integrations';
+  category: 'scalability' | 'migration' | 'security' | 'timelines' | 'integrations';
   categoryLabel: string;
   question: string;
   summary: string;
@@ -76,20 +76,20 @@ export const FAQS_DATA: FaqItem[] = [
     metricBadge: { label: 'Security Grade', value: 'Bank-Level' },
   },
   {
-    id: 'roi-timeline',
-    category: 'roi',
-    categoryLabel: 'ROI & Timelines',
-    question: 'What is the implementation timeline, and when can we expect measurable financial ROI?',
+    id: 'rollout-timeline',
+    category: 'timelines',
+    categoryLabel: 'Timelines & Rollout',
+    question: 'What is the implementation timeline, and when can we expect measurable operational impact?',
     summary: 'Production deployment takes 4 to 6 weeks, with measurable overhead reduction in the very first billing cycle.',
     detailedAnswer:
-      'Our structured 4-phase rollout gets your core catalog and central inventory live in under 30 days. By automating manual reconciliations between physical shelves, WhatsApp orders, and courier dispatch, clients typically experience an immediate 35–45% reduction in administrative labor overhead. As shown in our ROI Engine, average enterprise payback is achieved in 1.2 to 3.8 months.',
+      'Our structured 4-phase rollout gets your core catalog and central inventory live in under 30 days. By automating manual reconciliations between physical shelves, WhatsApp orders, and courier dispatch, clients typically experience an immediate 35–45% reduction in administrative labor overhead. Frontline teams achieve streamlined multi-store operational parity in 1.2 to 3.8 months.',
     takeaways: [
       'Rapid 4 to 6 week sprint from discovery to production launch',
       'Immediate elimination of double-entry paperwork & courier leakage',
-      'Average 3.4x net return on technology investment over 36 months',
+      'Streamlined operations across all physical stores within the first quarter',
     ],
     graphicBadge: 'Fast-Track Value',
-    metricBadge: { label: 'Avg. Payback', value: '1.2 - 3.8 Mo' },
+    metricBadge: { label: 'Go-Live Speed', value: '30 - 45 Days' },
   },
   {
     id: 'hardware-logistics-integrations',

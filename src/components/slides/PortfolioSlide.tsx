@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   Sparkles,
   ArrowRight,
@@ -14,6 +15,10 @@ import {
   Building,
   AlertCircle,
   Target,
+  Image as ImageIcon,
+  ChevronLeft,
+  ChevronRight,
+  Repeat,
 } from 'lucide-react';
 import { PORTFOLIO_ITEMS } from '../../data/content';
 import { PortfolioItem, SlideId } from '../../types';
@@ -34,8 +39,20 @@ export const PortfolioSlide: React.FC<PortfolioSlideProps> = ({
     (item) => selectedCategory === 'all' || item.category === selectedCategory
   );
 
-  const activeCase =
-    filteredItems.find((item) => item.id === selectedCaseId) || filteredItems[0] || PORTFOLIO_ITEMS[0];
+  const activeIndex = Math.max(0, filteredItems.findIndex((item) => item.id === selectedCaseId));
+  const activeCase = filteredItems[activeIndex] || filteredItems[0] || PORTFOLIO_ITEMS[0];
+
+  const cycleNextProject = () => {
+    if (filteredItems.length === 0) return;
+    const nextIdx = (activeIndex + 1) % filteredItems.length;
+    setSelectedCaseId(filteredItems[nextIdx].id);
+  };
+
+  const cyclePrevProject = () => {
+    if (filteredItems.length === 0) return;
+    const prevIdx = (activeIndex - 1 + filteredItems.length) % filteredItems.length;
+    setSelectedCaseId(filteredItems[prevIdx].id);
+  };
 
   const handleSelectAndInquire = (title: string) => {
     onSelectSolutionForInquiry(title);
@@ -142,116 +159,202 @@ export const PortfolioSlide: React.FC<PortfolioSlideProps> = ({
             {filteredItems.map((item) => {
               const isSelected = item.id === activeCase.id;
               return (
-                <div
+                <motion.div
                   key={item.id}
+                  whileHover={{ scale: 1.012, x: 2 }}
+                  whileTap={{ scale: 0.99 }}
                   onClick={() => setSelectedCaseId(item.id)}
-                  className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+                  className={`p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer flex items-center gap-3.5 ${
                     isSelected
-                      ? 'bg-slate-900 border-cyan-500/60 shadow-lg shadow-cyan-950/40'
+                      ? 'bg-slate-900 border-cyan-500/70 shadow-lg shadow-cyan-950/40 ring-1 ring-cyan-500/30'
                       : 'bg-slate-950/80 border-slate-800 hover:border-slate-700 hover:bg-slate-900/40'
                   }`}
                 >
-                  <div className="flex items-center justify-between gap-2 mb-1.5">
-                    <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase text-cyan-400">
-                      {getCategoryIcon(item.category)}
-                      <span>{item.categoryLabel}</span>
-                    </span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950/80 border border-emerald-500/30 text-emerald-300 font-bold">
-                      {item.metrics.value}
-                    </span>
-                  </div>
+                  {/* Visual Thumbnail */}
+                  {item.imageUrl && (
+                    <div className="relative w-16 h-16 sm:w-18 sm:h-18 rounded-xl overflow-hidden shrink-0 border border-slate-700/80 shadow-md">
+                      <img
+                        src={item.imageUrl}
+                        alt={item.title}
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
+                    </div>
+                  )}
 
-                  <h4 className="text-sm sm:text-base font-bold text-white font-display">
-                    {item.title}
-                  </h4>
-                  <p className="text-xs text-slate-300 mt-1 line-clamp-2">
-                    {item.summary}
-                  </p>
-                </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase text-cyan-400">
+                        {getCategoryIcon(item.category)}
+                        <span>{item.categoryLabel}</span>
+                      </span>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950/80 border border-emerald-500/30 text-emerald-300 font-bold shrink-0">
+                        {item.metrics.value}
+                      </span>
+                    </div>
+
+                    <h4 className="text-xs sm:text-sm font-bold text-white font-display truncate">
+                      {item.title}
+                    </h4>
+                    <p className="text-[11px] text-slate-400 mt-0.5 line-clamp-1">
+                      {item.summary}
+                    </p>
+                  </div>
+                </motion.div>
               );
             })}
           </div>
 
-          {/* Right Column: Selected Case Study Deep Dive */}
-          <div className="lg:col-span-7 bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5 backdrop-blur-md">
-            <div className="flex flex-wrap items-start justify-between gap-3 pb-3 border-b border-slate-800">
-              <div>
-                <span className="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wider block mb-1">
-                  {activeCase.categoryLabel} • {activeCase.badge}
-                </span>
-                <h3 className="text-xl sm:text-2xl font-bold font-display text-white">
-                  {activeCase.title}
-                </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Client Profile: <span className="text-slate-200 font-medium">{activeCase.clientType}</span>
-                </p>
-              </div>
-
-              {/* Big Metric Badge */}
-              <div className="p-3 rounded-2xl bg-emerald-950/70 border border-emerald-500/40 text-right">
-                <span className="text-2xl font-black font-display text-emerald-300 block leading-none">
-                  {activeCase.metrics.value}
-                </span>
-                <span className="text-[10px] font-mono uppercase text-emerald-400 font-bold block mt-1">
-                  {activeCase.metrics.label}
-                </span>
-              </div>
-            </div>
-
-            {/* Challenge & Solution */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
-              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-slate-700 transition-colors">
-                <div className="flex items-center gap-1.5 text-amber-300 font-bold uppercase tracking-wider text-[10px] mb-1">
-                  <AlertCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                  <span>Operational Challenge</span>
-                </div>
-                <p className="text-slate-300 leading-relaxed">
-                  {activeCase.challenge}
-                </p>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-slate-950 border border-cyan-500/30 hover:border-cyan-500/50 transition-colors">
-                <div className="flex items-center gap-1.5 text-cyan-300 font-bold uppercase tracking-wider text-[10px] mb-1">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                  <span>The Bitso Engineered Solution</span>
-                </div>
-                <p className="text-slate-300 leading-relaxed">
-                  {activeCase.solution}
-                </p>
-              </div>
-            </div>
-
-            {/* Results */}
-            <div>
-              <span className="text-xs font-mono uppercase text-slate-400 font-semibold block mb-2">
-                Documented Commercial Results
-              </span>
-              <div className="space-y-1.5">
-                {activeCase.results.map((res, rIdx) => (
-                  <div key={rIdx} className="flex items-start gap-2 text-xs text-slate-200">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                    <span>{res}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Bottom Action Area */}
-            <div className="pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-2 text-xs text-slate-400">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-xs text-slate-300 font-medium">Verified Client Project</span>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => handleSelectAndInquire(activeCase.title)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-slate-950 bg-cyan-400 hover:bg-cyan-300 active:scale-95 transition-all cursor-pointer shadow-md"
+          {/* Right Column: Selected Case Study Deep Dive with Picture & Motion */}
+          <div className="lg:col-span-7 bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-7 shadow-2xl backdrop-blur-md overflow-hidden relative">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeCase.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                className="space-y-4"
               >
-                <span>Request Similar Architecture</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
+                {/* Hero Photo Banner of the active case */}
+                {activeCase.imageUrl && (
+                  <div className="relative h-44 sm:h-52 -mx-5 -mt-5 sm:-mx-7 sm:-mt-7 mb-4 overflow-hidden rounded-t-3xl group">
+                    <img
+                      src={activeCase.imageUrl}
+                      alt={activeCase.title}
+                      className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
+                      referrerPolicy="no-referrer"
+                      loading="eager"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent" />
+                    
+                    {/* Floating pill tags on image */}
+                    <div className="absolute top-3.5 left-4 flex items-center gap-2">
+                      <span className="px-2.5 py-1 rounded-full bg-slate-950/85 border border-cyan-500/40 text-[10px] font-mono font-bold text-cyan-300 backdrop-blur-md shadow-md">
+                        {activeCase.categoryLabel}
+                      </span>
+                      <span className="px-2.5 py-1 rounded-full bg-emerald-950/85 border border-emerald-500/40 text-[10px] font-mono text-emerald-300 font-bold backdrop-blur-md shadow-md">
+                        {activeCase.badge}
+                      </span>
+                    </div>
+
+                    <div className="absolute bottom-3 right-4">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-950/90 border border-slate-700/80 text-[11px] text-white font-semibold backdrop-blur-md shadow-md">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                        Live Field Deployment
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex flex-wrap items-start justify-between gap-3 pb-3 border-b border-slate-800">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono font-bold text-cyan-400">
+                        CASE {String(activeIndex + 1).padStart(2, '0')} OF {String(filteredItems.length).padStart(2, '0')}
+                      </span>
+                      <div className="flex items-center gap-1 border-l border-slate-800 pl-2">
+                        <button
+                          type="button"
+                          onClick={cyclePrevProject}
+                          className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-all cursor-pointer"
+                          title="Previous Project (circular loop)"
+                        >
+                          <ChevronLeft className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={cycleNextProject}
+                          className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-all cursor-pointer"
+                          title="Next Project (circular loop)"
+                        >
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                    <h3 className="text-xl sm:text-2xl font-bold font-display text-white">
+                      {activeCase.title}
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      Client Profile: <span className="text-slate-200 font-medium">{activeCase.clientType}</span>
+                    </p>
+                  </div>
+
+                  {/* Big Metric Badge */}
+                  <div className="p-3 rounded-2xl bg-emerald-950/70 border border-emerald-500/40 text-right shrink-0">
+                    <span className="text-2xl font-black font-display text-emerald-300 block leading-none">
+                      {activeCase.metrics.value}
+                    </span>
+                    <span className="text-[10px] font-mono uppercase text-emerald-400 font-bold block mt-1">
+                      {activeCase.metrics.label}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Challenge & Solution */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-slate-700 transition-colors">
+                    <div className="flex items-center gap-1.5 text-amber-300 font-bold uppercase tracking-wider text-[10px] mb-1">
+                      <AlertCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <span>Operational Challenge</span>
+                    </div>
+                    <p className="text-slate-300 leading-relaxed">
+                      {activeCase.challenge}
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-slate-950 border border-cyan-500/30 hover:border-cyan-500/50 transition-colors">
+                    <div className="flex items-center gap-1.5 text-cyan-300 font-bold uppercase tracking-wider text-[10px] mb-1">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                      <span>The Bitso Engineered Solution</span>
+                    </div>
+                    <p className="text-slate-300 leading-relaxed">
+                      {activeCase.solution}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Results */}
+                <div>
+                  <span className="text-xs font-mono uppercase text-slate-400 font-semibold block mb-2">
+                    Documented Commercial Results
+                  </span>
+                  <div className="space-y-1.5">
+                    {activeCase.results.map((res, rIdx) => (
+                      <motion.div
+                        key={rIdx}
+                        initial={{ opacity: 0, x: -6 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: rIdx * 0.06 }}
+                        className="flex items-start gap-2 text-xs text-slate-200"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                        <span>{res}</span>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Bottom Action Area */}
+                <div className="pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-xs text-slate-400">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="text-xs text-slate-300 font-medium">Verified Client Project</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleSelectAndInquire(activeCase.title)}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-slate-950 bg-gradient-to-r from-cyan-400 to-emerald-400 hover:brightness-110 active:scale-95 transition-all cursor-pointer shadow-md"
+                  >
+                    <span>Request Similar Architecture</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
       </div>

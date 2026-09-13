@@ -72,7 +72,7 @@ export const WhyUsSection: React.FC = () => {
             <div className="lg:col-span-4 flex flex-col items-center sm:items-start text-center sm:text-left">
               <div className="relative w-44 h-44 sm:w-52 sm:h-52 rounded-3xl overflow-hidden border-2 border-cyan-400/50 shadow-2xl shadow-cyan-950/50 shrink-0 mb-5 group">
                 <img
-                  src="/src/assets/images/director_portrait_1788799927541.jpg"
+                  src="/images/director_portrait_1788799927541.jpg"
                   alt={`${COMPANY_INFO.leadership.name} - ${COMPANY_INFO.leadership.role}, Bitso Innovations`}
                   className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                   referrerPolicy="no-referrer"

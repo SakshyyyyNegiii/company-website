@@ -83,7 +83,7 @@ export const FlagshipRetailSection: React.FC<FlagshipRetailSectionProps> = ({
             <div className="flex flex-col sm:flex-row gap-5 items-start sm:items-center">
               <div className="relative w-full sm:w-44 h-32 sm:h-28 rounded-2xl overflow-hidden shrink-0 border border-slate-700/70">
                 <img
-                  src="/src/assets/images/smart_retail_store_1788799895410.jpg"
+                  src="/images/smart_retail_store_1788799895410.jpg"
                   alt="Modern smart supermarket store with cloud POS"
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   referrerPolicy="no-referrer"
@@ -122,7 +122,7 @@ export const FlagshipRetailSection: React.FC<FlagshipRetailSectionProps> = ({
             <div className="flex flex-col sm:flex-row gap-5 items-start sm:items-center">
               <div className="relative w-full sm:w-44 h-32 sm:h-28 rounded-2xl overflow-hidden shrink-0 border border-slate-700/70">
                 <img
-                  src="/src/assets/images/hyperlocal_logistics_1788799912853.jpg"
+                  src="/images/hyperlocal_logistics_1788799912853.jpg"
                   alt="Modern urban micro-fulfillment logistics dispatch center"
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   referrerPolicy="no-referrer"
@@ -228,8 +228,8 @@ export const FlagshipRetailSection: React.FC<FlagshipRetailSectionProps> = ({
                 <img
                   src={
                     selectedPillarId === 'pillar-1' || selectedPillarId === 'pillar-2'
-                      ? '/src/assets/images/smart_retail_store_1788799895410.jpg'
-                      : '/src/assets/images/hyperlocal_logistics_1788799912853.jpg'
+                      ? '/images/smart_retail_store_1788799895410.jpg'
+                      : '/images/hyperlocal_logistics_1788799912853.jpg'
                   }
                   alt={
                     selectedPillarId === 'pillar-1' || selectedPillarId === 'pillar-2'

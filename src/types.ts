@@ -95,6 +95,7 @@ export interface PortfolioItem {
   techStack: string[];
   metrics: { value: string; label: string };
   badge: string;
+  imageUrl?: string;
 }
 
 export type SlideId = 'home' | 'about' | 'services' | 'why-us' | 'portfolio' | 'contact';
