@@ -32,26 +32,21 @@ export const PortfolioSlide: React.FC<PortfolioSlideProps> = ({
   onSelectSolutionForInquiry,
   onNavigate,
 }) => {
-  const [selectedCategory, setSelectedCategory] = useState<'all' | 'retail' | 'erp' | 'logistics' | 'ai'>('all');
   const [selectedCaseId, setSelectedCaseId] = useState<string>(PORTFOLIO_ITEMS[0].id);
 
-  const filteredItems = PORTFOLIO_ITEMS.filter(
-    (item) => selectedCategory === 'all' || item.category === selectedCategory
-  );
-
-  const activeIndex = Math.max(0, filteredItems.findIndex((item) => item.id === selectedCaseId));
-  const activeCase = filteredItems[activeIndex] || filteredItems[0] || PORTFOLIO_ITEMS[0];
+  const activeIndex = Math.max(0, PORTFOLIO_ITEMS.findIndex((item) => item.id === selectedCaseId));
+  const activeCase = PORTFOLIO_ITEMS[activeIndex] || PORTFOLIO_ITEMS[0];
 
   const cycleNextProject = () => {
-    if (filteredItems.length === 0) return;
-    const nextIdx = (activeIndex + 1) % filteredItems.length;
-    setSelectedCaseId(filteredItems[nextIdx].id);
+    if (PORTFOLIO_ITEMS.length === 0) return;
+    const nextIdx = (activeIndex + 1) % PORTFOLIO_ITEMS.length;
+    setSelectedCaseId(PORTFOLIO_ITEMS[nextIdx].id);
   };
 
   const cyclePrevProject = () => {
-    if (filteredItems.length === 0) return;
-    const prevIdx = (activeIndex - 1 + filteredItems.length) % filteredItems.length;
-    setSelectedCaseId(filteredItems[prevIdx].id);
+    if (PORTFOLIO_ITEMS.length === 0) return;
+    const prevIdx = (activeIndex - 1 + PORTFOLIO_ITEMS.length) % PORTFOLIO_ITEMS.length;
+    setSelectedCaseId(PORTFOLIO_ITEMS[prevIdx].id);
   };
 
   const handleSelectAndInquire = (title: string) => {
@@ -75,88 +70,37 @@ export const PortfolioSlide: React.FC<PortfolioSlideProps> = ({
   };
 
   return (
-    <div className="w-full min-h-[calc(100vh-5rem)] flex flex-col justify-center py-6 sm:py-10">
+    <div className="w-full min-h-[calc(100vh-5rem)] flex flex-col justify-start lg:justify-center pt-4 sm:pt-6 pb-28 sm:pb-32">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6 sm:mb-8">
+        {/* Header without horizontal category scroll tabs */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 sm:mb-8">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-cyan-500/40 text-xs font-bold text-cyan-300 mb-2 uppercase tracking-wider">
               <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
               <span>Slide 05 • Proven Client Deployments</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black font-display text-white tracking-tight">
-              Enterprise Portfolio & Case Studies
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black font-display text-white tracking-tight">
+              Enterprise Portfolio &amp; Case Studies
             </h2>
-            <p className="text-sm sm:text-base text-slate-300 mt-1 max-w-2xl">
+            <p className="text-xs sm:text-sm md:text-base text-slate-300 mt-1 max-w-2xl">
               Proven digital transformations delivered across Indian retail chains, distribution networks, and logistics fleets.
             </p>
           </div>
 
-          {/* Category Filter Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
-            <button
-              type="button"
-              onClick={() => setSelectedCategory('all')}
-              className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer shrink-0 ${
-                selectedCategory === 'all'
-                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 shadow-sm'
-                  : 'bg-slate-900/90 text-slate-400 hover:text-white border border-slate-800'
-              }`}
-            >
-              All Projects ({PORTFOLIO_ITEMS.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelectedCategory('retail')}
-              className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer shrink-0 ${
-                selectedCategory === 'retail'
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 shadow-sm'
-                  : 'bg-slate-900/90 text-slate-400 hover:text-white border border-slate-800'
-              }`}
-            >
-              Retail & E-commerce
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelectedCategory('erp')}
-              className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer shrink-0 ${
-                selectedCategory === 'erp'
-                  ? 'bg-sky-500/20 text-sky-300 border border-sky-500/50 shadow-sm'
-                  : 'bg-slate-900/90 text-slate-400 hover:text-white border border-slate-800'
-              }`}
-            >
-              Enterprise ERP
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelectedCategory('logistics')}
-              className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer shrink-0 ${
-                selectedCategory === 'logistics'
-                  ? 'bg-teal-500/20 text-teal-300 border border-teal-500/50 shadow-sm'
-                  : 'bg-slate-900/90 text-slate-400 hover:text-white border border-slate-800'
-              }`}
-            >
-              Logistics Fleet
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelectedCategory('ai')}
-              className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer shrink-0 ${
-                selectedCategory === 'ai'
-                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 shadow-sm'
-                  : 'bg-slate-900/90 text-slate-400 hover:text-white border border-slate-800'
-              }`}
-            >
-              AI & Automation
-            </button>
+          {/* Clean counter badge */}
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/90 border border-slate-800 text-xs font-mono text-slate-300">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>{PORTFOLIO_ITEMS.length} Flagship Deployments</span>
+            </span>
           </div>
         </div>
 
         {/* Layout: Left Case Selector + Right Deep-Dive Showcase */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-start">
           {/* Left Column: Project Thumbnails / Cards */}
-          <div className="lg:col-span-5 space-y-2.5 max-h-[58vh] overflow-y-auto pr-1">
-            {filteredItems.map((item) => {
+          <div className="lg:col-span-5 space-y-2.5 max-h-[420px] sm:max-h-[500px] lg:max-h-[660px] overflow-y-auto pr-1 sm:pr-2">
+            {PORTFOLIO_ITEMS.map((item) => {
               const isSelected = item.id === activeCase.id;
               return (
                 <motion.div
@@ -208,7 +152,7 @@ export const PortfolioSlide: React.FC<PortfolioSlideProps> = ({
           </div>
 
           {/* Right Column: Selected Case Study Deep Dive with Picture & Motion */}
-          <div className="lg:col-span-7 bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-7 shadow-2xl backdrop-blur-md overflow-hidden relative">
+          <div className="lg:col-span-7 bg-slate-900/90 border border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-7 shadow-2xl backdrop-blur-md overflow-hidden relative">
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeCase.id}
@@ -220,7 +164,7 @@ export const PortfolioSlide: React.FC<PortfolioSlideProps> = ({
               >
                 {/* Hero Photo Banner of the active case */}
                 {activeCase.imageUrl && (
-                  <div className="relative h-44 sm:h-52 -mx-5 -mt-5 sm:-mx-7 sm:-mt-7 mb-4 overflow-hidden rounded-t-3xl group">
+                  <div className="relative h-40 sm:h-52 -mx-4 -mt-4 sm:-mx-6 sm:-mt-6 lg:-mx-7 lg:-mt-7 mb-4 overflow-hidden rounded-t-2xl sm:rounded-t-3xl group">
                     <img
                       src={activeCase.imageUrl}
                       alt={activeCase.title}
@@ -249,11 +193,11 @@ export const PortfolioSlide: React.FC<PortfolioSlideProps> = ({
                   </div>
                 )}
 
-                <div className="flex flex-wrap items-start justify-between gap-3 pb-3 border-b border-slate-800">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 pb-3 border-b border-slate-800">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-mono font-bold text-cyan-400">
-                        CASE {String(activeIndex + 1).padStart(2, '0')} OF {String(filteredItems.length).padStart(2, '0')}
+                        CASE {String(activeIndex + 1).padStart(2, '0')} OF {String(PORTFOLIO_ITEMS.length).padStart(2, '0')}
                       </span>
                       <div className="flex items-center gap-1 border-l border-slate-800 pl-2">
                         <button
@@ -274,7 +218,7 @@ export const PortfolioSlide: React.FC<PortfolioSlideProps> = ({
                         </button>
                       </div>
                     </div>
-                    <h3 className="text-xl sm:text-2xl font-bold font-display text-white">
+                    <h3 className="text-lg sm:text-xl md:text-2xl font-bold font-display text-white">
                       {activeCase.title}
                     </h3>
                     <p className="text-xs text-slate-400">
@@ -283,8 +227,8 @@ export const PortfolioSlide: React.FC<PortfolioSlideProps> = ({
                   </div>
 
                   {/* Big Metric Badge */}
-                  <div className="p-3 rounded-2xl bg-emerald-950/70 border border-emerald-500/40 text-right shrink-0">
-                    <span className="text-2xl font-black font-display text-emerald-300 block leading-none">
+                  <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-emerald-950/70 border border-emerald-500/40 text-left sm:text-right shrink-0 self-start sm:self-auto">
+                    <span className="text-xl sm:text-2xl font-black font-display text-emerald-300 block leading-none">
                       {activeCase.metrics.value}
                     </span>
                     <span className="text-[10px] font-mono uppercase text-emerald-400 font-bold block mt-1">
@@ -347,7 +291,7 @@ export const PortfolioSlide: React.FC<PortfolioSlideProps> = ({
                   <button
                     type="button"
                     onClick={() => handleSelectAndInquire(activeCase.title)}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-slate-950 bg-gradient-to-r from-cyan-400 to-emerald-400 hover:brightness-110 active:scale-95 transition-all cursor-pointer shadow-md"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-950 bg-gradient-to-r from-cyan-400 to-emerald-400 hover:brightness-110 active:scale-95 transition-all cursor-pointer shadow-md"
                   >
                     <span>Request Similar Architecture</span>
                     <ArrowRight className="w-3.5 h-3.5" />

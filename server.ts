@@ -1,3 +1,4 @@
+import http from 'http';
 import express, { Request, Response } from 'express';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
@@ -246,9 +247,17 @@ async function startServer() {
   app.use('/images', express.static(path.join(process.cwd(), 'public', 'images')));
   app.use('/src/assets/images', express.static(path.join(process.cwd(), 'public', 'images')));
 
+  const server = http.createServer(app);
+
   if (process.env.NODE_ENV !== 'production') {
+    const isHmrDisabled = process.env.DISABLE_HMR === 'true';
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      legacy: { skipWebSocketTokenCheck: true },
+      server: {
+        middlewareMode: true,
+        allowedHosts: true,
+        hmr: isHmrDisabled ? false : { server },
+      },
       appType: 'spa',
     });
     app.use(vite.middlewares);
@@ -260,7 +269,7 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
+  server.listen(PORT, '0.0.0.0', () => {
     console.log(`[Bitso Server] Backend running on http://0.0.0.0:${PORT}`);
   });
 }
