@@ -1,248 +1,148 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
-import { HomeSlide } from './components/slides/HomeSlide';
-import { AboutSlide } from './components/slides/AboutSlide';
-import { ServicesSlide } from './components/slides/ServicesSlide';
-import { WhyUsSlide } from './components/slides/WhyUsSlide';
-import { PortfolioSlide } from './components/slides/PortfolioSlide';
+import { HeroSection } from './components/HeroSection';
+import { ServicesSlider } from './components/ServicesSlider';
+import { ServicesSection } from './components/ServicesSection';
+import { WorkSection } from './components/WorkSection';
 import { ContactSection } from './components/ContactSection';
-import { SlideController } from './components/SlideController';
 import { Footer } from './components/Footer';
-import { AuthModal } from './components/AuthModal';
-import { AppointmentsDrawer } from './components/AppointmentsDrawer';
+import { ProjectModal } from './components/ProjectModal';
+import { ClientAuthModal } from './components/ClientAuthModal';
+import { ClientDashboardDrawer } from './components/ClientDashboardDrawer';
+import { ScrollProgressBar } from './components/ScrollProgressBar';
+import { SectionId } from './types';
 import { MessageCircle } from 'lucide-react';
-import { COMPANY_INFO, SLIDES_META } from './data/content';
-import { SlideId } from './types';
-import { motion, AnimatePresence } from 'motion/react';
-
-const SLIDE_ORDER: SlideId[] = ['home', 'about', 'services', 'why-us', 'portfolio', 'contact'];
+import { COMPANY_INFO } from './data/content';
 
 export default function App() {
-  const [currentSlide, setCurrentSlide] = useState<SlideId>('home');
-  const [direction, setDirection] = useState<number>(0);
-  const [selectedServiceForInquiry, setSelectedServiceForInquiry] = useState<string>('');
+  const [activeSection, setActiveSection] = useState<SectionId>('home');
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+  const [isDashboardOpen, setIsDashboardOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState<string>('Web Development');
 
-  const [isAutoLooping, setIsAutoLooping] = useState<boolean>(false);
+  // Smooth scroll to target section
+  const scrollToSection = (sectionId: SectionId) => {
+    setActiveSection(sectionId);
+    const element = document.getElementById(sectionId);
+    if (element) {
+      const topOffset = 70; // offset for fixed navbar
+      const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+      window.scrollTo({
+        top: elementPosition - topOffset,
+        behavior: 'smooth',
+      });
+      window.history.replaceState(null, '', `#${sectionId}`);
+    }
+  };
 
-  const touchStartX = useRef<number | null>(null);
-  const touchStartY = useRef<number | null>(null);
-
-  // Sync with initial URL hash if provided
+  // Scroll spy to update active section in navbar
   useEffect(() => {
-    const handleHash = () => {
-      const hash = window.location.hash.replace('#', '') as SlideId;
-      if (SLIDE_ORDER.includes(hash)) {
-        setCurrentSlide(hash);
+    const sectionIds: SectionId[] = ['home', 'services', 'work', 'contact'];
+
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + 200;
+
+      for (const id of sectionIds) {
+        const el = document.getElementById(id);
+        if (el) {
+          const top = el.offsetTop;
+          const height = el.offsetHeight;
+          if (scrollPosition >= top && scrollPosition < top + height) {
+            setActiveSection(id);
+            break;
+          }
+        }
       }
     };
 
-    handleHash();
-    window.addEventListener('hashchange', handleHash);
-    return () => window.removeEventListener('hashchange', handleHash);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const goToSlide = (targetSlide: SlideId) => {
-    if (targetSlide === currentSlide) return;
-    const currentIndex = SLIDE_ORDER.indexOf(currentSlide);
-    const targetIndex = SLIDE_ORDER.indexOf(targetSlide);
-    setDirection(targetIndex > currentIndex ? 1 : -1);
-    setCurrentSlide(targetSlide);
-    window.history.replaceState(null, '', `#${targetSlide}`);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // Continuous Circular Loops: Next wraps to 0, Prev wraps to last
-  const nextSlide = () => {
-    const currentIndex = SLIDE_ORDER.indexOf(currentSlide);
-    const nextIndex = (currentIndex + 1) % SLIDE_ORDER.length;
-    goToSlide(SLIDE_ORDER[nextIndex]);
-  };
-
-  const prevSlide = () => {
-    const currentIndex = SLIDE_ORDER.indexOf(currentSlide);
-    const prevIndex = (currentIndex - 1 + SLIDE_ORDER.length) % SLIDE_ORDER.length;
-    goToSlide(SLIDE_ORDER[prevIndex]);
-  };
-
-  // Auto-Loop Slideshow Effect
-  useEffect(() => {
-    if (!isAutoLooping) return;
-    const timer = setInterval(() => {
-      nextSlide();
-    }, 9000);
-    return () => clearInterval(timer);
-  }, [isAutoLooping, currentSlide]);
-
-  // Keyboard navigation (Arrow keys)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't intercept when user is typing inside forms or inputs
-      const target = e.target as HTMLElement;
-      if (
-        target &&
-        (target.tagName === 'INPUT' ||
-          target.tagName === 'TEXTAREA' ||
-          target.tagName === 'SELECT' ||
-          target.isContentEditable)
-      ) {
-        return;
-      }
-
-      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-        e.preventDefault();
-        nextSlide();
-      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-        e.preventDefault();
-        prevSlide();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentSlide]);
-
-  // Touch Swipe navigation for mobile and tablet
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartX.current === null || touchStartY.current === null) return;
-    const touchEndX = e.changedTouches[0].clientX;
-    const touchEndY = e.changedTouches[0].clientY;
-
-    const diffX = touchStartX.current - touchEndX;
-    const diffY = touchStartY.current - touchEndY;
-
-    // Verify horizontal swipe was dominant and exceeded threshold
-    if (Math.abs(diffX) > 65 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
-      if (diffX > 0) {
-        nextSlide();
-      } else {
-        prevSlide();
-      }
+  const handleOpenProjectModal = (serviceName?: string) => {
+    if (serviceName) {
+      setSelectedService(serviceName);
     }
-
-    touchStartX.current = null;
-    touchStartY.current = null;
+    setIsProjectModalOpen(true);
   };
 
-  const handleConsultationRequest = (serviceOrSolution?: string) => {
-    if (serviceOrSolution) {
-      setSelectedServiceForInquiry(serviceOrSolution);
-    }
-    goToSlide('contact');
-  };
-
-  const openWhatsAppDirect = () => {
+  const openWhatsApp = () => {
     const text = encodeURIComponent(
-      'Hello Bitso Innovations team! I would like to consult on digital transformation for our business.'
+      'Hello Bitso Innovations team! I would like to consult on a digital project.'
     );
-    window.open(
-      `https://wa.me/91${COMPANY_INFO.contact.phones[0].replace(/\s/g, '')}?text=${text}`,
-      '_blank'
-    );
+    window.open(`https://wa.me/919990366072?text=${text}`, '_blank');
   };
 
   return (
-    <div
-      className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500/20 selection:text-cyan-300 relative overflow-x-hidden"
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-    >
-      {/* Top Navbar */}
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500/20 selection:text-cyan-300 relative overflow-x-hidden">
+      {/* Slim Fixed Progress Bar at Very Top of Screen */}
+      <ScrollProgressBar />
+
+      {/* 1-Row Minimal Top Bar */}
       <Navbar
-        currentSlide={currentSlide}
-        onSelectSlide={goToSlide}
-        onOpenConsultation={() => handleConsultationRequest()}
+        activeSection={activeSection}
+        onNavigate={scrollToSection}
+        onStartProject={() => handleOpenProjectModal()}
+        onOpenDashboard={() => setIsDashboardOpen(true)}
       />
 
-      {/* Main Slide Deck Presentation Container */}
-      <main className="flex-grow flex flex-col justify-center relative pb-24 sm:pb-28">
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div
-            key={currentSlide}
-            initial={{ opacity: 0, x: direction >= 0 ? 30 : -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: direction >= 0 ? -30 : 30 }}
-            transition={{ duration: 0.28, ease: 'easeOut' }}
-            className="w-full flex-grow flex flex-col justify-center"
-          >
-            {/* Slide 1: Home */}
-            {currentSlide === 'home' && (
-              <HomeSlide
-                onNavigate={goToSlide}
-                onOpenConsultation={() => handleConsultationRequest()}
-              />
-            )}
+      {/* Main Content Sections */}
+      <main className="flex-grow flex flex-col">
+        {/* Section 1: Hero — First Impression */}
+        <HeroSection
+          onStartProject={() => handleOpenProjectModal()}
+          onExploreServices={() => scrollToSection('services')}
+        />
 
-            {/* Slide 2: About Us */}
-            {currentSlide === 'about' && (
-              <AboutSlide
-                onNavigate={goToSlide}
-                onOpenConsultation={() => handleConsultationRequest('Executive Strategy & Leadership Consultation')}
-              />
-            )}
+        {/* Featured Solutions Animated Carousel Slider */}
+        <ServicesSlider
+          onSelectCard={(serviceTitle) => handleOpenProjectModal(serviceTitle)}
+        />
 
-            {/* Slide 3: Services */}
-            {currentSlide === 'services' && (
-              <ServicesSlide
-                onSelectServiceForInquiry={(service) => handleConsultationRequest(service)}
-                onNavigate={goToSlide}
-              />
-            )}
+        {/* Section 2: Services + Why Bitso (Combined) */}
+        <ServicesSection
+          onSelectService={(serviceTitle) => handleOpenProjectModal(serviceTitle)}
+        />
 
-            {/* Slide 4: Why Choose Us / Features */}
-            {currentSlide === 'why-us' && (
-              <WhyUsSlide
-                onNavigate={goToSlide}
-                onOpenConsultation={(topic) =>
-                  handleConsultationRequest(topic || 'Enterprise Transformation & Strategic Partnership')
-                }
-              />
-            )}
+        {/* Section 3: Work + Process (Combined) */}
+        <WorkSection
+          onSelectProject={(projectTitle) => handleOpenProjectModal(projectTitle)}
+        />
 
-            {/* Slide 5: Portfolio */}
-            {currentSlide === 'portfolio' && (
-              <PortfolioSlide
-                onSelectSolutionForInquiry={(title) => handleConsultationRequest(title)}
-                onNavigate={goToSlide}
-              />
-            )}
-
-            {/* Slide 6: Contact Us */}
-            {currentSlide === 'contact' && (
-              <div className="w-full">
-                <ContactSection initialServiceSelection={selectedServiceForInquiry} />
-                {/* Footer rendered at the base of Contact slide */}
-                <Footer />
-              </div>
-            )}
-          </motion.div>
-        </AnimatePresence>
+        {/* Section 4: Final CTA + Contact */}
+        <ContactSection
+          initialService={selectedService}
+          onOpenDashboard={() => setIsDashboardOpen(true)}
+        />
       </main>
 
-      {/* Floating Bottom Slide Controller & Navigation Bar */}
-      <SlideController
-        currentSlide={currentSlide}
-        onSelectSlide={goToSlide}
-        onNextSlide={nextSlide}
-        onPrevSlide={prevSlide}
-        onOpenConsultation={() => handleConsultationRequest()}
-        isAutoLooping={isAutoLooping}
-        onToggleAutoLoop={() => setIsAutoLooping((prev) => !prev)}
+      {/* Minimal Footer */}
+      <Footer onNavigate={scrollToSection} />
+
+      {/* Instant Project Intake Modal */}
+      <ProjectModal
+        isOpen={isProjectModalOpen}
+        onClose={() => setIsProjectModalOpen(false)}
+        preSelectedService={selectedService}
       />
 
-      {/* Global Firebase Auth Modal & Appointments Drawer */}
-      <AuthModal />
-      <AppointmentsDrawer onBookNew={() => handleConsultationRequest()} />
+      {/* Client Portal Authentication Modal */}
+      <ClientAuthModal />
 
-      {/* Floating Quick WhatsApp Button */}
-      <aside aria-label="Quick WhatsApp Consultation" className="fixed bottom-24 right-4 sm:bottom-24 sm:right-6 z-40">
+      {/* Client Dashboard / Firestore Persistence Drawer */}
+      <ClientDashboardDrawer
+        isOpen={isDashboardOpen}
+        onClose={() => setIsDashboardOpen(false)}
+      />
+
+      {/* Floating Direct WhatsApp Action */}
+      <aside
+        aria-label="Quick WhatsApp Consultation"
+        className="fixed bottom-6 right-6 z-40"
+      >
         <button
           type="button"
-          onClick={openWhatsAppDirect}
+          onClick={openWhatsApp}
           className="flex items-center gap-2 p-3 sm:px-4 sm:py-3 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs sm:text-sm shadow-xl shadow-emerald-950/70 hover:scale-105 active:scale-95 transition-all cursor-pointer"
           title="Chat directly with Bitso Leadership on WhatsApp"
         >

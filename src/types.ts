@@ -1,56 +1,52 @@
+export type SectionId = 'home' | 'services' | 'work' | 'contact';
+export type SlideId = SectionId; // Backwards-compatible alias
+
 export interface ServiceItem {
   id: string;
   title: string;
-  category: 'core' | 'advanced';
+  category: 'web' | 'software' | 'ai' | 'mobile' | 'design';
   description: string;
-  bulletPoints: string[];
-  clientBenefit?: string;
+  focus: string;
   iconName: string;
 }
 
-export interface FlagshipPillar {
+export interface PortfolioItem {
   id: string;
-  number: string;
   title: string;
-  description: string;
-  features: string[];
-  iconName: string;
+  category: 'retail' | 'fashion' | 'erp' | 'logistics';
+  categoryLabel: string;
+  clientType: string;
+  summary: string;
+  results: string[];
+  techStack: string[];
+  metrics: { value: string; label: string };
   badge: string;
+  imageUrl: string;
 }
 
-export interface DigitalLoopStep {
+export interface ProcessStep {
   step: string;
   title: string;
-  tagline: string;
-  description: string;
-  metrics: string;
+  shortDesc: string;
 }
 
-export interface RoadmapMilestone {
-  yearRange: string;
-  phase: string;
-  title: string;
-  description: string;
-  deliverables: string[];
-  status: 'active' | 'upcoming';
-}
-
-export interface CorePillar {
-  title: string;
-  description: string;
-  highlight: string;
-  iconName: string;
-}
-
-export interface InquiryFormData {
-  fullName: string;
-  businessName: string;
-  businessType: string;
-  phone: string;
-  email: string;
-  storesCount: string;
+export interface Appointment {
+  id?: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  userPhone: string;
+  businessName?: string;
+  businessType?: string;
+  storesCount?: string;
   interest: string;
+  preferredDate?: string;
+  timeSlot?: string;
+  meetingType?: 'video' | 'phone' | 'in-person';
   message: string;
+  status: 'pending' | 'confirmed' | 'in_discussion' | 'completed' | 'cancelled';
+  createdAt?: any;
+  updatedAt?: any;
 }
 
 export interface UserProfile {
@@ -63,39 +59,16 @@ export interface UserProfile {
   createdAt?: string | number;
 }
 
-export interface Appointment {
+export interface UserInquiry {
   id?: string;
-  userId: string;
-  userName: string;
-  userEmail: string;
-  userPhone: string;
-  businessName: string;
-  businessType: string;
-  storesCount: string;
-  interest: string;
-  preferredDate: string;
-  timeSlot: string;
-  meetingType: 'video' | 'phone' | 'in-person';
+  userId?: string | null;
+  name: string;
+  fullName?: string;
+  email: string;
+  phone: string;
+  service: string;
   message: string;
-  status: 'pending' | 'confirmed' | 'in_discussion' | 'completed' | 'cancelled';
   createdAt?: any;
-  updatedAt?: any;
+  status?: string;
 }
 
-export interface PortfolioItem {
-  id: string;
-  title: string;
-  category: 'retail' | 'erp' | 'logistics' | 'ai';
-  categoryLabel: string;
-  clientType: string;
-  summary: string;
-  challenge: string;
-  solution: string;
-  results: string[];
-  techStack: string[];
-  metrics: { value: string; label: string };
-  badge: string;
-  imageUrl?: string;
-}
-
-export type SlideId = 'home' | 'about' | 'services' | 'why-us' | 'portfolio' | 'contact';

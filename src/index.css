@@ -44,3 +44,49 @@
   letter-spacing: 0.025em;
 }
 
+/* Shifting Mesh Gradient Animations */
+@keyframes meshFloat1 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(50px, -35px) scale(1.12);
+  }
+  66% {
+    transform: translate(-35px, 40px) scale(0.92);
+  }
+}
+
+@keyframes meshFloat2 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(-45px, 45px) scale(1.15);
+  }
+  66% {
+    transform: translate(35px, -30px) scale(0.95);
+  }
+}
+
+@keyframes meshFloat3 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  50% {
+    transform: translate(35px, 35px) scale(1.08);
+  }
+}
+
+.animate-mesh-1 {
+  animation: meshFloat1 18s ease-in-out infinite alternate;
+}
+
+.animate-mesh-2 {
+  animation: meshFloat2 22s ease-in-out infinite alternate;
+}
+
+.animate-mesh-3 {
+  animation: meshFloat3 26s ease-in-out infinite alternate;
+}
+

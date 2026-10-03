@@ -1,453 +1,214 @@
 import React, { useState, useEffect } from 'react';
+import { SectionId } from '../types';
+import { Menu, X, ArrowUpRight, User, ShieldCheck } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
-import {
-  Menu,
-  X,
-  Phone,
-  ArrowUpRight,
-  ShieldCheck,
-  Mail,
-  User as UserIcon,
-  LogIn,
-  LogOut,
-  CalendarCheck,
-  Sparkles,
-} from 'lucide-react';
-import { COMPANY_INFO, SLIDES_META } from '../data/content';
 import { useAuth } from '../context/AuthContext';
-import { SlideId } from '../types';
 
 interface NavbarProps {
-  currentSlide: SlideId;
-  onSelectSlide: (slideId: SlideId) => void;
-  onOpenConsultation: () => void;
+  activeSection: SectionId;
+  onNavigate: (section: SectionId) => void;
+  onStartProject: () => void;
+  onOpenDashboard?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
-  currentSlide,
-  onSelectSlide,
-  onOpenConsultation,
+  activeSection,
+  onNavigate,
+  onStartProject,
+  onOpenDashboard,
 }) => {
-  const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-
-  const {
-    currentUser,
-    userProfile,
-    appointmentsCount,
-    openAuthModal,
-    openAppointmentsDrawer,
-    signOutUser,
-    signInWithGooglePopup,
-  } = useAuth();
+  const [scrolled, setScrolled] = useState(false);
+  const { currentUser, openAuthModal, signOutUser } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      setScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navLinks: { id: SlideId; name: string; number: string }[] = [
-    { id: 'home', name: 'Home', number: '01' },
-    { id: 'about', name: 'About Us', number: '02' },
-    { id: 'services', name: 'Services', number: '03' },
-    { id: 'why-us', name: 'Why Choose Us', number: '04' },
-    { id: 'portfolio', name: 'Portfolio', number: '05' },
-    { id: 'contact', name: 'Contact Us', number: '06' },
+  const navItems: { id: SectionId; label: string }[] = [
+    { id: 'home', label: 'Home' },
+    { id: 'services', label: 'Services' },
+    { id: 'work', label: 'Work' },
+    { id: 'contact', label: 'Contact' },
   ];
 
+  const handleNavClick = (id: SectionId) => {
+    onNavigate(id);
+    setMobileMenuOpen(false);
+  };
+
   return (
-    <>
-      {/* Announcement top bar for flagship focus */}
-      <div className="bg-slate-900/95 border-b border-cyan-500/25 py-2 px-4 text-center text-slate-200 flex items-center justify-center gap-3">
-        <span className="inline-flex items-center gap-1.5 text-cyan-300 font-bold uppercase tracking-wider text-xs bg-slate-950/80 px-2.5 py-0.5 rounded-full border border-cyan-500/30">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          Flagship Focus
-        </span>
-        <span className="hidden sm:inline text-slate-500">•</span>
-        <span className="truncate text-slate-200 text-xs sm:text-sm font-medium">
-          E-commerce Platform Transformation for Brick-and-Mortar Retail Stores
-        </span>
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? 'bg-slate-950/85 backdrop-blur-md border-b border-white/10 py-3 shadow-lg shadow-black/40'
+          : 'bg-transparent py-5 border-b border-transparent'
+      }`}
+    >
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        {/* Zone 1: Authentic Bitso Innovations Brand Logo */}
         <button
-          type="button"
-          onClick={() => onSelectSlide('services')}
-          className="hidden md:inline-flex items-center gap-1 text-cyan-300 hover:text-cyan-200 font-semibold text-xs sm:text-sm underline underline-offset-4 ml-1 transition-colors cursor-pointer"
+          onClick={() => handleNavClick('home')}
+          className="cursor-pointer text-left focus:outline-none transition-transform hover:scale-[1.02] active:scale-[0.99]"
+          title="Bitso Innovations"
         >
-          Explore Solutions <ArrowUpRight className="w-3.5 h-3.5" />
+          <BrandLogo size="sm" showSubtitle={false} />
+        </button>
+
+        {/* Zone 2: Minimal Nav Links */}
+        <nav className="hidden md:flex items-center gap-8">
+          {navItems.map((item) => {
+            const isActive = activeSection === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => handleNavClick(item.id)}
+                className={`text-sm font-medium transition-colors relative py-1 cursor-pointer focus:outline-none ${
+                  isActive
+                    ? 'text-cyan-400'
+                    : 'text-slate-300 hover:text-white'
+                }`}
+              >
+                {item.label}
+                {isActive && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-400 rounded-full" />
+                )}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Zone 3: Primary Actions */}
+        <div className="hidden md:flex items-center gap-3">
+          {currentUser ? (
+            <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-slate-900 border border-white/10 text-xs">
+              <button
+                onClick={() => onOpenDashboard?.()}
+                className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer text-left"
+                title="Open Client Portal Dashboard"
+              >
+                {currentUser.photoURL ? (
+                  <img
+                    src={currentUser.photoURL}
+                    alt={currentUser.displayName || 'User'}
+                    className="w-5 h-5 rounded-full object-cover border border-cyan-400/50"
+                  />
+                ) : (
+                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                )}
+                <span className="text-slate-200 font-medium max-w-[110px] truncate">
+                  {currentUser.displayName || currentUser.email?.split('@')[0]}
+                </span>
+              </button>
+              <button
+                onClick={() => signOutUser()}
+                className="text-[10px] text-slate-400 hover:text-red-400 underline ml-1 cursor-pointer"
+                title="Sign out"
+              >
+                Exit
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                if (onOpenDashboard) onOpenDashboard();
+                else openAuthModal('signin');
+              }}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-slate-300 hover:text-white text-xs font-mono transition-colors cursor-pointer border border-transparent hover:border-white/10"
+              title="Client Portal Access"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Portal</span>
+            </button>
+          )}
+
+          <button
+            onClick={onStartProject}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-sm font-bold shadow-lg shadow-cyan-500/25 hover:shadow-cyan-400/40 hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer whitespace-nowrap"
+          >
+            <span>Start a Project</span>
+            <ArrowUpRight className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Mobile Hamburger Toggle */}
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="md:hidden p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-900 border border-white/10 transition-colors"
+          aria-label="Toggle menu"
+        >
+          {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
       </div>
 
-      {/* Main Sticky Navigation */}
-      <header
-        id="navbar-header"
-        className={`sticky top-0 z-50 w-full transition-all duration-200 ${
-          isScrolled
-            ? 'bg-slate-950/95 backdrop-blur-md border-b border-slate-800 shadow-xl shadow-black/50'
-            : 'bg-slate-950/80 backdrop-blur-sm border-b border-slate-900'
-        }`}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
-            {/* Brand Logo */}
-            <button
-              type="button"
-              onClick={() => onSelectSlide('home')}
-              className="flex items-center focus:outline-none focus:ring-2 focus:ring-cyan-500/50 rounded-xl p-1 transition-transform hover:scale-[1.02] cursor-pointer text-left"
-            >
-              <BrandLogo size="md" />
-            </button>
-
-            {/* Desktop Navigation Links */}
-            <nav className="hidden lg:flex items-center gap-2">
-              {navLinks.map((link) => {
-                const isActive = currentSlide === link.id;
-                return (
-                  <button
-                    key={link.id}
-                    type="button"
-                    onClick={() => onSelectSlide(link.id)}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
-                      isActive
-                        ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/40 shadow-sm shadow-cyan-950/50'
-                        : 'text-slate-300 hover:text-white hover:bg-slate-900/60'
-                    }`}
-                  >
-                    <span className="font-mono text-[10px] text-cyan-400/80">{link.number}</span>
-                    <span>{link.name}</span>
-                  </button>
-                );
-              })}
-            </nav>
-
-            {/* Desktop Right Action Buttons */}
-            <div className="hidden sm:flex items-center gap-3">
-              {/* User Authentication & Appointment State */}
-              {currentUser ? (
-                <div className="relative">
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={openAppointmentsDrawer}
-                      className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-cyan-300 bg-cyan-950/70 hover:bg-cyan-900/80 border border-cyan-500/40 rounded-xl transition-all shadow-sm cursor-pointer"
-                      title="View your booked transformation appointments"
-                    >
-                      <CalendarCheck className="w-3.5 h-3.5 text-cyan-400" />
-                      <span>My Appointments</span>
-                      {appointmentsCount > 0 && (
-                        <span className="ml-0.5 px-1.5 py-0.2 rounded-full bg-cyan-400 text-slate-950 font-black text-[10px]">
-                          {appointmentsCount}
-                        </span>
-                      )}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                      className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-xs font-semibold text-slate-200 transition-all cursor-pointer"
-                    >
-                      {userProfile?.photoURL || currentUser.photoURL ? (
-                        <img
-                          src={userProfile?.photoURL || currentUser.photoURL || ''}
-                          alt={userProfile?.displayName || currentUser.displayName || 'User'}
-                          className="w-6 h-6 rounded-lg object-cover border border-cyan-400/50"
-                          referrerPolicy="no-referrer"
-                        />
-                      ) : (
-                        <div className="w-6 h-6 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 flex items-center justify-center font-mono font-bold text-xs">
-                          {(userProfile?.displayName || currentUser.displayName || currentUser.email || 'U')[0].toUpperCase()}
-                        </div>
-                      )}
-                      <span className="max-w-[100px] truncate text-slate-200">
-                        {userProfile?.displayName || currentUser.displayName || 'Client'}
-                      </span>
-                    </button>
-                  </div>
-
-                  {/* Dropdown Menu */}
-                  {userDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-60 bg-slate-900 border border-slate-800 rounded-2xl p-2.5 shadow-2xl z-50 animate-in fade-in zoom-in-95">
-                      <div className="px-3 py-2 border-b border-slate-800 text-xs text-slate-400">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="font-bold text-white truncate max-w-[130px]">
-                            {userProfile?.displayName || currentUser.displayName || 'Client Partner'}
-                          </span>
-                          <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400 font-mono">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                            Synced
-                          </span>
-                        </div>
-                        <div className="truncate text-[11px] text-slate-400">{currentUser.email}</div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setUserDropdownOpen(false);
-                          openAppointmentsDrawer();
-                        }}
-                        className="w-full mt-1.5 px-3 py-2 text-left text-xs font-semibold text-slate-200 hover:text-cyan-300 hover:bg-slate-800 rounded-xl flex items-center justify-between"
-                      >
-                        <div className="flex items-center gap-2">
-                          <CalendarCheck className="w-3.5 h-3.5 text-cyan-400" />
-                          <span>Booked Appointments</span>
-                        </div>
-                        {appointmentsCount > 0 && (
-                          <span className="px-1.5 py-0.5 rounded-md bg-cyan-950 border border-cyan-500/40 text-cyan-300 text-[10px] font-bold font-mono">
-                            {appointmentsCount}
-                          </span>
-                        )}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setUserDropdownOpen(false);
-                          onOpenConsultation();
-                        }}
-                        className="w-full px-3 py-2 text-left text-xs font-semibold text-slate-200 hover:text-cyan-300 hover:bg-slate-800 rounded-xl flex items-center gap-2"
-                      >
-                        <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>Schedule New Audit</span>
-                      </button>
-                      <div className="my-1 border-t border-slate-800" />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setUserDropdownOpen(false);
-                          signOutUser();
-                        }}
-                        className="w-full px-3 py-2 text-left text-xs font-semibold text-rose-300 hover:bg-rose-950/40 rounded-xl flex items-center gap-2"
-                      >
-                        <LogOut className="w-3.5 h-3.5" />
-                        <span>Sign Out</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  {/* Quick Google Sign In */}
-                  <button
-                    type="button"
-                    onClick={() => signInWithGooglePopup()}
-                    className="inline-flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-200 hover:text-white bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 hover:border-cyan-500/40 rounded-xl transition-all cursor-pointer shadow-sm"
-                    title="Sign in quickly with your Google Account"
-                  >
-                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
-                      <path
-                        fill="#4285F4"
-                        d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"
-                      />
-                      <path
-                        fill="#34A853"
-                        d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"
-                      />
-                      <path
-                        fill="#FBBC05"
-                        d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.97 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
-                      />
-                      <path
-                        fill="#EA4335"
-                        d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
-                      />
-                    </svg>
-                    <span>Google Sign In</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => openAuthModal('signin')}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-300 hover:text-white bg-slate-950 hover:bg-slate-900 border border-slate-800 rounded-xl transition-all cursor-pointer"
-                  >
-                    <LogIn className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>Email</span>
-                  </button>
-                </div>
-              )}
-
+      {/* Mobile Drawer */}
+      {mobileMenuOpen && (
+        <div className="md:hidden bg-slate-950/95 backdrop-blur-xl border-b border-white/10 px-6 py-6 space-y-4 animate-in slide-in-from-top-2 duration-200">
+          <div className="flex flex-col space-y-3">
+            {navItems.map((item) => (
               <button
-                type="button"
-                id="navbar-cta-button"
-                onClick={onOpenConsultation}
-                className="inline-flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-bold text-slate-950 bg-gradient-to-r from-cyan-400 via-sky-400 to-emerald-400 hover:brightness-110 active:scale-[0.98] rounded-xl shadow-lg shadow-cyan-950/30 transition-all cursor-pointer"
+                key={item.id}
+                onClick={() => handleNavClick(item.id)}
+                className={`text-left text-base font-medium py-2 transition-colors ${
+                  activeSection === item.id ? 'text-cyan-400' : 'text-slate-300 hover:text-white'
+                }`}
               >
-                <span>Schedule Audit</span>
-                <ArrowUpRight className="w-4 h-4" />
+                {item.label}
               </button>
-            </div>
-
-            {/* Mobile Menu Button */}
-            <div className="flex items-center gap-2 lg:hidden">
-              <button
-                type="button"
-                id="mobile-menu-toggle-button"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                aria-label="Toggle Navigation Menu"
-                className="p-2.5 rounded-lg text-slate-300 hover:text-white bg-slate-900 border border-slate-800 hover:border-slate-700 focus:outline-none"
-              >
-                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-              </button>
-            </div>
+            ))}
           </div>
-        </div>
 
-        {/* Mobile Navigation Drawer */}
-        {mobileMenuOpen && (
-          <div className="lg:hidden border-b border-slate-800 bg-slate-950/98 backdrop-blur-xl px-4 pt-3 pb-6 animate-in slide-in-from-top-2 duration-150">
-            {/* Mobile Auth Bar */}
-            <div className="p-3 mb-3 rounded-2xl bg-slate-900 border border-slate-800">
-              {currentUser ? (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="text-xs">
-                      <div className="font-bold text-white">{userProfile?.displayName || currentUser.displayName || 'Client Partner'}</div>
-                      <div className="text-slate-400 text-[11px]">{currentUser.email}</div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        signOutUser();
-                        setMobileMenuOpen(false);
-                      }}
-                      className="text-xs text-rose-400 font-semibold px-2 py-1 rounded bg-rose-950/60 border border-rose-500/40"
-                    >
-                      Sign Out
-                    </button>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      openAppointmentsDrawer();
-                    }}
-                    className="w-full py-2.5 px-3 text-xs font-bold text-cyan-300 bg-cyan-950/60 border border-cyan-500/30 rounded-xl flex items-center justify-center gap-2"
-                  >
-                    <CalendarCheck className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>View My Appointments</span>
-                    {appointmentsCount > 0 && (
-                      <span className="px-1.5 py-0.2 rounded-full bg-cyan-400 text-slate-950 font-black text-[10px]">
-                        {appointmentsCount}
-                      </span>
-                    )}
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      signInWithGooglePopup();
-                    }}
-                    className="w-full py-2.5 px-3 text-xs font-bold text-slate-200 bg-slate-950 hover:bg-slate-800 border border-slate-700/80 rounded-xl flex items-center justify-center gap-2.5 shadow-sm"
-                  >
-                    <svg className="w-4 h-4" viewBox="0 0 24 24">
-                      <path
-                        fill="#4285F4"
-                        d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"
-                      />
-                      <path
-                        fill="#34A853"
-                        d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"
-                      />
-                      <path
-                        fill="#FBBC05"
-                        d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.97 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
-                      />
-                      <path
-                        fill="#EA4335"
-                        d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
-                      />
-                    </svg>
-                    <span>Continue with Google</span>
-                  </button>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMobileMenuOpen(false);
-                        openAuthModal('signin');
-                      }}
-                      className="py-2 px-3 text-xs font-bold text-slate-200 bg-slate-900 border border-slate-700 rounded-xl flex items-center justify-center gap-1.5"
-                    >
-                      <LogIn className="w-3.5 h-3.5 text-cyan-400" />
-                      <span>Sign In</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMobileMenuOpen(false);
-                        openAuthModal('signup');
-                      }}
-                      className="py-2 px-3 text-xs font-bold text-cyan-300 bg-cyan-950 border border-cyan-500/40 rounded-xl flex items-center justify-center"
-                    >
-                      <span>Create Account</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-1 pb-4 border-b border-slate-800/80">
-              {navLinks.map((link) => {
-                const isActive = currentSlide === link.id;
-                return (
-                  <button
-                    key={link.id}
-                    type="button"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      onSelectSlide(link.id);
-                    }}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors cursor-pointer text-left ${
-                      isActive
-                        ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/40'
-                        : 'text-slate-200 hover:text-cyan-400 hover:bg-slate-900/60'
-                    }`}
-                  >
-                    <span>{link.name}</span>
-                    <span className="font-mono text-xs text-slate-500">{link.number}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="pt-4 space-y-3">
-              <div className="flex flex-col gap-2">
-                <a
-                  href={`tel:${COMPANY_INFO.contact.phones[0].replace(/\s/g, '')}`}
-                  className="flex items-center justify-center gap-2.5 w-full py-3 text-sm font-semibold text-slate-200 bg-slate-900 border border-slate-700/60 rounded-lg"
+          <div className="pt-2 border-t border-white/10 space-y-3">
+            {currentUser ? (
+              <div className="flex items-center justify-between py-2 text-xs text-slate-300">
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onOpenDashboard?.();
+                  }}
+                  className="flex items-center gap-2 text-white font-medium hover:text-cyan-400"
                 >
-                  <Phone className="w-4 h-4 text-emerald-400" />
-                  Call: +91 {COMPANY_INFO.contact.phones[0]}
-                </a>
-                <a
-                  href={`mailto:${COMPANY_INFO.contact.email}`}
-                  className="flex items-center justify-center gap-2.5 w-full py-3 text-sm font-medium text-slate-300 bg-slate-900/50 border border-slate-800 rounded-lg"
+                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                  <span>Portal: {currentUser.displayName || currentUser.email}</span>
+                </button>
+                <button
+                  onClick={() => signOutUser()}
+                  className="text-cyan-400 underline font-semibold"
                 >
-                  <Mail className="w-4 h-4 text-cyan-400" />
-                  {COMPANY_INFO.contact.email}
-                </a>
+                  Sign Out
+                </button>
               </div>
-
+            ) : (
               <button
-                type="button"
-                id="mobile-menu-cta-button"
                 onClick={() => {
                   setMobileMenuOpen(false);
-                  onOpenConsultation();
+                  if (onOpenDashboard) onOpenDashboard();
+                  else openAuthModal('signin');
                 }}
-                className="w-full flex items-center justify-center gap-2 py-3 text-sm font-bold text-slate-950 bg-gradient-to-r from-cyan-400 via-sky-400 to-teal-400 rounded-lg"
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-white font-mono text-xs"
               >
-                Schedule Consultation
-                <ArrowUpRight className="w-4 h-4" />
+                <ShieldCheck className="w-4 h-4 text-cyan-400" />
+                <span>Client Portal / Google Sign In</span>
               </button>
-            </div>
+            )}
+
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onStartProject();
+              }}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-cyan-500 text-slate-950 font-bold text-sm shadow-md shadow-cyan-500/25"
+            >
+              <span>Start a Project</span>
+              <ArrowUpRight className="w-4 h-4" />
+            </button>
           </div>
-        )}
-      </header>
-    </>
+        </div>
+      )}
+    </header>
   );
 };
-
