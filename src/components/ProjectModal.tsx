@@ -164,7 +164,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
                   required
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+91 93101 89235"
+                  placeholder="+91 99903 66072"
                   className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-cyan-400 transition-colors"
                 />
               </div>

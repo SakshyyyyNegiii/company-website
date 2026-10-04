@@ -189,7 +189,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const signInDemoClient = async (
     customEmail = 'client.partner@bitsoinnovations.com',
     customName = 'Client Partner',
-    customPhone = '+91 93101 89235'
+    customPhone = '+91 99903 66072'
   ) => {
     const fallbackUid = 'client_' + Math.abs(
       customEmail.split('').reduce((acc, char) => ((acc << 5) - acc) + char.charCodeAt(0), 0)

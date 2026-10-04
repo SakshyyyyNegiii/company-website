@@ -31,7 +31,7 @@ export const ClientAuthModal: React.FC = () => {
       await signInDemoClient(
         email.trim() || 'partner@bitsoinnovations.com',
         fullName.trim() || 'Client Partner',
-        phone.trim() || '+91 93101 89235'
+        phone.trim() || '+91 99903 66072'
       );
       closeAuthModal();
     } catch (err: any) {
@@ -190,7 +190,7 @@ export const ClientAuthModal: React.FC = () => {
                   required
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+91 93101 89235"
+                  placeholder="+91 99903 66072"
                   className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-400"
                 />
               </div>

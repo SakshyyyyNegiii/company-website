@@ -106,7 +106,7 @@ export const ClientDashboardDrawer: React.FC<ClientDashboardDrawerProps> = ({
         name: currentUser.displayName || userProfile?.displayName || 'Client Partner',
         fullName: currentUser.displayName || userProfile?.displayName || 'Client Partner',
         email: currentUser.email || '',
-        phone: phone || userProfile?.phone || '+91 9310189235',
+        phone: phone || userProfile?.phone || '+91 99903 66072',
         service,
         message: message.trim(),
         status: 'received',
@@ -328,7 +328,7 @@ export const ClientDashboardDrawer: React.FC<ClientDashboardDrawerProps> = ({
                         type="tel"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        placeholder="+91 93101 89235"
+                        placeholder="+91 99903 66072"
                         className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-400"
                         required
                       />

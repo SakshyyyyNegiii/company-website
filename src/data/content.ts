@@ -14,9 +14,9 @@ export const COMPANY_INFO = {
   ctaSubline: "Let's turn your idea into a modern digital solution.",
   contact: {
     contactPerson: 'ch. AMAN',
-    phones: ['+91 93101 89235'],
-    rawPhones: ['9310189235'],
-    phone: '+91 93101 89235',
+    phones: ['+91 99903 66072'],
+    rawPhones: ['9990366072'],
+    phone: '+91 99903 66072',
     email: 'info.bitsoinnovations@gmail.com',
     website: 'www.bitsoinnovations.com',
     location: 'Laxmi Nagar, New Delhi, India 110092',
@@ -27,7 +27,7 @@ export const COMPANY_INFO = {
     { label: 'LinkedIn', href: 'https://www.linkedin.com/company/bitso-innovations/?viewAsMember=true' },
     { label: 'Instagram', href: 'https://www.instagram.com/bitso_i.t?stkn=djUwOTUzZ2MxOW90' },
     { label: 'Twitter', href: 'https://twitter.com/bitsoinnovate' },
-    { label: 'WhatsApp', href: 'https://wa.me/919310189235' },
+    { label: 'WhatsApp', href: 'https://wa.me/919990366072' },
   ],
 };
 

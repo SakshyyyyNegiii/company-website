@@ -112,7 +112,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
     const text = encodeURIComponent(
       'Hello Bitso Innovations team! I would like to consult on an enterprise digital project.'
     );
-    window.open(`https://wa.me/919310189235?text=${text}`, '_blank');
+    window.open(`https://wa.me/91${COMPANY_INFO.contact.rawPhones[0]}?text=${text}`, '_blank');
   };
 
   return (
@@ -224,10 +224,11 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                 </a>
 
                 <a
-                  href={`https://wa.me/${COMPANY_INFO.contact.rawPhones[0]}`}
+                  href={`https://wa.me/91${COMPANY_INFO.contact.rawPhones[0]}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-start gap-4 text-slate-300 hover:text-emerald-400 transition-colors group"
+                  className="flex items-start gap-4 text-slate-300 hover:text-emerald-400 transition-colors group cursor-pointer"
+                  title="Phone / WhatsApp"
                 >
                   <div className="w-10 h-10 rounded-xl bg-slate-800 border border-white/10 flex items-center justify-center text-emerald-400 group-hover:border-emerald-500/40 shrink-0">
                     <MessageCircle className="w-4 h-4" />
@@ -274,8 +275,9 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                   href="https://www.linkedin.com/company/bitso-innovations/?viewAsMember=true"
                   target="_blank"
                   rel="noreferrer"
-                  className="w-9 h-9 rounded-lg bg-slate-800 hover:bg-cyan-500 hover:text-slate-950 text-slate-300 flex items-center justify-center transition-all"
+                  className="w-9 h-9 rounded-lg bg-slate-800 hover:bg-cyan-500 hover:text-slate-950 text-slate-300 flex items-center justify-center transition-all cursor-pointer"
                   aria-label="LinkedIn"
+                  title="LinkedIn"
                 >
                   <Linkedin className="w-4 h-4" />
                 </a>
@@ -283,17 +285,29 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                   href="https://www.instagram.com/bitso_i.t?stkn=djUwOTUzZ2MxOW90"
                   target="_blank"
                   rel="noreferrer"
-                  className="w-9 h-9 rounded-lg bg-slate-800 hover:bg-gradient-to-tr hover:from-amber-500 hover:via-rose-500 hover:to-purple-600 hover:text-white text-slate-300 flex items-center justify-center transition-all"
+                  className="w-9 h-9 rounded-lg bg-slate-800 hover:bg-gradient-to-tr hover:from-amber-500 hover:via-rose-500 hover:to-purple-600 hover:text-white text-slate-300 flex items-center justify-center transition-all cursor-pointer"
                   aria-label="Instagram"
+                  title="Instagram"
                 >
                   <Instagram className="w-4 h-4" />
+                </a>
+                <a
+                  href={`https://wa.me/91${COMPANY_INFO.contact.rawPhones[0]}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-9 h-9 rounded-lg bg-slate-800 hover:bg-emerald-500 hover:text-white text-slate-300 flex items-center justify-center transition-all cursor-pointer"
+                  aria-label="WhatsApp"
+                  title="WhatsApp"
+                >
+                  <MessageCircle className="w-4 h-4" />
                 </a>
                 <a
                   href="https://twitter.com/bitsoinnovate"
                   target="_blank"
                   rel="noreferrer"
-                  className="w-9 h-9 rounded-lg bg-slate-800 hover:bg-cyan-500 hover:text-slate-950 text-slate-300 flex items-center justify-center transition-all"
+                  className="w-9 h-9 rounded-lg bg-slate-800 hover:bg-cyan-500 hover:text-slate-950 text-slate-300 flex items-center justify-center transition-all cursor-pointer"
                   aria-label="Twitter"
+                  title="Twitter"
                 >
                   <Twitter className="w-4 h-4" />
                 </a>
@@ -364,7 +378,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                         required
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        placeholder="e.g. +91 93101 89235"
+                        placeholder="e.g. +91 99903 66072"
                         className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-cyan-400 transition-colors"
                       />
                     </div>
