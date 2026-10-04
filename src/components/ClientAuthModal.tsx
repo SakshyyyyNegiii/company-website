@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { X, LogIn, UserPlus, ShieldCheck } from 'lucide-react';
+import { X, LogIn, UserPlus, ShieldCheck, Zap, ArrowRight } from 'lucide-react';
 
 export const ClientAuthModal: React.FC = () => {
   const {
@@ -12,6 +12,7 @@ export const ClientAuthModal: React.FC = () => {
     signInWithEmail,
     signUpWithEmail,
     signInWithGooglePopup,
+    signInDemoClient,
   } = useAuth();
 
   const [email, setEmail] = useState('');
@@ -23,6 +24,23 @@ export const ClientAuthModal: React.FC = () => {
 
   if (!isAuthModalOpen) return null;
 
+  const handleInstantDemo = async () => {
+    setLoading(true);
+    setErrorMsg('');
+    try {
+      await signInDemoClient(
+        email.trim() || 'partner@bitsoinnovations.com',
+        fullName.trim() || 'Client Partner',
+        phone.trim() || '+91 93101 89235'
+      );
+      closeAuthModal();
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Could not initialize demo session.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleGoogleSignIn = async () => {
     setLoading(true);
     setErrorMsg('');
@@ -30,7 +48,7 @@ export const ClientAuthModal: React.FC = () => {
       await signInWithGooglePopup();
       closeAuthModal();
     } catch (err: any) {
-      setErrorMsg(err.message || 'Google sign-in encountered an error. Please try again.');
+      setErrorMsg(err.message || 'Google sign-in could not be completed in this window.');
     } finally {
       setLoading(false);
     }
@@ -38,6 +56,19 @@ export const ClientAuthModal: React.FC = () => {
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email.trim()) {
+      setErrorMsg('Please enter your work email.');
+      return;
+    }
+    if (!password) {
+      setErrorMsg('Please enter your password.');
+      return;
+    }
+    if (authModalMode === 'signup' && password.length < 6) {
+      setErrorMsg('Password must be at least 6 characters.');
+      return;
+    }
+
     setLoading(true);
     setErrorMsg('');
 
@@ -56,8 +87,8 @@ export const ClientAuthModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md rounded-3xl bg-slate-900 border border-white/10 shadow-2xl p-6 sm:p-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-md rounded-3xl bg-slate-900 border border-white/10 shadow-2xl p-6 sm:p-8 max-h-[90vh] overflow-y-auto">
         <button
           onClick={closeAuthModal}
           className="absolute top-5 right-5 p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
@@ -79,17 +110,36 @@ export const ClientAuthModal: React.FC = () => {
         </div>
 
         {errorMsg && (
-          <div className="mb-4 p-3 rounded-xl bg-red-950/60 border border-red-500/30 text-red-300 text-xs">
-            {errorMsg}
+          <div className="mb-4 p-3 rounded-xl bg-red-950/70 border border-red-500/40 text-red-200 text-xs space-y-2">
+            <div>{errorMsg}</div>
+            <button
+              type="button"
+              onClick={handleInstantDemo}
+              className="w-full py-1.5 px-3 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-[11px] transition-all cursor-pointer flex items-center justify-center gap-1.5"
+            >
+              <Zap className="w-3.5 h-3.5" />
+              <span>Continue with 1-Click Instant Access</span>
+            </button>
           </div>
         )}
 
-        {/* 1-Click Google Sign In */}
+        {/* Guaranteed 1-Click Instant Access Button */}
+        <button
+          type="button"
+          onClick={handleInstantDemo}
+          disabled={loading}
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs sm:text-sm shadow-lg shadow-cyan-500/25 transition-all cursor-pointer disabled:opacity-50 mb-3"
+        >
+          <Zap className="w-4 h-4 text-slate-950" />
+          <span>1-Click Instant Client Access</span>
+        </button>
+
+        {/* Google Sign In */}
         <button
           type="button"
           onClick={handleGoogleSignIn}
           disabled={loading}
-          className="w-full flex items-center justify-center gap-3 py-3 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-semibold text-sm shadow-md transition-all cursor-pointer disabled:opacity-50 mb-4"
+          className="w-full flex items-center justify-center gap-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-white/10 text-white font-medium text-xs shadow-md transition-all cursor-pointer disabled:opacity-50 mb-4"
         >
           <svg className="w-4 h-4" viewBox="0 0 24 24">
             <path
@@ -114,7 +164,7 @@ export const ClientAuthModal: React.FC = () => {
 
         <div className="flex items-center gap-3 my-4">
           <div className="flex-grow h-px bg-white/10" />
-          <span className="text-[10px] font-mono text-slate-500 uppercase">OR EMAIL</span>
+          <span className="text-[10px] font-mono text-slate-500 uppercase">OR WITH EMAIL</span>
           <div className="flex-grow h-px bg-white/10" />
         </div>
 
@@ -134,13 +184,13 @@ export const ClientAuthModal: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-[11px] font-mono text-slate-400 mb-1">Phone Number</label>
+                <label className="block text-[11px] font-mono text-slate-400 mb-1">Contact Phone</label>
                 <input
                   type="tel"
                   required
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+91 99903 66072"
+                  placeholder="+91 93101 89235"
                   className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-400"
                 />
               </div>
@@ -164,9 +214,10 @@ export const ClientAuthModal: React.FC = () => {
             <input
               type="password"
               required
+              minLength={6}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="At least 6 characters"
               className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-400"
             />
           </div>
@@ -174,7 +225,7 @@ export const ClientAuthModal: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-md transition-all cursor-pointer disabled:opacity-50 mt-2"
+            className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-white text-slate-950 font-bold text-xs shadow-md transition-all cursor-pointer disabled:opacity-50 mt-2"
           >
             {loading ? 'Processing...' : authModalMode === 'signin' ? 'Sign In to Portal' : 'Register Account'}
           </button>
@@ -183,6 +234,7 @@ export const ClientAuthModal: React.FC = () => {
         <div className="mt-4 text-center">
           {authModalMode === 'signin' ? (
             <button
+              type="button"
               onClick={() => openAuthModal('signup')}
               className="text-xs text-slate-400 hover:text-cyan-400 transition-colors cursor-pointer"
             >
@@ -190,6 +242,7 @@ export const ClientAuthModal: React.FC = () => {
             </button>
           ) : (
             <button
+              type="button"
               onClick={() => openAuthModal('signin')}
               className="text-xs text-slate-400 hover:text-cyan-400 transition-colors cursor-pointer"
             >

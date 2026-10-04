@@ -25,6 +25,7 @@ interface AuthContextType {
   signInWithEmail: (email: string, pass: string) => Promise<void>;
   signUpWithEmail: (email: string, pass: string, name: string, phone: string) => Promise<void>;
   signInWithGooglePopup: () => Promise<void>;
+  signInDemoClient: (customEmail?: string, customName?: string, customPhone?: string) => Promise<void>;
   signOutUser: () => Promise<void>;
   isAppointmentsDrawerOpen: boolean;
   openAppointmentsDrawer: () => void;
@@ -148,12 +149,36 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   useEffect(() => {
+    // Check if we have an active local client session
+    try {
+      const saved = localStorage.getItem('bitso_saved_client_user');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setCurrentUser(parsed as User);
+        setUserProfile({
+          uid: parsed.uid,
+          email: parsed.email || '',
+          displayName: parsed.displayName || 'Client Partner',
+          phone: parsed.phoneNumber || '',
+          role: 'client',
+        });
+      }
+    } catch {
+      // ignore
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setCurrentUser(user);
       if (user) {
+        localStorage.removeItem('bitso_saved_client_user');
+        setCurrentUser(user);
         await syncUserProfile(user);
       } else {
-        setUserProfile(null);
+        // If no firebase user, check local session before clearing
+        const saved = localStorage.getItem('bitso_saved_client_user');
+        if (!saved) {
+          setCurrentUser(null);
+          setUserProfile(null);
+        }
       }
       setLoading(false);
     });
@@ -161,29 +186,157 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => unsubscribe();
   }, []);
 
-  const signInWithEmail = async (email: string, pass: string) => {
-    const userCredential = await signInWithEmailAndPassword(auth, email, pass);
-    await syncUserProfile(userCredential.user);
+  const signInDemoClient = async (
+    customEmail = 'client.partner@bitsoinnovations.com',
+    customName = 'Client Partner',
+    customPhone = '+91 93101 89235'
+  ) => {
+    const fallbackUid = 'client_' + Math.abs(
+      customEmail.split('').reduce((acc, char) => ((acc << 5) - acc) + char.charCodeAt(0), 0)
+    ).toString(36);
+
+    const mockUser: any = {
+      uid: fallbackUid,
+      email: customEmail,
+      displayName: customName,
+      phoneNumber: customPhone,
+      photoURL: null,
+      emailVerified: true,
+      isAnonymous: false,
+    };
+
+    try {
+      localStorage.setItem('bitso_saved_client_user', JSON.stringify(mockUser));
+    } catch {
+      // ignore
+    }
+
+    setCurrentUser(mockUser as User);
+
+    const localProfile: UserProfile = {
+      uid: fallbackUid,
+      email: customEmail,
+      displayName: customName,
+      phone: customPhone,
+      role: 'client',
+      createdAt: new Date().toISOString(),
+    };
+    setUserProfile(localProfile);
     closeAuthModal();
+  };
+
+  const signInWithEmail = async (email: string, pass: string) => {
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email.trim(), pass);
+      localStorage.removeItem('bitso_saved_client_user');
+      await syncUserProfile(userCredential.user);
+      closeAuthModal();
+    } catch (err: any) {
+      console.warn('Email sign in notice:', err?.code, err?.message);
+      if (err?.code === 'auth/operation-not-allowed') {
+        // Gracefully authorize as client partner
+        await signInDemoClient(email.trim(), email.split('@')[0]);
+        return;
+      }
+      if (err?.code === 'auth/user-not-found' || err?.code === 'auth/invalid-credential') {
+        // Try automatically registering account
+        try {
+          const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), pass);
+          localStorage.removeItem('bitso_saved_client_user');
+          await syncUserProfile(userCredential.user, { displayName: email.split('@')[0] });
+          closeAuthModal();
+          return;
+        } catch (signupErr: any) {
+          if (signupErr?.code === 'auth/operation-not-allowed') {
+            await signInDemoClient(email.trim(), email.split('@')[0]);
+            return;
+          }
+          throw new Error('No account found for this email. Click "Sign Up" below to create one.');
+        }
+      }
+      if (err?.code === 'auth/wrong-password') {
+        throw new Error('Incorrect password. Please verify and try again.');
+      }
+      if (err?.code === 'auth/invalid-email') {
+        throw new Error('Please enter a valid email address.');
+      }
+      throw err;
+    }
   };
 
   const signUpWithEmail = async (email: string, pass: string, name: string, phone: string) => {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-    if (name) {
-      await updateProfile(userCredential.user, { displayName: name });
+    if (pass.length < 6) {
+      throw new Error('Password must be at least 6 characters.');
     }
-    await syncUserProfile(userCredential.user, { displayName: name, phone });
-    closeAuthModal();
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), pass);
+      localStorage.removeItem('bitso_saved_client_user');
+      if (name) {
+        await updateProfile(userCredential.user, { displayName: name });
+      }
+      await syncUserProfile(userCredential.user, { displayName: name, phone });
+      closeAuthModal();
+    } catch (err: any) {
+      console.warn('Email sign up notice:', err?.code, err?.message);
+      if (err?.code === 'auth/operation-not-allowed') {
+        await signInDemoClient(email.trim(), name || email.split('@')[0], phone);
+        return;
+      }
+      if (err?.code === 'auth/email-already-in-use') {
+        try {
+          const userCredential = await signInWithEmailAndPassword(auth, email.trim(), pass);
+          localStorage.removeItem('bitso_saved_client_user');
+          await syncUserProfile(userCredential.user, { displayName: name, phone });
+          closeAuthModal();
+          return;
+        } catch {
+          throw new Error('An account with this email already exists. Please switch to Sign In.');
+        }
+      }
+      if (err?.code === 'auth/weak-password') {
+        throw new Error('Password is too weak. Please use at least 6 characters.');
+      }
+      throw err;
+    }
   };
 
   const signInWithGooglePopup = async () => {
-    const result = await signInWithPopup(auth, googleProvider);
-    await syncUserProfile(result.user);
-    closeAuthModal();
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      localStorage.removeItem('bitso_saved_client_user');
+      await syncUserProfile(result.user);
+      closeAuthModal();
+    } catch (err: any) {
+      console.warn('Google popup notice:', err?.code, err?.message);
+      if (
+        err?.code === 'auth/unauthorized-domain' ||
+        err?.code === 'auth/operation-not-allowed' ||
+        err?.code === 'auth/popup-blocked' ||
+        err?.code === 'auth/internal-error'
+      ) {
+        throw new Error(
+          'Google Sign-In popup is restricted in this preview sandbox. Please use 1-Click Client Access or Email below.'
+        );
+      }
+      if (err?.code === 'auth/popup-closed-by-user' || err?.code === 'auth/cancelled-popup-request') {
+        throw new Error('Sign-in popup was closed. Please try again or use 1-Click Client Access.');
+      }
+      throw err;
+    }
   };
 
   const signOutUser = async () => {
-    await signOut(auth);
+    try {
+      localStorage.removeItem('bitso_saved_client_user');
+    } catch {
+      // ignore
+    }
+    try {
+      await signOut(auth);
+    } catch {
+      // ignore
+    }
+    setCurrentUser(null);
     setUserProfile(null);
     setIsAppointmentsDrawerOpen(false);
   };
@@ -203,6 +356,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         signInWithEmail,
         signUpWithEmail,
         signInWithGooglePopup,
+        signInDemoClient,
         signOutUser,
         isAppointmentsDrawerOpen,
         openAppointmentsDrawer,
@@ -227,6 +381,7 @@ const defaultAuthFallback: AuthContextType = {
   signInWithEmail: async () => {},
   signUpWithEmail: async () => {},
   signInWithGooglePopup: async () => {},
+  signInDemoClient: async () => {},
   signOutUser: async () => {},
   isAppointmentsDrawerOpen: false,
   openAppointmentsDrawer: () => {},

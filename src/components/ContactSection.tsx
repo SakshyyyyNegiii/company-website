@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { COMPANY_INFO, SERVICES } from '../data/content';
 import {
-  Phone,
   Mail,
   MapPin,
   MessageCircle,
@@ -9,8 +8,8 @@ import {
   CheckCircle2,
   Send,
   Linkedin,
-  Github,
   Twitter,
+  Instagram,
   ShieldCheck,
   User,
   LogIn,
@@ -75,15 +74,29 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
     setSubmitting(true);
     setErrorMsg('');
 
+    const inqData = {
+      name: fullName.trim(),
+      fullName: fullName.trim(),
+      phone: phone.trim(),
+      email: email.trim(),
+      service: service,
+      message: message.trim(),
+      userId: currentUser?.uid || null,
+      createdAt: { seconds: Math.floor(Date.now() / 1000) },
+    };
+
+    try {
+      const raw = localStorage.getItem('bitso_local_inquiries');
+      const list = raw ? JSON.parse(raw) : [];
+      list.unshift(inqData);
+      localStorage.setItem('bitso_local_inquiries', JSON.stringify(list));
+    } catch {
+      // ignore
+    }
+
     try {
       await addDoc(collection(db, 'inquiries'), {
-        name: fullName.trim(),
-        fullName: fullName.trim(),
-        phone: phone.trim(),
-        email: email.trim(),
-        service: service,
-        message: message.trim(),
-        userId: currentUser?.uid || null,
+        ...inqData,
         createdAt: serverTimestamp(),
       });
       setSubmitted(true);
@@ -99,7 +112,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
     const text = encodeURIComponent(
       'Hello Bitso Innovations team! I would like to consult on an enterprise digital project.'
     );
-    window.open(`https://wa.me/919990366072?text=${text}`, '_blank');
+    window.open(`https://wa.me/919310189235?text=${text}`, '_blank');
   };
 
   return (
@@ -183,20 +196,17 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
               </h3>
 
               <div className="space-y-5">
-                <a
-                  href={`tel:${COMPANY_INFO.contact.rawPhones[0]}`}
-                  className="flex items-start gap-4 text-slate-300 hover:text-cyan-400 transition-colors group"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-slate-800 border border-white/10 flex items-center justify-center text-cyan-400 group-hover:border-cyan-500/40 shrink-0">
-                    <Phone className="w-4 h-4" />
+                <div className="flex items-start gap-4 text-slate-300">
+                  <div className="w-10 h-10 rounded-xl bg-slate-800 border border-white/10 flex items-center justify-center text-cyan-400 shrink-0">
+                    <User className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-xs font-mono text-slate-400">Direct Call</div>
-                    <div className="text-sm font-semibold text-white group-hover:text-cyan-400">
-                      {COMPANY_INFO.contact.phones.join(' / ')}
+                    <div className="text-xs font-mono text-slate-400">Key Contact / Leadership</div>
+                    <div className="text-sm font-bold text-white tracking-wide">
+                      {COMPANY_INFO.contact.contactPerson}
                     </div>
                   </div>
-                </a>
+                </div>
 
                 <a
                   href={`mailto:${COMPANY_INFO.contact.email}`}
@@ -209,6 +219,23 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                     <div className="text-xs font-mono text-slate-400">Email Inquiry</div>
                     <div className="text-sm font-semibold text-white group-hover:text-cyan-400">
                       {COMPANY_INFO.contact.email}
+                    </div>
+                  </div>
+                </a>
+
+                <a
+                  href={`https://wa.me/${COMPANY_INFO.contact.rawPhones[0]}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-start gap-4 text-slate-300 hover:text-emerald-400 transition-colors group"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-slate-800 border border-white/10 flex items-center justify-center text-emerald-400 group-hover:border-emerald-500/40 shrink-0">
+                    <MessageCircle className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-mono text-slate-400">Phone / WhatsApp</div>
+                    <div className="text-sm font-semibold text-white group-hover:text-emerald-400">
+                      {COMPANY_INFO.contact.phone}
                     </div>
                   </div>
                 </a>
@@ -244,7 +271,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
               <span className="text-xs font-mono text-slate-400">CONNECT WITH US</span>
               <div className="flex items-center gap-3">
                 <a
-                  href="https://www.linkedin.com/company/bitsoinnovations"
+                  href="https://www.linkedin.com/company/bitso-innovations/?viewAsMember=true"
                   target="_blank"
                   rel="noreferrer"
                   className="w-9 h-9 rounded-lg bg-slate-800 hover:bg-cyan-500 hover:text-slate-950 text-slate-300 flex items-center justify-center transition-all"
@@ -253,13 +280,13 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                   <Linkedin className="w-4 h-4" />
                 </a>
                 <a
-                  href="https://github.com/bitsoinnovations"
+                  href="https://www.instagram.com/bitso_i.t?stkn=djUwOTUzZ2MxOW90"
                   target="_blank"
                   rel="noreferrer"
-                  className="w-9 h-9 rounded-lg bg-slate-800 hover:bg-cyan-500 hover:text-slate-950 text-slate-300 flex items-center justify-center transition-all"
-                  aria-label="GitHub"
+                  className="w-9 h-9 rounded-lg bg-slate-800 hover:bg-gradient-to-tr hover:from-amber-500 hover:via-rose-500 hover:to-purple-600 hover:text-white text-slate-300 flex items-center justify-center transition-all"
+                  aria-label="Instagram"
                 >
-                  <Github className="w-4 h-4" />
+                  <Instagram className="w-4 h-4" />
                 </a>
                 <a
                   href="https://twitter.com/bitsoinnovate"
@@ -337,7 +364,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                         required
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        placeholder="e.g. +91 99903 66072"
+                        placeholder="e.g. +91 93101 89235"
                         className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-cyan-400 transition-colors"
                       />
                     </div>

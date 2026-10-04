@@ -11,6 +11,8 @@ import {
   Send,
   CheckCircle2,
   User,
+  Zap,
+  Mail,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { collection, query, where, onSnapshot, orderBy, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -27,10 +29,19 @@ export const ClientDashboardDrawer: React.FC<ClientDashboardDrawerProps> = ({
   isOpen,
   onClose,
 }) => {
-  const { currentUser, userProfile, signInWithGooglePopup, signOutUser, loading } = useAuth();
+  const {
+    currentUser,
+    userProfile,
+    signInWithGooglePopup,
+    signInDemoClient,
+    signOutUser,
+    openAuthModal,
+    loading,
+  } = useAuth();
   const [inquiries, setInquiries] = useState<UserInquiry[]>([]);
   const [isFetching, setIsFetching] = useState(false);
   const [showNewInquiryForm, setShowNewInquiryForm] = useState(false);
+  const [authError, setAuthError] = useState('');
 
   // New inquiry form state
   const [service, setService] = useState('Custom Software Development');
@@ -95,7 +106,7 @@ export const ClientDashboardDrawer: React.FC<ClientDashboardDrawerProps> = ({
         name: currentUser.displayName || userProfile?.displayName || 'Client Partner',
         fullName: currentUser.displayName || userProfile?.displayName || 'Client Partner',
         email: currentUser.email || '',
-        phone: phone || userProfile?.phone || '+91 9990366072',
+        phone: phone || userProfile?.phone || '+91 9310189235',
         service,
         message: message.trim(),
         status: 'received',
@@ -147,7 +158,7 @@ export const ClientDashboardDrawer: React.FC<ClientDashboardDrawerProps> = ({
           {/* Drawer Body */}
           <div className="flex-grow overflow-y-auto p-6 space-y-6">
             {!currentUser ? (
-              /* Signed Out State: Google Sign In Callout */
+              /* Signed Out State: Flexible Sign In Options */
               <div className="py-8 text-center space-y-4">
                 <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 mx-auto">
                   <User className="w-8 h-8" />
@@ -155,15 +166,48 @@ export const ClientDashboardDrawer: React.FC<ClientDashboardDrawerProps> = ({
                 <div>
                   <h4 className="text-lg font-bold text-white tracking-tight">Sign In to Client Portal</h4>
                   <p className="text-xs text-slate-300 max-w-xs mx-auto mt-1 leading-relaxed">
-                    Authenticate securely with your Google account to persist and track your digital project scopes, consultations, and engineering specifications.
+                    Authenticate to review, track, and log your technical specifications and project scopes.
                   </p>
                 </div>
 
-                <div className="pt-2">
+                {authError && (
+                  <div className="p-3 rounded-xl bg-red-950/70 border border-red-500/40 text-red-200 text-xs text-left">
+                    {authError}
+                  </div>
+                )}
+
+                <div className="pt-2 space-y-2.5">
+                  {/* 1-Click Instant Access */}
                   <button
-                    onClick={() => signInWithGooglePopup()}
+                    type="button"
+                    onClick={async () => {
+                      setAuthError('');
+                      try {
+                        await signInDemoClient();
+                      } catch (err: any) {
+                        setAuthError(err?.message || 'Could not initialize client session.');
+                      }
+                    }}
                     disabled={loading}
-                    className="w-full flex items-center justify-center gap-3 py-3 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-semibold text-sm shadow-md transition-all cursor-pointer disabled:opacity-50"
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs sm:text-sm shadow-lg shadow-cyan-500/25 transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    <Zap className="w-4 h-4 text-slate-950" />
+                    <span>1-Click Instant Client Access</span>
+                  </button>
+
+                  {/* Google Sign In */}
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setAuthError('');
+                      try {
+                        await signInWithGooglePopup();
+                      } catch (err: any) {
+                        setAuthError(err?.message || 'Google sign-in could not be completed.');
+                      }
+                    }}
+                    disabled={loading}
+                    className="w-full flex items-center justify-center gap-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-white/10 text-white font-medium text-xs shadow-md transition-all cursor-pointer disabled:opacity-50"
                   >
                     <svg className="w-4 h-4" viewBox="0 0 24 24">
                       <path
@@ -185,10 +229,23 @@ export const ClientDashboardDrawer: React.FC<ClientDashboardDrawerProps> = ({
                     </svg>
                     <span>Sign In with Google</span>
                   </button>
+
+                  {/* Email & Password Sign In / Register */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      openAuthModal('signin');
+                    }}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-white/10 text-slate-300 hover:text-white font-medium text-xs transition-colors cursor-pointer"
+                  >
+                    <Mail className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Sign In or Register with Email</span>
+                  </button>
                 </div>
 
                 <div className="pt-4 border-t border-white/10 text-[11px] font-mono text-slate-500">
-                  SECURE AUTHENTICATION · GOOGLE IDENTITY PLATFORM
+                  SECURE AUTHENTICATION · PERSISTENT CLIENT PORTAL
                 </div>
               </div>
             ) : (
@@ -271,7 +328,7 @@ export const ClientDashboardDrawer: React.FC<ClientDashboardDrawerProps> = ({
                         type="tel"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        placeholder="+91 99903 66072"
+                        placeholder="+91 93101 89235"
                         className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-400"
                         required
                       />

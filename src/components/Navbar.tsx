@@ -138,7 +138,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Mobile Hamburger Toggle */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="md:hidden p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-900 border border-white/10 transition-colors"
+          className="md:hidden p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-900 border border-white/10 transition-colors cursor-pointer"
           aria-label="Toggle menu"
         >
           {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -153,7 +153,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 key={item.id}
                 onClick={() => handleNavClick(item.id)}
-                className={`text-left text-base font-medium py-2 transition-colors ${
+                className={`text-left text-base font-medium py-2 transition-colors cursor-pointer ${
                   activeSection === item.id ? 'text-cyan-400' : 'text-slate-300 hover:text-white'
                 }`}
               >
@@ -170,14 +170,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                     setMobileMenuOpen(false);
                     onOpenDashboard?.();
                   }}
-                  className="flex items-center gap-2 text-white font-medium hover:text-cyan-400"
+                  className="flex items-center gap-2 text-white font-medium hover:text-cyan-400 cursor-pointer"
                 >
                   <span className="w-2 h-2 rounded-full bg-emerald-400" />
                   <span>Portal: {currentUser.displayName || currentUser.email}</span>
                 </button>
                 <button
                   onClick={() => signOutUser()}
-                  className="text-cyan-400 underline font-semibold"
+                  className="text-cyan-400 underline font-semibold cursor-pointer"
                 >
                   Sign Out
                 </button>
@@ -189,10 +189,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                   if (onOpenDashboard) onOpenDashboard();
                   else openAuthModal('signin');
                 }}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-white font-mono text-xs"
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-white font-mono text-xs cursor-pointer hover:bg-slate-800 transition-colors"
               >
                 <ShieldCheck className="w-4 h-4 text-cyan-400" />
-                <span>Client Portal / Google Sign In</span>
+                <span>Client Portal Access</span>
               </button>
             )}
 
@@ -201,7 +201,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 setMobileMenuOpen(false);
                 onStartProject();
               }}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-cyan-500 text-slate-950 font-bold text-sm shadow-md shadow-cyan-500/25"
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm shadow-md shadow-cyan-500/25 cursor-pointer transition-colors"
             >
               <span>Start a Project</span>
               <ArrowUpRight className="w-4 h-4" />

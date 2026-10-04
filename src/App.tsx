@@ -70,7 +70,7 @@ export default function App() {
     const text = encodeURIComponent(
       'Hello Bitso Innovations team! I would like to consult on a digital project.'
     );
-    window.open(`https://wa.me/919990366072?text=${text}`, '_blank');
+    window.open(`https://wa.me/91${COMPANY_INFO.contact.rawPhones[0]}?text=${text}`, '_blank');
   };
 
   return (

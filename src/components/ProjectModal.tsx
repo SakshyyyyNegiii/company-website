@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { X, Send, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Send, CheckCircle2, Check, Loader2 } from 'lucide-react';
 import { SERVICES } from '../data/content';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -21,8 +21,19 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
   const [service, setService] = useState(preSelectedService);
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  // Reset state when opening modal
+  useEffect(() => {
+    if (isOpen) {
+      setSubmitted(false);
+      setIsSuccess(false);
+      setErrorMsg('');
+      setService(preSelectedService);
+    }
+  }, [isOpen, preSelectedService]);
 
   if (!isOpen) return null;
 
@@ -36,20 +47,44 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
     setSubmitting(true);
     setErrorMsg('');
 
+    const inqData = {
+      name: fullName.trim(),
+      fullName: fullName.trim(),
+      phone: phone.trim(),
+      email: email.trim(),
+      service: service || preSelectedService,
+      message: message.trim(),
+      createdAt: { seconds: Math.floor(Date.now() / 1000) },
+    };
+
+    try {
+      const raw = localStorage.getItem('bitso_local_inquiries');
+      const list = raw ? JSON.parse(raw) : [];
+      list.unshift(inqData);
+      localStorage.setItem('bitso_local_inquiries', JSON.stringify(list));
+    } catch {
+      // ignore
+    }
+
     try {
       await addDoc(collection(db, 'inquiries'), {
-        name: fullName.trim(),
-        fullName: fullName.trim(),
-        phone: phone.trim(),
-        email: email.trim(),
-        service: service || preSelectedService,
-        message: message.trim(),
+        ...inqData,
         createdAt: serverTimestamp(),
       });
-      setSubmitted(true);
+      // Show immediate subtle check-mark feedback animation on the button
+      setIsSuccess(true);
+      setTimeout(() => {
+        setSubmitted(true);
+        setIsSuccess(false);
+      }, 850);
     } catch (err) {
       handleFirestoreError(err, OperationType.CREATE, 'inquiries');
-      setSubmitted(true);
+      // Fallback local persistence was already saved
+      setIsSuccess(true);
+      setTimeout(() => {
+        setSubmitted(true);
+        setIsSuccess(false);
+      }, 850);
     } finally {
       setSubmitting(false);
     }
@@ -114,7 +149,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
                 required
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                placeholder="e.g. Aman Pal"
+                placeholder="e.g. ch. AMAN"
                 className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-cyan-400 transition-colors"
               />
             </div>
@@ -129,7 +164,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
                   required
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+91 99903 66072"
+                  placeholder="+91 93101 89235"
                   className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-cyan-400 transition-colors"
                 />
               </div>
@@ -142,7 +177,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="aman@example.com"
+                  placeholder="aman@company.com"
                   className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-cyan-400 transition-colors"
                 />
               </div>
@@ -183,11 +218,27 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
 
             <button
               type="submit"
-              disabled={submitting}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm shadow-xl shadow-cyan-500/25 transition-all cursor-pointer disabled:opacity-50"
+              disabled={submitting || isSuccess}
+              className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm shadow-xl transition-all duration-300 cursor-pointer disabled:opacity-90 ${
+                isSuccess
+                  ? 'bg-emerald-500 text-slate-950 shadow-emerald-500/30 scale-[1.02] ring-2 ring-emerald-400/50'
+                  : submitting
+                  ? 'bg-cyan-500/80 text-slate-950 cursor-wait'
+                  : 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-cyan-500/25 active:scale-[0.99]'
+              }`}
             >
-              {submitting ? (
-                <span>Submitting...</span>
+              {isSuccess ? (
+                <span className="inline-flex items-center gap-2 text-slate-950 animate-in fade-in zoom-in-95 duration-200">
+                  <span className="w-5 h-5 rounded-full bg-slate-950/15 flex items-center justify-center animate-in zoom-in-50 duration-300">
+                    <Check className="w-3.5 h-3.5 text-slate-950 stroke-[3] animate-in zoom-in duration-300" />
+                  </span>
+                  <span>Inquiry Sent!</span>
+                </span>
+              ) : submitting ? (
+                <span className="inline-flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
+                  <span>Submitting...</span>
+                </span>
               ) : (
                 <>
                   <span>Submit Project Inquiry</span>

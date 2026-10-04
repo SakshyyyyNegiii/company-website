@@ -399,7 +399,7 @@ export const TechVisual: React.FC<TechVisualProps> = ({ onStartProject }) => {
             </div>
             <button
               onClick={() => setSelectedNode(null)}
-              className="text-xs text-slate-400 hover:text-white px-2 py-1 rounded bg-slate-900 border border-white/10"
+              className="text-xs text-slate-400 hover:text-white px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-white/10 transition-colors cursor-pointer"
             >
               Close
             </button>
