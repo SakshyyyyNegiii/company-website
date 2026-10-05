@@ -15,6 +15,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { useFadeInOnScroll } from '../hooks/useFadeInOnScroll';
+import { InteractiveCard } from './InteractiveCard';
 
 interface ServicesSectionProps {
   onSelectService: (serviceName: string) => void;
@@ -116,14 +117,15 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
             const spec = TECH_SPECS[service.id];
 
             return (
-              <div
+              <InteractiveCard
                 key={service.id}
                 onClick={() => onSelectService(service.title)}
-                className="p-6 sm:p-7 rounded-2xl bg-slate-900/60 border border-white/10 hover:border-cyan-500/40 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-cyan-950/30 flex flex-col justify-between group cursor-pointer"
+                glowColor="rgba(6, 182, 212, 0.22)"
+                className="p-6 sm:p-7 rounded-2xl bg-slate-900/60 border border-white/10 hover:border-cyan-500/40 backdrop-blur-md transition-all duration-300 hover:shadow-xl hover:shadow-cyan-950/30 flex flex-col justify-between group cursor-pointer"
               >
                 <div>
                   <div className="flex items-center justify-between mb-5">
-                    <div className="w-12 h-12 rounded-xl bg-cyan-950/70 border border-cyan-500/30 flex items-center justify-center group-hover:scale-105 group-hover:border-cyan-400 transition-all">
+                    <div className="w-12 h-12 rounded-xl bg-cyan-950/70 border border-cyan-500/30 flex items-center justify-center group-hover:scale-110 group-hover:border-cyan-400 transition-all">
                       {getIcon(service.iconName)}
                     </div>
                     <span className="text-[11px] font-mono text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-500/20">
@@ -176,7 +178,7 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
                     {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                   </button>
                 </div>
-              </div>
+              </InteractiveCard>
             );
           })}
         </div>
@@ -188,14 +190,15 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
             const spec = TECH_SPECS[service.id];
 
             return (
-              <div
+              <InteractiveCard
                 key={service.id}
                 onClick={() => onSelectService(service.title)}
-                className="p-6 sm:p-7 rounded-2xl bg-slate-900/60 border border-white/10 hover:border-cyan-500/40 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-cyan-950/30 flex flex-col justify-between group cursor-pointer"
+                glowColor="rgba(6, 182, 212, 0.22)"
+                className="p-6 sm:p-7 rounded-2xl bg-slate-900/60 border border-white/10 hover:border-cyan-500/40 backdrop-blur-md transition-all duration-300 hover:shadow-xl hover:shadow-cyan-950/30 flex flex-col justify-between group cursor-pointer"
               >
                 <div>
                   <div className="flex items-center justify-between mb-5">
-                    <div className="w-12 h-12 rounded-xl bg-cyan-950/70 border border-cyan-500/30 flex items-center justify-center group-hover:scale-105 group-hover:border-cyan-400 transition-all">
+                    <div className="w-12 h-12 rounded-xl bg-cyan-950/70 border border-cyan-500/30 flex items-center justify-center group-hover:scale-110 group-hover:border-cyan-400 transition-all">
                       {getIcon(service.iconName)}
                     </div>
                     <span className="text-[11px] font-mono text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-500/20">
@@ -248,7 +251,7 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
                     {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                   </button>
                 </div>
-              </div>
+              </InteractiveCard>
             );
           })}
         </div>

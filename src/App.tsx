@@ -10,6 +10,7 @@ import { ProjectModal } from './components/ProjectModal';
 import { ClientAuthModal } from './components/ClientAuthModal';
 import { ClientDashboardDrawer } from './components/ClientDashboardDrawer';
 import { ScrollProgressBar } from './components/ScrollProgressBar';
+import { CustomCursor } from './components/CustomCursor';
 import { SectionId } from './types';
 import { MessageCircle } from 'lucide-react';
 import { COMPANY_INFO } from './data/content';
@@ -75,6 +76,9 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500/20 selection:text-cyan-300 relative overflow-x-hidden">
+      {/* Custom Cursor with Dissipating Glowing Particle Trail */}
+      <CustomCursor />
+
       {/* Slim Fixed Progress Bar at Very Top of Screen */}
       <ScrollProgressBar />
 
@@ -127,7 +131,7 @@ export default function App() {
       />
 
       {/* Client Portal Authentication Modal */}
-      <ClientAuthModal />
+      <ClientAuthModal onOpenDashboard={() => setIsDashboardOpen(true)} />
 
       {/* Client Dashboard / Firestore Persistence Drawer */}
       <ClientDashboardDrawer

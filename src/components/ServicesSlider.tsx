@@ -207,10 +207,10 @@ export const ServicesSlider: React.FC<ServicesSliderProps> = ({ onSelectCard }) 
                   }
                 }}
                 style={style}
-                className={`absolute left-1/2 top-1/2 -translate-y-1/2 w-[280px] sm:w-[340px] md:w-[380px] h-[350px] sm:h-[390px] md:h-[420px] rounded-2xl overflow-hidden cursor-pointer ${
+                className={`absolute left-1/2 top-1/2 -translate-y-1/2 w-[280px] sm:w-[340px] md:w-[380px] h-[350px] sm:h-[390px] md:h-[420px] rounded-2xl overflow-hidden cursor-pointer transition-all duration-500 ${
                   isActive
-                    ? 'border-2 border-cyan-400/80 shadow-[0_0_35px_rgba(6,182,212,0.25)] ring-1 ring-cyan-400/30'
-                    : 'border border-white/10 hover:border-cyan-500/40 hover:opacity-75'
+                    ? 'border-2 border-cyan-400 shadow-[0_0_40px_rgba(6,182,212,0.35)] ring-1 ring-cyan-400/40'
+                    : 'border border-white/10 hover:border-cyan-500/50 hover:opacity-85'
                 }`}
               >
                 {/* Background Image with Fallback */}
@@ -227,8 +227,14 @@ export const ServicesSlider: React.FC<ServicesSliderProps> = ({ onSelectCard }) 
                 {/* Subtle Deep Dark Gradient Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/75 to-slate-900/40" />
 
-                {/* Subtle Top Light Accent */}
-                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent" />
+                {/* Dynamic Laser Light Accent */}
+                <div className="absolute top-0 left-0 right-0 h-[2px] overflow-hidden">
+                  <div
+                    className={`h-full w-full bg-gradient-to-r from-transparent via-cyan-400 to-transparent ${
+                      isActive ? 'animate-laser-sweep' : 'opacity-30'
+                    }`}
+                  />
+                </div>
 
                 {/* Card Content Overlay */}
                 <div className="absolute inset-0 p-6 sm:p-7 flex flex-col justify-between z-10">

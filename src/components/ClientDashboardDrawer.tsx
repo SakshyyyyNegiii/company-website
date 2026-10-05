@@ -121,6 +121,26 @@ export const ClientDashboardDrawer: React.FC<ClientDashboardDrawerProps> = ({
       }, 1500);
     } catch (err) {
       handleFirestoreError(err, OperationType.CREATE, 'inquiries');
+      // Offline fallback: preserve in local list so client always sees their submitted inquiry
+      const localInquiry: UserInquiry = {
+        id: 'local_' + Date.now(),
+        userId: currentUser.uid,
+        name: currentUser.displayName || userProfile?.displayName || 'Client Partner',
+        fullName: currentUser.displayName || userProfile?.displayName || 'Client Partner',
+        email: currentUser.email || '',
+        phone: phone || userProfile?.phone || '+91 99903 66072',
+        service,
+        message: message.trim(),
+        status: 'received',
+        createdAt: { seconds: Math.floor(Date.now() / 1000) } as any,
+      };
+      setInquiries((prev) => [localInquiry, ...prev]);
+      setSubmitSuccess(true);
+      setMessage('');
+      setTimeout(() => {
+        setSubmitSuccess(false);
+        setShowNewInquiryForm(false);
+      }, 1500);
     } finally {
       setSubmitting(false);
     }

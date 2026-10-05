@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { X, LogIn, UserPlus, ShieldCheck, Zap, ArrowRight } from 'lucide-react';
 
-export const ClientAuthModal: React.FC = () => {
+interface ClientAuthModalProps {
+  onOpenDashboard?: () => void;
+}
+
+export const ClientAuthModal: React.FC<ClientAuthModalProps> = ({ onOpenDashboard }) => {
   const {
     isAuthModalOpen,
     authModalMode,
@@ -34,6 +38,7 @@ export const ClientAuthModal: React.FC = () => {
         phone.trim() || '+91 99903 66072'
       );
       closeAuthModal();
+      onOpenDashboard?.();
     } catch (err: any) {
       setErrorMsg(err?.message || 'Could not initialize demo session.');
     } finally {
@@ -45,10 +50,11 @@ export const ClientAuthModal: React.FC = () => {
     setLoading(true);
     setErrorMsg('');
     try {
-      await signInWithGooglePopup();
+      await signInWithGooglePopup(email.trim() || undefined);
       closeAuthModal();
+      onOpenDashboard?.();
     } catch (err: any) {
-      setErrorMsg(err.message || 'Google sign-in could not be completed in this window.');
+      setErrorMsg(err.message || 'Google sign-in could not be completed.');
     } finally {
       setLoading(false);
     }
@@ -79,6 +85,7 @@ export const ClientAuthModal: React.FC = () => {
         await signUpWithEmail(email, password, fullName, phone);
       }
       closeAuthModal();
+      onOpenDashboard?.();
     } catch (err: any) {
       setErrorMsg(err.message || 'Authentication error. Please check your credentials.');
     } finally {

@@ -15,12 +15,30 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   onExploreServices,
 }) => {
   const { ref, isVisible } = useFadeInOnScroll({ threshold: 0.05, initialDelayMs: 50 });
+  const [mouseCoord, setMouseCoord] = React.useState({ x: 500, y: 300 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setMouseCoord({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  };
 
   return (
     <section
       id="home"
+      onMouseMove={handleMouseMove}
       className="relative min-h-[92vh] flex items-center justify-center pt-24 pb-16 overflow-hidden"
     >
+      {/* Interactive Cursor Spotlight Glow */}
+      <div
+        className="pointer-events-none absolute -inset-px opacity-40 transition-opacity duration-300 z-0"
+        style={{
+          background: `radial-gradient(750px circle at ${mouseCoord.x}px ${mouseCoord.y}px, rgba(6, 182, 212, 0.14), transparent 70%)`,
+        }}
+      />
+
       {/* Dynamic Futuristic Shifting Mesh & Interactive Particle Constellation Background */}
       <HeroBackground />
 
@@ -43,7 +61,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             {/* Main Headline */}
             <h1 className="text-4xl sm:text-6xl lg:text-[4.25rem] font-extrabold tracking-tight text-white leading-[1.1] text-balance">
               Building{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-300 drop-shadow-[0_0_25px_rgba(6,182,212,0.35)]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-300 animate-gradient-shift drop-shadow-[0_0_30px_rgba(6,182,212,0.45)]">
                 Digital Solutions
               </span>{' '}
               That Move Your Business Forward.
@@ -78,10 +96,12 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             <div className="mt-8 sm:mt-10 flex flex-wrap items-center gap-4 w-full sm:w-auto">
               <button
                 onClick={onStartProject}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-base shadow-xl shadow-cyan-500/25 hover:shadow-cyan-400/35 hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer"
+                className="relative overflow-hidden w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 via-sky-400 to-cyan-400 hover:from-cyan-400 hover:to-sky-300 text-slate-950 font-bold text-base shadow-xl shadow-cyan-500/30 hover:shadow-cyan-400/40 hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer group"
               >
+                {/* Shimmer sweep effect */}
+                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full duration-1000 bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform ease-out pointer-events-none" />
                 <span>Start a Project</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </button>
 
               <button

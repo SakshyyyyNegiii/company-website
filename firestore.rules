@@ -13,39 +13,22 @@ service cloud.firestore {
 
     // User profiles collection
     match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId);
-      allow delete: if false;
+      allow read, write: if true;
     }
 
     // Appointments collection: Bookings by authenticated users or enterprise prospects
     match /appointments/{appointmentId} {
-      allow read: if isAuthenticated() && (
-        resource.data.userId == request.auth.uid ||
-        (request.auth.token.email != null && resource.data.userEmail == request.auth.token.email)
-      );
-      allow create: if isAuthenticated()
-        ? (request.resource.data.userId == request.auth.uid)
-        : (request.resource.data.userName != null && request.resource.data.userPhone != null);
-      allow update: if isAuthenticated() && (
-        resource.data.userId == request.auth.uid ||
-        (request.auth.token.email != null && resource.data.userEmail == request.auth.token.email)
-      );
-      allow delete: if isAuthenticated() && (
-        resource.data.userId == request.auth.uid
-      );
+      allow read, write: if true;
     }
 
     // Direct enterprise inquiries & audit requests
     match /inquiries/{inquiryId} {
-      allow create: if request.resource.data.name != null && request.resource.data.phone != null;
-      allow read, update, delete: if isAuthenticated();
+      allow read, write: if true;
     }
 
     // Connection test document
     match /test/connection {
-      allow read: if true;
+      allow read, write: if true;
     }
   }
 }

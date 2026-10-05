@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { PORTFOLIO_PROJECTS, PROCESS_STEPS } from '../data/content';
 import { ArrowRight, ChevronRight, Terminal, Activity, Layers, Check } from 'lucide-react';
 import { useFadeInOnScroll } from '../hooks/useFadeInOnScroll';
+import { InteractiveCard } from './InteractiveCard';
 
 interface WorkSectionProps {
   onSelectProject: (projectTitle: string) => void;
@@ -121,10 +122,11 @@ export const WorkSection: React.FC<WorkSectionProps> = ({ onSelectProject }) => 
             const isArchVisible = activeArchId === project.id;
 
             return (
-              <div
+              <InteractiveCard
                 key={project.id}
                 onClick={() => onSelectProject(project.title)}
-                className="group rounded-3xl bg-slate-900/60 border border-white/10 hover:border-cyan-500/40 backdrop-blur-md overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-cyan-950/30 flex flex-col cursor-pointer"
+                glowColor="rgba(6, 182, 212, 0.2)"
+                className="group rounded-3xl bg-slate-900/60 border border-white/10 hover:border-cyan-500/40 backdrop-blur-md overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-cyan-950/30 flex flex-col cursor-pointer"
               >
                 {/* Project Image Frame */}
                 <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-950">
@@ -229,20 +231,39 @@ export const WorkSection: React.FC<WorkSectionProps> = ({ onSelectProject }) => 
                     </span>
                   </div>
                 </div>
-              </div>
+              </InteractiveCard>
             );
           })}
         </div>
 
         {/* Process Flow: Discover → Design → Develop → Launch */}
         <div className="mt-20 pt-16 border-t border-white/10">
-          <div className="text-center mb-10">
+          <div className="text-center mb-8">
             <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
               Interactive Engineering Process
             </h3>
             <p className="text-sm text-slate-400 mt-1">
               Click any stage to inspect our production deliverables and technical governance.
             </p>
+          </div>
+
+          {/* Animated Connecting Stage Laser Beam Track */}
+          <div className="relative mb-6 hidden lg:block px-4">
+            <div className="h-1.5 w-full bg-slate-900 rounded-full overflow-hidden border border-white/5 relative">
+              <div
+                className="h-full bg-gradient-to-r from-cyan-500 via-sky-400 to-indigo-400 transition-all duration-500 ease-out shadow-[0_0_16px_rgba(6,182,212,0.9)]"
+                style={{
+                  width:
+                    activeProcessStep === '01'
+                      ? '25%'
+                      : activeProcessStep === '02'
+                      ? '50%'
+                      : activeProcessStep === '03'
+                      ? '75%'
+                      : '100%',
+                }}
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
