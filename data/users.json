@@ -1,0 +1,22 @@
+[
+  {
+    "id": "usr_client_partner",
+    "fullName": "Client Partner",
+    "email": "client.partner@bitsoinnovations.com",
+    "passwordHash": "$2b$10$ruAxYeSg0DLkObtOt7yHA.x16nVFl/Qkk65zWJsr8HvokoyJHYnIe",
+    "phone": "+91 99903 66072",
+    "role": "client",
+    "createdAt": "2026-10-05T17:06:48.481Z",
+    "updatedAt": "2026-10-05T17:06:48.481Z"
+  },
+  {
+    "id": "usr_muvi5fdw_kd77w",
+    "fullName": "Aditya Kumar",
+    "email": "aditya.test@company.com",
+    "passwordHash": "$2b$10$nc3Omq6XH19sh2hKgN211.YuO5f7pNNtQeEMpaKDtz383Vb3syfSG",
+    "phone": "+91 99903 66072",
+    "role": "client",
+    "createdAt": "2026-10-05T17:06:57.956Z",
+    "updatedAt": "2026-10-05T17:06:58.205Z"
+  }
+]

@@ -1,6 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { SectionId } from '../types';
-import { Menu, X, ArrowUpRight, User, ShieldCheck } from 'lucide-react';
+import {
+  Menu,
+  X,
+  ArrowUpRight,
+  User,
+  ShieldCheck,
+  LogIn,
+  UserPlus,
+  LogOut,
+  LayoutDashboard,
+  ChevronDown,
+} from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
 import { useAuth } from '../context/AuthContext';
 
@@ -18,8 +29,21 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenDashboard,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { currentUser, openAuthModal, signOutUser } = useAuth();
+  const { currentUser, userProfile, openAuthModal, signOutUser } = useAuth();
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setProfileDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -40,6 +64,12 @@ export const Navbar: React.FC<NavbarProps> = ({
     onNavigate(id);
     setMobileMenuOpen(false);
   };
+
+  const displayName =
+    currentUser?.displayName ||
+    userProfile?.displayName ||
+    currentUser?.email?.split('@')[0] ||
+    'Client';
 
   return (
     <header
@@ -85,45 +115,110 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Zone 3: Primary Actions */}
         <div className="hidden md:flex items-center gap-3">
           {currentUser ? (
-            <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-slate-900 border border-white/10 text-xs">
+            /* Authenticated State: User Profile Dropdown */
+            <div className="relative" ref={dropdownRef}>
               <button
-                onClick={() => onOpenDashboard?.()}
-                className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer text-left"
-                title="Open Client Portal Dashboard"
+                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-white/15 hover:border-cyan-500/40 text-xs transition-all cursor-pointer shadow-sm"
+                aria-expanded={profileDropdownOpen}
+                aria-haspopup="true"
               >
                 {currentUser.photoURL ? (
                   <img
                     src={currentUser.photoURL}
-                    alt={currentUser.displayName || 'User'}
+                    alt={displayName}
                     className="w-5 h-5 rounded-full object-cover border border-cyan-400/50"
                   />
                 ) : (
-                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                  <div className="w-5 h-5 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 flex items-center justify-center font-bold text-[10px]">
+                    {displayName.charAt(0).toUpperCase()}
+                  </div>
                 )}
-                <span className="text-slate-200 font-medium max-w-[110px] truncate">
-                  {currentUser.displayName || currentUser.email?.split('@')[0]}
+
+                <span className="text-slate-200 font-medium max-w-[120px] truncate">
+                  {displayName}
                 </span>
+
+                <ChevronDown
+                  className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${
+                    profileDropdownOpen ? 'rotate-180 text-cyan-400' : ''
+                  }`}
+                />
               </button>
-              <button
-                onClick={() => signOutUser()}
-                className="text-[10px] text-slate-400 hover:text-red-400 underline ml-1 cursor-pointer"
-                title="Sign out"
-              >
-                Exit
-              </button>
+
+              {/* Profile Dropdown Menu */}
+              {profileDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-slate-900 border border-white/15 shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150 backdrop-blur-xl">
+                  {/* User Info Header */}
+                  <div className="px-4 py-2.5 border-b border-white/10">
+                    <p className="text-xs font-bold text-white truncate">{displayName}</p>
+                    <p className="text-[11px] font-mono text-slate-400 truncate">
+                      {currentUser.email || userProfile?.email}
+                    </p>
+                    <span className="inline-block mt-1 text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-cyan-950/80 text-cyan-400 border border-cyan-500/30">
+                      {userProfile?.role || 'Client Partner'}
+                    </span>
+                  </div>
+
+                  {/* Dropdown Items */}
+                  <div className="py-1">
+                    <button
+                      onClick={() => {
+                        setProfileDropdownOpen(false);
+                        openAuthModal('profile');
+                      }}
+                      className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-slate-300 hover:text-white hover:bg-slate-800/80 transition-colors cursor-pointer text-left"
+                    >
+                      <User className="w-4 h-4 text-cyan-400" />
+                      <span>Profile</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setProfileDropdownOpen(false);
+                        if (onOpenDashboard) onOpenDashboard();
+                      }}
+                      className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-slate-300 hover:text-white hover:bg-slate-800/80 transition-colors cursor-pointer text-left"
+                    >
+                      <LayoutDashboard className="w-4 h-4 text-sky-400" />
+                      <span>Dashboard</span>
+                    </button>
+                  </div>
+
+                  <div className="border-t border-white/10 pt-1">
+                    <button
+                      onClick={async () => {
+                        setProfileDropdownOpen(false);
+                        await signOutUser();
+                      }}
+                      className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 transition-colors cursor-pointer text-left"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span>Logout</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
-            <button
-              onClick={() => {
-                if (onOpenDashboard) onOpenDashboard();
-                else openAuthModal('signin');
-              }}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-slate-300 hover:text-white text-xs font-mono transition-colors cursor-pointer border border-transparent hover:border-white/10"
-              title="Client Portal Access"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Portal</span>
-            </button>
+            /* Unauthenticated State: Sign In & Sign Up Options */
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => openAuthModal('signin')}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-slate-300 hover:text-white text-xs font-semibold transition-colors cursor-pointer border border-transparent hover:border-white/15 hover:bg-slate-900/60"
+              >
+                <LogIn className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Sign In</span>
+              </button>
+
+              <button
+                onClick={() => openAuthModal('signup')}
+                className="hidden lg:flex items-center gap-1.5 px-3 py-2 rounded-xl text-slate-400 hover:text-cyan-300 text-xs font-medium transition-colors cursor-pointer"
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                <span>Sign Up</span>
+              </button>
+            </div>
           )}
 
           <button
@@ -164,36 +259,78 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <div className="pt-2 border-t border-white/10 space-y-3">
             {currentUser ? (
-              <div className="flex items-center justify-between py-2 text-xs text-slate-300">
+              <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-white/10 space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 flex items-center justify-center font-bold text-xs">
+                    {displayName.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-grow min-w-0">
+                    <p className="text-xs font-bold text-white truncate">{displayName}</p>
+                    <p className="text-[10px] font-mono text-slate-400 truncate">
+                      {currentUser.email || userProfile?.email}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      openAuthModal('profile');
+                    }}
+                    className="flex items-center justify-center gap-1.5 py-2 rounded-lg bg-slate-800 text-xs font-medium text-slate-200 hover:text-white cursor-pointer"
+                  >
+                    <User className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Profile</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      onOpenDashboard?.();
+                    }}
+                    className="flex items-center justify-center gap-1.5 py-2 rounded-lg bg-slate-800 text-xs font-medium text-slate-200 hover:text-white cursor-pointer"
+                  >
+                    <LayoutDashboard className="w-3.5 h-3.5 text-sky-400" />
+                    <span>Dashboard</span>
+                  </button>
+                </div>
+
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     setMobileMenuOpen(false);
-                    onOpenDashboard?.();
+                    await signOutUser();
                   }}
-                  className="flex items-center gap-2 text-white font-medium hover:text-cyan-400 cursor-pointer"
+                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg bg-rose-950/40 border border-rose-500/30 text-rose-300 text-xs font-medium cursor-pointer"
                 >
-                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                  <span>Portal: {currentUser.displayName || currentUser.email}</span>
-                </button>
-                <button
-                  onClick={() => signOutUser()}
-                  className="text-cyan-400 underline font-semibold cursor-pointer"
-                >
-                  Sign Out
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span>Logout</span>
                 </button>
               </div>
             ) : (
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  if (onOpenDashboard) onOpenDashboard();
-                  else openAuthModal('signin');
-                }}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-white font-mono text-xs cursor-pointer hover:bg-slate-800 transition-colors"
-              >
-                <ShieldCheck className="w-4 h-4 text-cyan-400" />
-                <span>Client Portal Access</span>
-              </button>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    openAuthModal('signin');
+                  }}
+                  className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-white font-medium text-xs cursor-pointer hover:bg-slate-800 transition-colors"
+                >
+                  <LogIn className="w-4 h-4 text-cyan-400" />
+                  <span>Sign In</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    openAuthModal('signup');
+                  }}
+                  className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-cyan-950/80 border border-cyan-500/30 text-cyan-300 font-medium text-xs cursor-pointer hover:bg-cyan-900 transition-colors"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span>Sign Up</span>
+                </button>
+              </div>
             )}
 
             <button

@@ -13,6 +13,8 @@ import {
   User,
   Zap,
   Mail,
+  LogIn,
+  UserPlus,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { collection, query, where, onSnapshot, orderBy, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -251,17 +253,30 @@ export const ClientDashboardDrawer: React.FC<ClientDashboardDrawerProps> = ({
                   </button>
 
                   {/* Email & Password Sign In / Register */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onClose();
-                      openAuthModal('signin');
-                    }}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-white/10 text-slate-300 hover:text-white font-medium text-xs transition-colors cursor-pointer"
-                  >
-                    <Mail className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>Sign In or Register with Email</span>
-                  </button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onClose();
+                        openAuthModal('signin');
+                      }}
+                      className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-white/10 text-slate-200 font-medium text-xs transition-colors cursor-pointer"
+                    >
+                      <LogIn className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Sign In</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onClose();
+                        openAuthModal('signup');
+                      }}
+                      className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-500/30 text-cyan-300 font-medium text-xs transition-colors cursor-pointer"
+                    >
+                      <UserPlus className="w-3.5 h-3.5" />
+                      <span>Sign Up</span>
+                    </button>
+                  </div>
                 </div>
 
                 <div className="pt-4 border-t border-white/10 text-[11px] font-mono text-slate-500">

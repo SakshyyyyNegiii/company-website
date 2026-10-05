@@ -2,6 +2,7 @@ import http from 'http';
 import express, { Request, Response } from 'express';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
+import { authRouter } from './server/auth';
 
 const app = express();
 const PORT = 3000;
@@ -9,6 +10,9 @@ const PORT = 3000;
 // Body parsing middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Mount authentication API
+app.use('/api/auth', authRouter);
 
 // In-memory operational store for backend records & telemetry
 interface ServerAppointment {
