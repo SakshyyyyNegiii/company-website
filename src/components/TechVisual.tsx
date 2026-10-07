@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useId } from 'react';
 import {
   Layers,
   Cpu,
@@ -10,8 +10,6 @@ import {
   Activity,
   Zap,
   Terminal,
-  Play,
-  RotateCcw,
   Sparkles,
 } from 'lucide-react';
 
@@ -54,6 +52,10 @@ export const TechVisual: React.FC<TechVisualProps> = ({ onStartProject }) => {
   const [isSurging, setIsSurging] = useState(false);
   const [equalizerHeights, setEqualizerHeights] = useState<number[]>([40, 65, 85, 50, 95, 70, 80, 60]);
   const pulsesRef = useRef<PulseParticle[]>([]);
+
+  const uniqueId = useId();
+  const lineGradId = `lineGrad-${uniqueId.replace(/:/g, '')}`;
+  const activeGradId = `activeGrad-${uniqueId.replace(/:/g, '')}`;
 
   // Fluctuating telemetry
   useEffect(() => {
@@ -406,11 +408,11 @@ export const TechVisual: React.FC<TechVisualProps> = ({ onStartProject }) => {
         {/* SVG Connection Lines */}
         <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <linearGradient id={lineGradId} x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.8" />
               <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.4" />
             </linearGradient>
-            <linearGradient id="activeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <linearGradient id={activeGradId} x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#22d3ee" stopOpacity="1" />
               <stop offset="100%" stopColor="#34d399" stopOpacity="0.8" />
             </linearGradient>
@@ -435,7 +437,7 @@ export const TechVisual: React.FC<TechVisualProps> = ({ onStartProject }) => {
                   y1={`${fromNode.y}%`}
                   x2={`${toNode.x}%`}
                   y2={`${toNode.y}%`}
-                  stroke={isHighlighted || isSurging ? 'url(#activeGrad)' : 'rgba(6, 182, 212, 0.28)'}
+                  stroke={isHighlighted || isSurging ? `url(#${activeGradId})` : 'rgba(6, 182, 212, 0.28)'}
                   strokeWidth={isHighlighted || isSurging ? '2.5' : '1.5'}
                   strokeDasharray={isHighlighted || isSurging ? 'none' : '3 3'}
                   className="transition-all duration-300"

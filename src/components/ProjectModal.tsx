@@ -3,6 +3,7 @@ import { X, Send, CheckCircle2, Check, Loader2 } from 'lucide-react';
 import { SERVICES } from '../data/content';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useAuth } from '../context/AuthContext';
 
 interface ProjectModalProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
   onClose,
   preSelectedService = 'Web Development',
 }) => {
+  const { currentUser, userProfile } = useAuth();
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -32,8 +34,15 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
       setIsSuccess(false);
       setErrorMsg('');
       setService(preSelectedService);
+      if (currentUser) {
+        setFullName(userProfile?.displayName || currentUser.displayName || '');
+        setEmail(currentUser.email || '');
+        if (userProfile?.phone) {
+          setPhone(userProfile.phone);
+        }
+      }
     }
-  }, [isOpen, preSelectedService]);
+  }, [isOpen, preSelectedService, currentUser, userProfile]);
 
   if (!isOpen) return null;
 
@@ -54,6 +63,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
       email: email.trim(),
       service: service || preSelectedService,
       message: message.trim(),
+      userId: currentUser?.uid || null,
       createdAt: { seconds: Math.floor(Date.now() / 1000) },
     };
 

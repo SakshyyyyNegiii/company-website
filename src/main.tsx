@@ -1,9 +1,9 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import App from './App.tsx';
-import { AuthProvider } from './context/AuthContext.tsx';
-import { ErrorBoundary } from './components/ErrorBoundary.tsx';
-import { testFirestoreConnection } from './lib/firebase.ts';
+import App from './App';
+import { AuthProvider } from './context/AuthContext';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { testFirestoreConnection } from './lib/firebase';
 import './index.css';
 
 // Validate connection to Firestore on initial boot

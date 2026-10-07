@@ -51,12 +51,15 @@ export interface Appointment {
 
 export interface UserProfile {
   uid: string;
+  name: string;
   email: string;
-  displayName: string;
-  photoURL?: string;
+  photoURL?: string | null;
+  provider: string;
+  createdAt?: any;
+  lastLoginAt?: any;
+  displayName?: string;
   phone?: string;
   role?: string;
-  createdAt?: string | number;
 }
 
 export interface UserInquiry {

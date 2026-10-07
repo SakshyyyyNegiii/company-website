@@ -26,10 +26,25 @@ interface ContactSectionProps {
 
 export const ContactSection: React.FC<ContactSectionProps> = ({
   initialService = '',
-  onOpenDashboard,
 }) => {
   const { ref, isVisible } = useFadeInOnScroll();
-  const { currentUser, userProfile, openAuthModal, signOutUser } = useAuth();
+  const { currentUser, userProfile, openAuthModal, signOutUser, signInWithGooglePopup } = useAuth();
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  const handleGoogleAuth = async () => {
+    if (googleLoading) return;
+    setGoogleLoading(true);
+    try {
+      const res = await signInWithGooglePopup();
+      if (!res.success && res.message && !res.message.includes('cancelled') && !res.message.includes('already in progress')) {
+        openAuthModal('signin');
+      }
+    } catch {
+      openAuthModal('signin');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
 
   // Contact form state
   const [fullName, setFullName] = useState('');
@@ -53,10 +68,16 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
 
       // Listen to user's existing inquiries
       try {
-        const q = query(collection(db, 'inquiries'), where('email', '==', currentUser.email));
-        const unsub = onSnapshot(q, (snapshot) => {
-          setUserInquiriesCount(snapshot.size);
-        });
+        const q = query(collection(db, 'inquiries'), where('userId', '==', currentUser.uid));
+        const unsub = onSnapshot(
+          q,
+          (snapshot) => {
+            setUserInquiriesCount(snapshot.size);
+          },
+          () => {
+            // gracefully ignore network hiccups
+          }
+        );
         return () => unsub();
       } catch {
         // fallback
@@ -138,27 +159,14 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
             {COMPANY_INFO.ctaSubline}
           </p>
 
-          {/* Client Portal Status Pill */}
+          {/* Account Status Pill */}
           <div className="mt-6 inline-flex items-center gap-3 p-1.5 px-4 rounded-full bg-slate-900/90 border border-white/10 text-xs backdrop-blur-md">
             {currentUser ? (
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                <button
-                  type="button"
-                  onClick={() => onOpenDashboard?.()}
-                  className="text-white font-medium hover:text-cyan-300 transition-colors text-left"
-                >
+                <span className="text-white font-medium">
                   Signed in as <span className="text-cyan-400 font-semibold">{currentUser.displayName || currentUser.email}</span>
-                </button>
-                {userInquiriesCount > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => onOpenDashboard?.()}
-                    className="font-mono text-[10px] text-cyan-300 bg-cyan-950 px-2 py-0.5 rounded border border-cyan-500/30 hover:bg-cyan-900 cursor-pointer"
-                  >
-                    {userInquiriesCount} Inquiries Saved
-                  </button>
-                )}
+                </span>
                 <button
                   type="button"
                   onClick={() => signOutUser()}
@@ -168,19 +176,30 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-2 text-slate-300">
+              <div className="flex flex-wrap items-center gap-2 text-slate-300">
                 <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Client Portal available for tracking technical inquiries</span>
+                <span>Account:</span>
                 <button
                   type="button"
-                  onClick={() => {
-                    if (onOpenDashboard) onOpenDashboard();
-                    else openAuthModal('signin');
-                  }}
-                  className="text-cyan-400 font-bold hover:text-cyan-300 ml-1 cursor-pointer flex items-center gap-1"
+                  onClick={handleGoogleAuth}
+                  disabled={googleLoading}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-900 text-xs font-bold shadow transition-all cursor-pointer disabled:opacity-50"
+                >
+                  <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.05h3.9c2.28-2.1 3.64-5.2 3.64-9.14z" />
+                    <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.9-3.05c-1.08.72-2.45 1.16-4.03 1.16-3.1 0-5.73-2.1-6.67-4.93H1.28v3.15C3.3 21.36 7.37 24 12 24z" />
+                    <path fill="#FBBC05" d="M5.33 14.27c-.24-.72-.38-1.49-.38-2.27s.14-1.55.38-2.27V6.58H1.28C.46 8.21 0 10.05 0 12s.46 3.79 1.28 5.42l4.05-3.15z" />
+                    <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.37 0 3.3 2.64 1.28 6.58l4.05 3.15c.94-2.83 3.57-4.98 6.67-4.98z" />
+                  </svg>
+                  <span>Google Sign In</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openAuthModal('signin')}
+                  className="text-cyan-400 font-bold hover:text-cyan-300 ml-1 cursor-pointer flex items-center gap-1 text-xs"
                 >
                   <LogIn className="w-3 h-3" />
-                  <span>Sign In</span>
+                  <span>Email Sign In</span>
                 </button>
               </div>
             )}

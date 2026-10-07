@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PORTFOLIO_PROJECTS, PROCESS_STEPS } from '../data/content';
-import { ArrowRight, ChevronRight, Terminal, Activity, Layers, Check } from 'lucide-react';
+import { ArrowRight, ChevronRight, Terminal, Layers, Check } from 'lucide-react';
 import { useFadeInOnScroll } from '../hooks/useFadeInOnScroll';
 import { InteractiveCard } from './InteractiveCard';
 

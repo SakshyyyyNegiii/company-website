@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 
 interface BrandLogoProps {
   size?: 'sm' | 'md' | 'lg';
@@ -11,6 +11,9 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   showSubtitle = true,
   className = '',
 }) => {
+  const uniqueId = useId();
+  const gradId = `bitsoGrad-${uniqueId.replace(/:/g, '')}`;
+
   const iconDimensions = {
     sm: 'w-8 h-8',
     md: 'w-10 h-10',
@@ -34,14 +37,10 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
           xmlns="http://www.w3.org/2000/svg"
         >
           <defs>
-            <linearGradient id="bitsoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#06b6d4" />
               <stop offset="50%" stopColor="#2563eb" />
               <stop offset="100%" stopColor="#10b981" />
-            </linearGradient>
-            <linearGradient id="glowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#38bdf8" />
-              <stop offset="100%" stopColor="#06b6d4" />
             </linearGradient>
           </defs>
 
@@ -53,7 +52,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
             height="88"
             rx="18"
             fill="#090d16"
-            stroke="url(#bitsoGrad)"
+            stroke={`url(#${gradId})`}
             strokeWidth="2"
             className="opacity-90"
           />
@@ -69,7 +68,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
           {/* Smooth dynamic circuit ribbon shaping the B curves */}
           <path
             d="M44 26 C66 26 78 34 78 45 C78 54 68 58 58 60 C74 61 80 72 78 81 C75 90 60 91 46 91"
-            stroke="url(#bitsoGrad)"
+            stroke={`url(#${gradId})`}
             strokeWidth="7"
             strokeLinecap="round"
             strokeLinejoin="round"

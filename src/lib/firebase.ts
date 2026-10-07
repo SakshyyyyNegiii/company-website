@@ -1,18 +1,6 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider } from 'firebase/auth';
-import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
-import firebaseConfig from '../../firebase-applet-config.json';
-
-// Initialize Firebase with provisioned applet configuration
-export const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = firebaseConfig.firestoreDatabaseId
-  ? getFirestore(app, firebaseConfig.firestoreDatabaseId)
-  : getFirestore(app);
-export const googleProvider = new GoogleAuthProvider();
-googleProvider.setCustomParameters({
-  prompt: 'select_account',
-});
+export { app, auth, db, googleProvider } from '../firebase';
+import { auth, db } from '../firebase';
+import { doc, getDocFromServer } from 'firebase/firestore';
 
 export enum OperationType {
   CREATE = 'create',

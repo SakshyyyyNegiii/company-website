@@ -1,10 +1,13 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
 import {
   User,
   onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
+  sendPasswordResetEmail,
   signOut,
   updateProfile,
 } from 'firebase/auth';
@@ -45,7 +48,7 @@ interface AuthContextType {
   forgotPassword: (email: string) => Promise<{ success: boolean; message: string; resetToken?: string; resetCode?: string }>;
   resetPassword: (email: string, newPassword: string, resetToken?: string, resetCode?: string) => Promise<{ success: boolean; message: string }>;
   updateUserProfile: (fullName: string, phone?: string) => Promise<{ success: boolean; message?: string }>;
-  signInWithGooglePopup: (preferredEmail?: string) => Promise<void>;
+  signInWithGooglePopup: (preferredEmail?: string) => Promise<{ success: boolean; message?: string }>;
   signInDemoClient: (customEmail?: string, customName?: string, customPhone?: string) => Promise<void>;
   signOutUser: () => Promise<void>;
   isAppointmentsDrawerOpen: boolean;
@@ -107,7 +110,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           setAppointmentsCount(snapshot.size);
         },
         () => {
-          // keep local count on failure
+          // keep local count on network failure
         }
       );
       return () => unsubscribe();
@@ -135,44 +138,97 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsAppointmentsDrawerOpen(false);
   };
 
-  // Sync user profile document in Firestore
-  const syncUserProfile = async (user: User, additionalData?: { phone?: string; displayName?: string }) => {
+  // Sync user profile document in Firestore:
+  // users
+  //   uid
+  //   name
+  //   email
+  //   photoURL
+  //   provider
+  //   createdAt
+  //   lastLoginAt
+  const syncUserProfile = async (
+    user: User,
+    additionalData?: { phone?: string; displayName?: string; provider?: string }
+  ): Promise<UserProfile> => {
     const userDocRef = doc(db, 'users', user.uid);
+    const resolvedName =
+      additionalData?.displayName ||
+      user.displayName ||
+      (user.email ? user.email.split('@')[0].replace(/[._-]/g, ' ') : 'User');
+
+    const isGoogle =
+      additionalData?.provider === 'google' ||
+      user.providerData?.some((p) => p.providerId === 'google.com');
+
+    const resolvedProvider = isGoogle
+      ? 'google'
+      : (additionalData?.provider ||
+        (user.providerData && user.providerData.length > 0 ? user.providerData[0].providerId : 'password'));
+
+    let profileData: UserProfile = {
+      uid: user.uid,
+      name: resolvedName,
+      email: user.email || '',
+      photoURL: user.photoURL || null,
+      provider: resolvedProvider,
+      createdAt: new Date().toISOString(),
+      lastLoginAt: new Date().toISOString(),
+      displayName: resolvedName,
+      phone: additionalData?.phone || user.phoneNumber || '',
+      role: 'user',
+    };
+
     try {
       const snap = await getDoc(userDocRef);
       if (!snap.exists()) {
-        const newProfile: UserProfile = {
+        const newRecord = {
           uid: user.uid,
+          name: resolvedName,
           email: user.email || '',
-          displayName: additionalData?.displayName || user.displayName || 'Client Partner',
-          photoURL: user.photoURL || undefined,
+          photoURL: user.photoURL || null,
+          provider: resolvedProvider,
+          createdAt: serverTimestamp(),
+          lastLoginAt: serverTimestamp(),
+          displayName: resolvedName,
           phone: additionalData?.phone || user.phoneNumber || '',
           role: 'client',
         };
-        await setDoc(userDocRef, {
-          ...newProfile,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        });
-        setUserProfile(newProfile);
+        await setDoc(userDocRef, newRecord);
+        profileData = { ...profileData, ...newRecord };
       } else {
-        const data = snap.data() as UserProfile;
-        if (user.photoURL && data.photoURL !== user.photoURL) {
-          await setDoc(userDocRef, { photoURL: user.photoURL, updatedAt: serverTimestamp() }, { merge: true });
-          data.photoURL = user.photoURL;
+        const existing = snap.data() as UserProfile;
+        const updates: Record<string, any> = {
+          lastLoginAt: serverTimestamp(),
+        };
+
+        if (user.photoURL && existing.photoURL !== user.photoURL) {
+          updates.photoURL = user.photoURL;
         }
-        setUserProfile(data);
+        if (resolvedName && !existing.name) {
+          updates.name = resolvedName;
+          updates.displayName = resolvedName;
+        }
+        if (additionalData?.phone && !existing.phone) {
+          updates.phone = additionalData.phone;
+        }
+
+        await setDoc(userDocRef, updates, { merge: true });
+        profileData = {
+          ...profileData,
+          ...existing,
+          ...updates,
+          name: existing.name || resolvedName,
+          displayName: existing.displayName || existing.name || resolvedName,
+        };
       }
+      setUserProfile(profileData);
+      return profileData;
     } catch (err) {
       handleFirestoreError(err, OperationType.WRITE, `users/${user.uid}`);
-      setUserProfile({
-        uid: user.uid,
-        email: user.email || '',
-        displayName: additionalData?.displayName || user.displayName || 'Client Partner',
-        photoURL: user.photoURL || undefined,
-        phone: additionalData?.phone || '',
-        role: 'client',
-      });
+      console.warn('[Auth Firestore Notice] Storing in-memory session profile:', err);
+      setUserProfile(profileData);
+      return profileData;
     }
   };
 
@@ -183,13 +239,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     fullName: string;
     phone?: string;
     role?: string;
+    photoURL?: string | null;
+    provider?: string;
   }) => {
     const mockUser: any = {
       uid: userObj.id,
       email: userObj.email,
       displayName: userObj.fullName,
       phoneNumber: userObj.phone || '+91 99903 66072',
-      photoURL: null,
+      photoURL: userObj.photoURL || null,
       emailVerified: true,
       isAnonymous: false,
     };
@@ -204,23 +262,42 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const profile: UserProfile = {
       uid: userObj.id,
+      name: userObj.fullName,
       email: userObj.email,
+      photoURL: userObj.photoURL || null,
+      provider: userObj.provider || 'password',
       displayName: userObj.fullName,
       phone: userObj.phone || '+91 99903 66072',
       role: userObj.role || 'client',
       createdAt: new Date().toISOString(),
+      lastLoginAt: new Date().toISOString(),
     };
     setUserProfile(profile);
   };
 
   // -------------------------------------------------------------
-  // Initial Boot: Validate backend token or local session
+  // Initial Boot: Validate backend token or local session & Redirect
   // -------------------------------------------------------------
   useEffect(() => {
     let isMounted = true;
 
     async function initAuth() {
-      // 1. If we have a backend JWT token, validate with GET /api/auth/me
+      // 1. Process Google OAuth redirect results if coming back from redirect
+      try {
+        const redirectRes = await getRedirectResult(auth);
+        if (redirectRes && redirectRes.user && isMounted) {
+          console.log('[Google Auth] Redirect sign-in successful:', redirectRes.user.email);
+          localStorage.removeItem(CLIENT_STORAGE_KEY);
+          setCurrentUser(redirectRes.user);
+          await syncUserProfile(redirectRes.user, { provider: 'google' });
+          setLoading(false);
+          return;
+        }
+      } catch (redirectErr: any) {
+        console.error('[Google Auth Redirect Result Error]', redirectErr?.code, redirectErr?.message);
+      }
+
+      // 2. If we have a backend JWT token, validate with GET /api/auth/me
       const storedToken = localStorage.getItem(TOKEN_STORAGE_KEY);
       if (storedToken) {
         try {
@@ -253,35 +330,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
       }
 
-      // 2. Check saved client profile cache
+      // 3. Clean up any legacy mock client credentials
       try {
-        const saved = localStorage.getItem(CLIENT_STORAGE_KEY);
-        if (saved && isMounted) {
-          const parsed = JSON.parse(saved);
-          setCurrentUser(parsed as User);
-          setUserProfile({
-            uid: parsed.uid,
-            email: parsed.email || '',
-            displayName: parsed.displayName || 'Client Partner',
-            phone: parsed.phoneNumber || '',
-            role: 'client',
-          });
-        }
+        localStorage.removeItem(CLIENT_STORAGE_KEY);
       } catch {
         // ignore
       }
 
-      // 3. Listen to Firebase auth state
+      // 4. Listen to Firebase auth state persistence
       const unsubscribe = onAuthStateChanged(auth, async (user) => {
         if (!isMounted) return;
         if (user) {
           setCurrentUser(user);
           await syncUserProfile(user);
         } else {
-          // If no Firebase user and no stored token/client, clear state
+          // If no Firebase user and no stored token, clear state
           const token = localStorage.getItem(TOKEN_STORAGE_KEY);
-          const saved = localStorage.getItem(CLIENT_STORAGE_KEY);
-          if (!token && !saved) {
+          if (!token) {
             setCurrentUser(null);
             setUserProfile(null);
           }
@@ -302,7 +367,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   // -------------------------------------------------------------
-  // 1. Sign In with Backend API (POST /api/auth/login)
+  // 1. Sign In with Email & Password
   // -------------------------------------------------------------
   const signInWithEmail = async (
     email: string,
@@ -311,75 +376,84 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   ): Promise<{ success: boolean; message?: string }> => {
     const cleanEmail = email.trim().toLowerCase();
 
-    // 1. Try Backend API
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: cleanEmail, password: pass, rememberMe }),
-      });
-
-      const data = await res.json();
-      if (res.ok && data.success) {
-        if (data.token) {
-          localStorage.setItem(TOKEN_STORAGE_KEY, data.token);
-          setAuthToken(data.token);
-        }
-
-        establishUserSession({
-          id: data.user.id,
-          email: data.user.email,
-          fullName: data.user.fullName,
-          phone: data.user.phone,
-          role: data.user.role,
-        });
-
-        // Sync with Firebase Auth in background if password matches
-        signInWithEmailAndPassword(auth, cleanEmail, pass).catch(() => {});
-
-        closeAuthModal();
-        return { success: true, message: data.message || 'Signed in successfully.' };
-      }
-    } catch (err: any) {
-      console.warn('[Auth] Server sign-in notice, checking client fallback:', err?.message);
-    }
-
-    // 2. Fallback: Firebase Auth directly
+    // 1. Authenticate with Firebase Authentication
     try {
       const userCredential = await signInWithEmailAndPassword(auth, cleanEmail, pass);
       localStorage.removeItem(CLIENT_STORAGE_KEY);
-      await syncUserProfile(userCredential.user);
-      closeAuthModal();
-      return { success: true };
-    } catch (fbErr: any) {
-      console.warn('[Auth] Firebase sign-in fallback notice:', fbErr?.code);
+      await syncUserProfile(userCredential.user, { provider: 'password' });
 
-      // Auto-register if not found or invalid credential
-      if (
-        fbErr?.code === 'auth/user-not-found' ||
-        fbErr?.code === 'auth/invalid-credential'
-      ) {
-        try {
-          const userCredential = await createUserWithEmailAndPassword(auth, cleanEmail, pass);
-          const name = cleanEmail.split('@')[0];
-          await updateProfile(userCredential.user, { displayName: name });
-          await syncUserProfile(userCredential.user, { displayName: name });
+      // Synchronize with backend in background
+      fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: cleanEmail, password: pass, rememberMe }),
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.token) {
+            localStorage.setItem(TOKEN_STORAGE_KEY, data.token);
+            setAuthToken(data.token);
+          }
+        })
+        .catch(() => {});
+
+      closeAuthModal();
+      return { success: true, message: 'Signed in successfully.' };
+    } catch (fbErr: any) {
+      console.error('[Auth Error] Firebase Email Sign-In Error:', fbErr?.code, fbErr);
+
+      // Try backend if account was registered via backend API
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: cleanEmail, password: pass, rememberMe }),
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          if (data.token) {
+            localStorage.setItem(TOKEN_STORAGE_KEY, data.token);
+            setAuthToken(data.token);
+          }
+          establishUserSession({
+            id: data.user.id,
+            email: data.user.email,
+            fullName: data.user.fullName,
+            phone: data.user.phone,
+            role: data.user.role,
+          });
           closeAuthModal();
-          return { success: true };
-        } catch {
-          // ignore
+          return { success: true, message: data.message || 'Signed in successfully.' };
         }
+      } catch {
+        // ignore
       }
 
-      // Seamless client session fallback
-      await signInDemoClient(cleanEmail, cleanEmail.split('@')[0], '+91 99903 66072');
-      closeAuthModal();
-      return { success: true };
+      let errorMsg = 'Authentication error. Please check your credentials.';
+      switch (fbErr?.code) {
+        case 'auth/invalid-credential':
+        case 'auth/wrong-password':
+          errorMsg = 'Incorrect email or password. Please verify your credentials or click "Forgot Password".';
+          break;
+        case 'auth/user-not-found':
+          errorMsg = 'No account found with this email. Please click "Sign Up" below.';
+          break;
+        case 'auth/invalid-email':
+          errorMsg = 'Please enter a valid email address.';
+          break;
+        case 'auth/too-many-requests':
+          errorMsg = 'Too many failed login attempts. Access is temporarily locked. Please reset your password or wait a few minutes.';
+          break;
+        default:
+          errorMsg = fbErr?.message || 'Sign in failed. Please check your credentials.';
+      }
+
+      throw new Error(errorMsg);
     }
   };
 
   // -------------------------------------------------------------
-  // 2. Sign Up with Backend API (POST /api/auth/signup)
+  // 2. Sign Up with Email & Password
   // -------------------------------------------------------------
   const signUpWithEmail = async (
     email: string,
@@ -390,81 +464,70 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   ): Promise<{ success: boolean; message?: string }> => {
     const cleanEmail = email.trim().toLowerCase();
     const cleanName = name.trim();
-    const cleanPhone = phone?.trim() || '+91 99903 66072';
+    const cleanPhone = phone?.trim() || '';
 
-    // 1. Try Backend API
+    if (confirmPass && pass !== confirmPass) {
+      throw new Error('Passwords do not match. Please verify both password fields.');
+    }
+
     try {
-      const res = await fetch('/api/auth/signup', {
+      const userCredential = await createUserWithEmailAndPassword(auth, cleanEmail, pass);
+      await updateProfile(userCredential.user, { displayName: cleanName });
+      localStorage.removeItem(CLIENT_STORAGE_KEY);
+
+      await syncUserProfile(userCredential.user, {
+        displayName: cleanName,
+        phone: cleanPhone,
+        provider: 'password',
+      });
+
+      // Synchronize with backend API
+      fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           fullName: cleanName,
           email: cleanEmail,
           password: pass,
-          confirmPassword: confirmPass || pass,
+          confirmPassword: pass,
           phone: cleanPhone,
         }),
-      });
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.token) {
+            localStorage.setItem(TOKEN_STORAGE_KEY, data.token);
+            setAuthToken(data.token);
+          }
+        })
+        .catch(() => {});
 
-      const data = await res.json();
-      if (res.ok && data.success) {
-        if (data.token) {
-          localStorage.setItem(TOKEN_STORAGE_KEY, data.token);
-          setAuthToken(data.token);
-        }
-
-        establishUserSession({
-          id: data.user.id,
-          email: data.user.email,
-          fullName: data.user.fullName,
-          phone: data.user.phone,
-          role: data.user.role,
-        });
-
-        // Mirror in Firebase in background
-        createUserWithEmailAndPassword(auth, cleanEmail, pass)
-          .then((cred) => {
-            updateProfile(cred.user, { displayName: cleanName });
-            syncUserProfile(cred.user, { displayName: cleanName, phone: cleanPhone });
-          })
-          .catch(() => {});
-
-        closeAuthModal();
-        return { success: true, message: data.message || 'Account created successfully.' };
-      }
-    } catch (err: any) {
-      console.warn('[Auth] Server signup notice, checking fallback:', err?.message);
-    }
-
-    // 2. Fallback: Firebase Auth directly
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, cleanEmail, pass);
-      await updateProfile(userCredential.user, { displayName: cleanName });
-      await syncUserProfile(userCredential.user, { displayName: cleanName, phone: cleanPhone });
       closeAuthModal();
-      return { success: true };
+      return { success: true, message: 'Account successfully created.' };
     } catch (fbErr: any) {
-      console.warn('[Auth] Firebase signup fallback notice:', fbErr?.code);
+      console.error('[Auth Error] Firebase Sign-Up Error:', fbErr?.code, fbErr);
 
-      if (fbErr?.code === 'auth/email-already-in-use') {
-        try {
-          const userCredential = await signInWithEmailAndPassword(auth, cleanEmail, pass);
-          await syncUserProfile(userCredential.user, { displayName: cleanName, phone: cleanPhone });
-          closeAuthModal();
-          return { success: true };
-        } catch {
-          // ignore
-        }
+      let errorMsg = 'Account creation could not be completed.';
+      switch (fbErr?.code) {
+        case 'auth/email-already-in-use':
+          errorMsg = 'An account with this email address already exists. Please sign in instead.';
+          break;
+        case 'auth/weak-password':
+          errorMsg = 'Password must be at least 6 characters in length.';
+          break;
+        case 'auth/invalid-email':
+          errorMsg = 'Please enter a valid email address.';
+          break;
+        default:
+          errorMsg = fbErr?.message || 'Failed to create account. Please try again.';
       }
 
-      await signInDemoClient(cleanEmail, cleanName, cleanPhone);
-      closeAuthModal();
-      return { success: true };
+      throw new Error(errorMsg);
     }
   };
 
   // -------------------------------------------------------------
-  // 3. Forgot Password (POST /api/auth/forgot-password)
+  // 3. Forgot Password (Dispatches Real Password Reset Email)
   // -------------------------------------------------------------
   const forgotPassword = async (
     email: string
@@ -472,37 +535,59 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const cleanEmail = email.trim().toLowerCase();
 
     try {
-      const res = await fetch('/api/auth/forgot-password', {
+      // Dispatch real password reset email via Firebase Auth
+      await sendPasswordResetEmail(auth, cleanEmail);
+      console.log('[Auth] Firebase password reset email sent to:', cleanEmail);
+
+      // Trigger backend endpoint for tracking
+      fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: cleanEmail }),
-      });
+      }).catch(() => {});
 
-      const data = await res.json();
-      if (res.ok && data.success) {
-        return {
-          success: true,
-          message: data.message || 'Password reset instructions dispatched.',
-          resetToken: data.resetToken,
-          resetCode: data.resetCode,
-        };
-      } else {
-        throw new Error(data.error || 'Failed to dispatch password reset request.');
-      }
-    } catch (err: any) {
-      // Local fallback for offline / preview
-      const demoCode = Math.floor(100000 + Math.random() * 900000).toString();
       return {
         success: true,
-        message: 'Password reset code generated.',
-        resetCode: demoCode,
-        resetToken: 'rst_' + Date.now().toString(36),
+        message: 'Password reset email sent! Please check your inbox (and spam folder) for instructions.',
       };
+    } catch (err: any) {
+      console.error('[Auth Error] Forgot Password Error:', err?.code, err);
+
+      if (err?.code === 'auth/user-not-found') {
+        return {
+          success: true,
+          message: 'If an account exists with this email, password reset instructions have been sent.',
+        };
+      } else if (err?.code === 'auth/invalid-email') {
+        throw new Error('Please enter a valid email address.');
+      }
+
+      // Backend fallback
+      try {
+        const res = await fetch('/api/auth/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: cleanEmail }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          return {
+            success: true,
+            message: data.message || 'Password reset link sent to your email.',
+            resetToken: data.resetToken,
+            resetCode: data.resetCode,
+          };
+        }
+      } catch {
+        // ignore
+      }
+
+      throw new Error(err?.message || 'Failed to dispatch password reset request.');
     }
   };
 
   // -------------------------------------------------------------
-  // 4. Reset Password (POST /api/auth/reset-password)
+  // 4. Reset Password
   // -------------------------------------------------------------
   const resetPassword = async (
     email: string,
@@ -528,24 +613,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (res.ok && data.success) {
         return {
           success: true,
-          message: data.message || 'Password reset successfully.',
+          message: data.message || 'Password reset successfully. Please sign in with your new password.',
         };
       } else {
         throw new Error(data.error || 'Failed to reset password.');
       }
     } catch (err: any) {
-      if (err.message && !err.message.includes('fetch')) {
-        throw err;
-      }
-      return {
-        success: true,
-        message: 'Password reset successfully. Please sign in with your new password.',
-      };
+      console.error('[Auth Error] Reset Password Error:', err);
+      throw new Error(err?.message || 'Password reset failed. Please request a new link.');
     }
   };
 
   // -------------------------------------------------------------
-  // 5. Update Profile (PUT /api/auth/profile)
+  // 5. Update Profile
   // -------------------------------------------------------------
   const updateUserProfile = async (
     fullName: string,
@@ -554,9 +634,34 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const cleanName = fullName.trim();
     const cleanPhone = phone ? phone.trim() : userProfile?.phone || '';
 
+    // Update in Firebase Auth if current user exists
+    if (currentUser) {
+      try {
+        await updateProfile(currentUser, { displayName: cleanName });
+      } catch (e) {
+        console.warn('[Auth] updateProfile notice:', e);
+      }
+
+      try {
+        const userDocRef = doc(db, 'users', currentUser.uid);
+        await setDoc(
+          userDocRef,
+          {
+            name: cleanName,
+            displayName: cleanName,
+            phone: cleanPhone,
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true }
+        );
+      } catch (e) {
+        console.warn('[Auth] Firestore user update notice:', e);
+      }
+    }
+
     if (authToken) {
       try {
-        const res = await fetch('/api/auth/profile', {
+        await fetch('/api/auth/profile', {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -564,29 +669,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           },
           body: JSON.stringify({ fullName: cleanName, phone: cleanPhone }),
         });
-
-        if (res.ok) {
-          const data = await res.json();
-          if (data.user) {
-            establishUserSession({
-              id: data.user.id,
-              email: data.user.email,
-              fullName: data.user.fullName,
-              phone: data.user.phone,
-              role: data.user.role,
-            });
-            return { success: true, message: 'Profile updated successfully.' };
-          }
-        }
       } catch (err) {
         console.warn('[Auth] Server profile update notice:', err);
       }
     }
 
-    // Local profile update
     if (userProfile) {
       const updated: UserProfile = {
         ...userProfile,
+        name: cleanName,
         displayName: cleanName,
         phone: cleanPhone,
       };
@@ -607,54 +698,109 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return { success: true, message: 'Profile updated successfully.' };
   };
 
+  // Google Sign In concurrency guard
+  const isGoogleAuthInProgressRef = useRef(false);
+
   // -------------------------------------------------------------
-  // 6. Sign In with Google Popup (Seamless Client Fallback)
+  // 6. Sign In with Google (Popup with Redirect Fallback)
   // -------------------------------------------------------------
-  const signInWithGooglePopup = async (preferredEmail?: string) => {
+  const signInWithGooglePopup = async (): Promise<{ success: boolean; message?: string }> => {
+    if (isGoogleAuthInProgressRef.current) {
+      return { success: false, message: 'Google sign-in is already in progress.' };
+    }
+
+    isGoogleAuthInProgressRef.current = true;
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      localStorage.removeItem(CLIENT_STORAGE_KEY);
-      await syncUserProfile(result.user);
-      closeAuthModal();
-      return;
+      let result;
+      try {
+        result = await signInWithPopup(auth, googleProvider);
+      } catch (popupErr: any) {
+        // If popup was closed or cancelled, handle cleanly without error logging
+        if (
+          popupErr?.code === 'auth/cancelled-popup-request' ||
+          popupErr?.code === 'auth/popup-closed-by-user'
+        ) {
+          return { success: false, message: 'Sign-in was cancelled.' };
+        }
+
+        // If popup was blocked by browser or restricted environment, try redirect
+        if (popupErr?.code === 'auth/popup-blocked') {
+          try {
+            await signInWithRedirect(auth, googleProvider);
+            return { success: true, message: 'Redirecting to Google Sign-In...' };
+          } catch {
+            return {
+              success: false,
+              message: 'Google Sign-In popup was blocked by your browser. Please allow popups.',
+            };
+          }
+        }
+        throw popupErr;
+      }
+
+      if (result && result.user) {
+        try {
+          localStorage.removeItem(CLIENT_STORAGE_KEY);
+        } catch {
+          // ignore
+        }
+        await syncUserProfile(result.user, { provider: 'google' });
+        closeAuthModal();
+        return { success: true, message: 'Google sign-in successful.' };
+      }
+
+      return { success: false, message: 'Google sign-in could not retrieve user credentials.' };
     } catch (err: any) {
-      console.warn('[Auth] Google popup notice:', err?.code, err?.message);
+      // Normal user cancellations
+      if (
+        err?.code === 'auth/cancelled-popup-request' ||
+        err?.code === 'auth/popup-closed-by-user'
+      ) {
+        return { success: false, message: 'Sign-in was cancelled.' };
+      }
 
-      const targetEmail = preferredEmail?.trim() || 'client.partner@bitsoinnovations.com';
-      const targetName =
-        targetEmail === 'client.partner@bitsoinnovations.com'
-          ? 'Client Partner'
-          : targetEmail
-              .split('@')[0]
-              .replace(/[._-]/g, ' ')
-              .replace(/\b\w/g, (c) => c.toUpperCase());
+      let friendlyMessage = 'Google sign-in failed. Please try again.';
+      switch (err?.code) {
+        case 'auth/popup-blocked':
+          friendlyMessage =
+            'Google Sign-In popup was blocked by your browser. Please allow popups for this site.';
+          break;
+        case 'auth/unauthorized-domain':
+          friendlyMessage =
+            'This domain is not authorized in Firebase. Please add this domain to Firebase Console > Authentication > Settings > Authorized Domains.';
+          break;
+        case 'auth/account-exists-with-different-credential':
+          friendlyMessage =
+            'An account already exists with this email using a different sign-in method. Please sign in with email/password.';
+          break;
+        case 'auth/network-request-failed':
+          friendlyMessage = 'Network connection failed during sign in. Please verify your internet connection.';
+          break;
+        case 'auth/operation-not-allowed':
+          friendlyMessage =
+            'Google Sign-In is not enabled in Firebase Console. Please enable Google in Firebase Console > Authentication > Sign-in method.';
+          break;
+        case 'auth/api-key-not-valid.-please-pass-a-valid-api-key.':
+        case 'auth/invalid-api-key':
+          friendlyMessage =
+            'Firebase authentication is syncing credentials. Please refresh the page or try again.';
+          break;
+        default:
+          friendlyMessage = err?.message || 'Google sign-in failed. Please try again.';
+      }
 
-      await signInDemoClient(targetEmail, targetName, '+91 99903 66072');
-      closeAuthModal();
+      return { success: false, message: friendlyMessage };
+    } finally {
+      isGoogleAuthInProgressRef.current = false;
     }
   };
 
   // -------------------------------------------------------------
-  // 7. Instant 1-Click Client Access
+  // 7. Demo Client Access (Disabled per user request)
   // -------------------------------------------------------------
-  const signInDemoClient = async (
-    customEmail = 'client.partner@bitsoinnovations.com',
-    customName = 'Client Partner',
-    customPhone = '+91 99903 66072'
-  ) => {
-    const fallbackUid = 'client_' + Math.abs(
-      customEmail.split('').reduce((acc, char) => ((acc << 5) - acc) + char.charCodeAt(0), 0)
-    ).toString(36);
-
-    establishUserSession({
-      id: fallbackUid,
-      email: customEmail,
-      fullName: customName,
-      phone: customPhone,
-      role: 'client',
-    });
-
-    closeAuthModal();
+  const signInDemoClient = async () => {
+    // Demo client access removed: only real user authentication is enabled
+    openAuthModal('signin');
   };
 
   // -------------------------------------------------------------

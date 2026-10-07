@@ -11,19 +11,35 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // User profiles collection
+    // User profiles collection: a user can only read and write their own private document
     match /users/{userId} {
-      allow read, write: if true;
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Appointments collection: Bookings by authenticated users or enterprise prospects
+    // Appointments collection: public creation allowed, read/update restricted to owner
     match /appointments/{appointmentId} {
-      allow read, write: if true;
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        (request.auth.token.email != null && resource.data.userEmail == request.auth.token.email)
+      );
+      allow create: if true;
+      allow update, delete: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        (request.auth.token.email != null && resource.data.userEmail == request.auth.token.email)
+      );
     }
 
     // Direct enterprise inquiries & audit requests
     match /inquiries/{inquiryId} {
-      allow read, write: if true;
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        (request.auth.token.email != null && resource.data.email == request.auth.token.email)
+      );
+      allow create: if true;
+      allow update, delete: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        (request.auth.token.email != null && resource.data.email == request.auth.token.email)
+      );
     }
 
     // Connection test document

@@ -40,6 +40,8 @@ export const CustomCursor: React.FC = () => {
   const isLoopRunning = useRef(false);
   const rafId = useRef<number | null>(null);
 
+  const isVisibleRef = useRef(false);
+
   // Check touch / pointer capability & reduced motion
   useEffect(() => {
     const isTouch =
@@ -167,7 +169,7 @@ export const CustomCursor: React.FC = () => {
       }
 
       // Keep running if there are active particles or cursor is on screen
-      if (particles.length > 0 || isVisible) {
+      if (particles.length > 0 || isVisibleRef.current) {
         rafId.current = requestAnimationFrame(animate);
       } else {
         isLoopRunning.current = false;
@@ -184,7 +186,8 @@ export const CustomCursor: React.FC = () => {
     const handleMouseMove = (e: MouseEvent) => {
       const { clientX: x, clientY: y } = e;
 
-      if (!isVisible) {
+      if (!isVisibleRef.current) {
+        isVisibleRef.current = true;
         setIsVisible(true);
         ringPos.current = { x, y };
         lastSpawnPos.current = { x, y };
@@ -246,6 +249,7 @@ export const CustomCursor: React.FC = () => {
     };
 
     const handleMouseLeave = () => {
+      isVisibleRef.current = false;
       setIsVisible(false);
     };
 
@@ -262,7 +266,7 @@ export const CustomCursor: React.FC = () => {
       document.documentElement.removeEventListener('mouseleave', handleMouseLeave);
       if (rafId.current) cancelAnimationFrame(rafId.current);
     };
-  }, [isTouchDevice, isVisible]);
+  }, [isTouchDevice]);
 
   // Completely disabled on mobile/touch screens
   if (isTouchDevice) return null;

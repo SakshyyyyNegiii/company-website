@@ -1,28 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth, AuthModalMode } from '../context/AuthContext';
+import { signUpSchema } from '../lib/schemas';
 import {
   X,
   LogIn,
   UserPlus,
-  ShieldCheck,
   Zap,
   ArrowRight,
   Eye,
   EyeOff,
   KeyRound,
   CheckCircle2,
-  Mail,
   User,
-  Phone,
   AlertCircle,
   RefreshCw,
 } from 'lucide-react';
 
 interface ClientAuthModalProps {
-  onOpenDashboard?: () => void;
+  // Clean modal with authentication only
 }
 
-export const ClientAuthModal: React.FC<ClientAuthModalProps> = ({ onOpenDashboard }) => {
+export const ClientAuthModal: React.FC<ClientAuthModalProps> = () => {
   const {
     isAuthModalOpen,
     authModalMode,
@@ -37,7 +35,6 @@ export const ClientAuthModal: React.FC<ClientAuthModalProps> = ({ onOpenDashboar
     resetPassword,
     updateUserProfile,
     signInWithGooglePopup,
-    signInDemoClient,
     signOutUser,
   } = useAuth();
 
@@ -61,11 +58,13 @@ export const ClientAuthModal: React.FC<ClientAuthModalProps> = ({ onOpenDashboar
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // Reset form inputs on mode change
   useEffect(() => {
     setErrorMsg('');
     setSuccessMsg('');
+    setFieldErrors({});
     setShowPassword(false);
     setShowConfirmPassword(false);
 
@@ -76,6 +75,13 @@ export const ClientAuthModal: React.FC<ClientAuthModalProps> = ({ onOpenDashboar
   }, [authModalMode, userProfile]);
 
   if (!isAuthModalOpen) return null;
+
+  // Live password complexity criteria for sign-up
+  const passwordCriteria = {
+    minLength: password.length >= 8,
+    hasNumber: /[0-9]/.test(password),
+    hasSpecial: /[^A-Za-z0-9]/.test(password),
+  };
 
   // -------------------------------------------------------------
   // Form Submission Handlers
@@ -110,7 +116,6 @@ export const ClientAuthModal: React.FC<ClientAuthModalProps> = ({ onOpenDashboar
       setSuccessMsg(res?.message || 'Signed in successfully.');
       setTimeout(() => {
         closeAuthModal();
-        onOpenDashboard?.();
       }, 500);
     } catch (err: any) {
       setErrorMsg(err.message || 'Authentication error. Please check your credentials.');
@@ -122,31 +127,26 @@ export const ClientAuthModal: React.FC<ClientAuthModalProps> = ({ onOpenDashboar
   // 2. Sign Up
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    const cleanName = fullName.trim();
-    const cleanEmail = email.trim();
+    setFieldErrors({});
 
-    if (!cleanName) {
-      setErrorMsg('Please enter your full name.');
-      return;
-    }
+    const parseResult = signUpSchema.safeParse({
+      fullName: fullName.trim(),
+      email: email.trim(),
+      phoneNumber: phoneNumber.trim() || undefined,
+      password,
+      confirmPassword,
+    });
 
-    if (!cleanEmail) {
-      setErrorMsg('Please enter your email address.');
-      return;
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(cleanEmail)) {
-      setErrorMsg('Please enter a valid email format.');
-      return;
-    }
-
-    if (!password || password.length < 6) {
-      setErrorMsg('Password must be at least 6 characters in length.');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setErrorMsg('Passwords do not match. Please verify both password fields.');
+    if (!parseResult.success) {
+      const errMap: Record<string, string> = {};
+      parseResult.error.issues.forEach((err) => {
+        const fieldName = err.path[0] as string;
+        if (fieldName && !errMap[fieldName]) {
+          errMap[fieldName] = err.message;
+        }
+      });
+      setFieldErrors(errMap);
+      setErrorMsg(parseResult.error.issues[0]?.message || 'Please meet all sign-up requirements.');
       return;
     }
 
@@ -155,17 +155,17 @@ export const ClientAuthModal: React.FC<ClientAuthModalProps> = ({ onOpenDashboar
     setSuccessMsg('');
 
     try {
+      const validated = parseResult.data;
       const res = await signUpWithEmail(
-        cleanEmail,
-        password,
-        cleanName,
-        phoneNumber.trim() || undefined,
-        confirmPassword
+        validated.email,
+        validated.password,
+        validated.fullName,
+        validated.phoneNumber,
+        validated.confirmPassword
       );
       setSuccessMsg(res?.message || 'Account successfully created.');
       setTimeout(() => {
         closeAuthModal();
-        onOpenDashboard?.();
       }, 500);
     } catch (err: any) {
       setErrorMsg(err.message || 'Account creation could not be completed.');
@@ -194,11 +194,14 @@ export const ClientAuthModal: React.FC<ClientAuthModalProps> = ({ onOpenDashboar
       if (res.resetToken) setResetToken(res.resetToken);
       if (res.resetCode) setResetCode(res.resetCode);
 
-      // Transition to reset password view
-      setTimeout(() => {
-        openAuthModal('reset');
-      }, 1200);
+      // Transition to reset password view if token was returned
+      if (res.resetToken || res.resetCode) {
+        setTimeout(() => {
+          openAuthModal('reset');
+        }, 1500);
+      }
     } catch (err: any) {
+      console.error('[Forgot Password Error]', err);
       setErrorMsg(err.message || 'Could not process password reset request.');
     } finally {
       setLoading(false);
@@ -231,6 +234,7 @@ export const ClientAuthModal: React.FC<ClientAuthModalProps> = ({ onOpenDashboar
         openAuthModal('signin', 'Password updated! Please sign in with your new credentials.');
       }, 1200);
     } catch (err: any) {
+      console.error('[Reset Password Error]', err);
       setErrorMsg(err.message || 'Password reset failed. Please request a new link.');
     } finally {
       setLoading(false);
@@ -257,35 +261,23 @@ export const ClientAuthModal: React.FC<ClientAuthModalProps> = ({ onOpenDashboar
     }
   };
 
-  // Instant Demo Sign In
-  const handleInstantDemo = async () => {
-    setLoading(true);
-    setErrorMsg('');
-    try {
-      await signInDemoClient(
-        email.trim() || 'client.partner@bitsoinnovations.com',
-        fullName.trim() || 'Client Partner',
-        phoneNumber.trim() || '+91 99903 66072'
-      );
-      closeAuthModal();
-      onOpenDashboard?.();
-    } catch (err: any) {
-      setErrorMsg(err?.message || 'Could not initialize client session.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // Google Sign In
   const handleGoogleSignIn = async () => {
     setLoading(true);
     setErrorMsg('');
     try {
-      await signInWithGooglePopup(email.trim() || undefined);
-      closeAuthModal();
-      onOpenDashboard?.();
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Google sign-in could not be completed.');
+      const res = await signInWithGooglePopup(email.trim() || undefined);
+      if (res?.message && res.message.includes('Redirecting')) {
+        setSuccessMsg('Redirecting to Google Sign-In...');
+        return;
+      }
+      if (res?.success) {
+        closeAuthModal();
+      } else if (res?.message && !res.message.includes('cancelled') && !res.message.includes('already in progress')) {
+        setErrorMsg(res.message);
+      }
+    } catch {
+      // Graceful fallback
     } finally {
       setLoading(false);
     }
@@ -356,25 +348,14 @@ export const ClientAuthModal: React.FC<ClientAuthModalProps> = ({ onOpenDashboar
         {/* ----------------------------------------------------------- */}
         {authModalMode === 'signin' && (
           <>
-            {/* Quick 1-Click Client Access */}
-            <button
-              type="button"
-              onClick={handleInstantDemo}
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs sm:text-sm shadow-lg shadow-cyan-500/25 transition-all cursor-pointer disabled:opacity-50 mb-3"
-            >
-              <Zap className="w-4 h-4 text-slate-950" />
-              <span>1-Click Instant Client Access</span>
-            </button>
-
             {/* Google Sign In */}
             <button
               type="button"
               onClick={handleGoogleSignIn}
               disabled={loading}
-              className="w-full flex items-center justify-center gap-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-white/10 text-white font-medium text-xs shadow-md transition-all cursor-pointer disabled:opacity-50 mb-4"
+              className="w-full flex items-center justify-center gap-3 py-3 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs sm:text-sm shadow-md transition-all cursor-pointer disabled:opacity-50 mb-4 border border-slate-200"
             >
-              <svg className="w-4 h-4" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                 <path
                   fill="#4285F4"
                   d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.05h3.9c2.28-2.1 3.64-5.2 3.64-9.14z"
@@ -494,7 +475,42 @@ export const ClientAuthModal: React.FC<ClientAuthModalProps> = ({ onOpenDashboar
         {/* VIEW 2: SIGN UP                                             */}
         {/* ----------------------------------------------------------- */}
         {authModalMode === 'signup' && (
-          <form onSubmit={handleSignUp} className="space-y-3.5">
+          <>
+            {/* Google Sign In / Sign Up */}
+            <button
+              type="button"
+              onClick={handleGoogleSignIn}
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-3 py-3 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs sm:text-sm shadow-md transition-all cursor-pointer disabled:opacity-50 mb-3 border border-slate-200"
+            >
+              <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                <path
+                  fill="#4285F4"
+                  d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.05h3.9c2.28-2.1 3.64-5.2 3.64-9.14z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.9-3.05c-1.08.72-2.45 1.16-4.03 1.16-3.1 0-5.73-2.1-6.67-4.93H1.28v3.15C3.3 21.36 7.37 24 12 24z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.33 14.27c-.24-.72-.38-1.49-.38-2.27s.14-1.55.38-2.27V6.58H1.28C.46 8.21 0 10.05 0 12s.46 3.79 1.28 5.42l4.05-3.15z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.37 0 3.3 2.64 1.28 6.58l4.05 3.15c.94-2.83 3.57-4.98 6.67-4.98z"
+                />
+              </svg>
+              <span>Continue with Google</span>
+            </button>
+
+            <div className="flex items-center gap-3 my-3">
+              <div className="flex-grow h-px bg-white/10" />
+              <span className="text-[10px] font-mono text-slate-500 uppercase">OR REGISTER WITH EMAIL</span>
+              <div className="flex-grow h-px bg-white/10" />
+            </div>
+
+            <form onSubmit={handleSignUp} className="space-y-3.5">
             <div>
               <label className="block text-[11px] font-mono text-slate-400 mb-1">
                 Full Name
@@ -503,10 +519,21 @@ export const ClientAuthModal: React.FC<ClientAuthModalProps> = ({ onOpenDashboar
                 type="text"
                 required
                 value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                onChange={(e) => {
+                  setFullName(e.target.value);
+                  if (fieldErrors.fullName) setFieldErrors((prev) => ({ ...prev, fullName: '' }));
+                }}
                 placeholder="e.g. Vikram Singhania"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-400 placeholder:text-slate-600"
+                className={`w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border ${
+                  fieldErrors.fullName ? 'border-rose-500/70 focus:border-rose-400' : 'border-white/10 focus:border-cyan-400'
+                } text-white text-xs focus:outline-none placeholder:text-slate-600 transition-colors`}
               />
+              {fieldErrors.fullName && (
+                <p className="text-[11px] text-rose-400 mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3 shrink-0" />
+                  <span>{fieldErrors.fullName}</span>
+                </p>
+              )}
             </div>
 
             <div>
@@ -517,10 +544,21 @@ export const ClientAuthModal: React.FC<ClientAuthModalProps> = ({ onOpenDashboar
                 type="email"
                 required
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: '' }));
+                }}
                 placeholder="name@company.com"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-400 placeholder:text-slate-600"
+                className={`w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border ${
+                  fieldErrors.email ? 'border-rose-500/70 focus:border-rose-400' : 'border-white/10 focus:border-cyan-400'
+                } text-white text-xs focus:outline-none placeholder:text-slate-600 transition-colors`}
               />
+              {fieldErrors.email && (
+                <p className="text-[11px] text-rose-400 mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3 shrink-0" />
+                  <span>{fieldErrors.email}</span>
+                </p>
+              )}
             </div>
 
             <div>
@@ -544,11 +582,15 @@ export const ClientAuthModal: React.FC<ClientAuthModalProps> = ({ onOpenDashboar
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
-                  minLength={6}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="At least 6 characters"
-                  className="w-full px-3.5 py-2.5 pr-10 rounded-xl bg-slate-950 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-400 placeholder:text-slate-600"
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: '' }));
+                  }}
+                  placeholder="Minimum 8 characters"
+                  className={`w-full px-3.5 py-2.5 pr-10 rounded-xl bg-slate-950 border ${
+                    fieldErrors.password ? 'border-rose-500/70 focus:border-rose-400' : 'border-white/10 focus:border-cyan-400'
+                  } text-white text-xs focus:outline-none placeholder:text-slate-600 transition-colors`}
                 />
                 <button
                   type="button"
@@ -559,6 +601,46 @@ export const ClientAuthModal: React.FC<ClientAuthModalProps> = ({ onOpenDashboar
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+
+              {/* Live Password Complexity Checklist */}
+              <div className="p-2.5 rounded-xl bg-slate-950/70 border border-white/10 space-y-1.5 mt-2">
+                <p className="text-[10px] font-mono uppercase tracking-wider text-slate-400">
+                  Password Complexity:
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 text-[10px]">
+                  <div
+                    className={`flex items-center gap-1.5 transition-colors ${
+                      passwordCriteria.minLength ? 'text-emerald-400 font-medium' : 'text-slate-500'
+                    }`}
+                  >
+                    <CheckCircle2 className={`w-3.5 h-3.5 shrink-0 ${passwordCriteria.minLength ? 'text-emerald-400' : 'text-slate-600'}`} />
+                    <span>8+ characters</span>
+                  </div>
+                  <div
+                    className={`flex items-center gap-1.5 transition-colors ${
+                      passwordCriteria.hasNumber ? 'text-emerald-400 font-medium' : 'text-slate-500'
+                    }`}
+                  >
+                    <CheckCircle2 className={`w-3.5 h-3.5 shrink-0 ${passwordCriteria.hasNumber ? 'text-emerald-400' : 'text-slate-600'}`} />
+                    <span>1+ number</span>
+                  </div>
+                  <div
+                    className={`flex items-center gap-1.5 transition-colors ${
+                      passwordCriteria.hasSpecial ? 'text-emerald-400 font-medium' : 'text-slate-500'
+                    }`}
+                  >
+                    <CheckCircle2 className={`w-3.5 h-3.5 shrink-0 ${passwordCriteria.hasSpecial ? 'text-emerald-400' : 'text-slate-600'}`} />
+                    <span>1+ special char</span>
+                  </div>
+                </div>
+              </div>
+
+              {fieldErrors.password && (
+                <p className="text-[11px] text-rose-400 mt-1.5 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3 shrink-0" />
+                  <span>{fieldErrors.password}</span>
+                </p>
+              )}
             </div>
 
             <div>
@@ -569,11 +651,15 @@ export const ClientAuthModal: React.FC<ClientAuthModalProps> = ({ onOpenDashboar
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
                   required
-                  minLength={6}
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value);
+                    if (fieldErrors.confirmPassword) setFieldErrors((prev) => ({ ...prev, confirmPassword: '' }));
+                  }}
                   placeholder="Re-enter password"
-                  className="w-full px-3.5 py-2.5 pr-10 rounded-xl bg-slate-950 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-400 placeholder:text-slate-600"
+                  className={`w-full px-3.5 py-2.5 pr-10 rounded-xl bg-slate-950 border ${
+                    fieldErrors.confirmPassword ? 'border-rose-500/70 focus:border-rose-400' : 'border-white/10 focus:border-cyan-400'
+                  } text-white text-xs focus:outline-none placeholder:text-slate-600 transition-colors`}
                 />
                 <button
                   type="button"
@@ -584,6 +670,12 @@ export const ClientAuthModal: React.FC<ClientAuthModalProps> = ({ onOpenDashboar
                   {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+              {fieldErrors.confirmPassword && (
+                <p className="text-[11px] text-rose-400 mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3 shrink-0" />
+                  <span>{fieldErrors.confirmPassword}</span>
+                </p>
+              )}
             </div>
 
             <button
@@ -612,9 +704,10 @@ export const ClientAuthModal: React.FC<ClientAuthModalProps> = ({ onOpenDashboar
               </button>
             </div>
           </form>
-        )}
+        </>
+      )}
 
-        {/* ----------------------------------------------------------- */}
+      {/* ----------------------------------------------------------- */}
         {/* VIEW 3: FORGOT PASSWORD                                     */}
         {/* ----------------------------------------------------------- */}
         {authModalMode === 'forgot' && (
@@ -652,6 +745,29 @@ export const ClientAuthModal: React.FC<ClientAuthModalProps> = ({ onOpenDashboar
                 className="text-xs text-slate-400 hover:text-white transition-colors cursor-pointer"
               >
                 ← Back to Sign In
+              </button>
+            </div>
+
+            <div className="pt-2">
+              <div className="flex items-center gap-3 my-2">
+                <div className="flex-grow h-px bg-white/10" />
+                <span className="text-[10px] font-mono text-slate-500 uppercase">OR</span>
+                <div className="flex-grow h-px bg-white/10" />
+              </div>
+
+              <button
+                type="button"
+                onClick={handleGoogleSignIn}
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-2.5 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs shadow-md transition-all cursor-pointer disabled:opacity-50 border border-slate-200"
+              >
+                <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.05h3.9c2.28-2.1 3.64-5.2 3.64-9.14z" />
+                  <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.9-3.05c-1.08.72-2.45 1.16-4.03 1.16-3.1 0-5.73-2.1-6.67-4.93H1.28v3.15C3.3 21.36 7.37 24 12 24z" />
+                  <path fill="#FBBC05" d="M5.33 14.27c-.24-.72-.38-1.49-.38-2.27s.14-1.55.38-2.27V6.58H1.28C.46 8.21 0 10.05 0 12s.46 3.79 1.28 5.42l4.05-3.15z" />
+                  <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.37 0 3.3 2.64 1.28 6.58l4.05 3.15c.94-2.83 3.57-4.98 6.67-4.98z" />
+                </svg>
+                <span>Continue with Google</span>
               </button>
             </div>
           </form>
@@ -740,9 +856,9 @@ export const ClientAuthModal: React.FC<ClientAuthModalProps> = ({ onOpenDashboar
           <form onSubmit={handleUpdateProfile} className="space-y-4">
             <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-white/10 space-y-2">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400">Account Role</span>
+                <span className="text-slate-400">Account Status</span>
                 <span className="font-mono text-cyan-400 uppercase font-semibold">
-                  {userProfile?.role || 'Verified Client'}
+                  Active
                 </span>
               </div>
               <div className="flex items-center justify-between text-xs">
@@ -778,25 +894,34 @@ export const ClientAuthModal: React.FC<ClientAuthModalProps> = ({ onOpenDashboar
               />
             </div>
 
-            <div className="flex items-center gap-3 pt-2">
+            <div className="pt-2">
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition-all cursor-pointer"
+                className="w-full py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition-all cursor-pointer"
               >
                 {loading ? 'Saving...' : 'Save Profile'}
               </button>
-              <button
-                type="button"
-                onClick={() => {
-                  closeAuthModal();
-                  onOpenDashboard?.();
-                }}
-                className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-medium text-xs transition-all cursor-pointer"
-              >
-                Open Dashboard
-              </button>
             </div>
+
+            {userProfile?.provider !== 'google' && (
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={handleGoogleSignIn}
+                  disabled={loading}
+                  className="w-full flex items-center justify-center gap-2.5 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs shadow-md transition-all cursor-pointer disabled:opacity-50 border border-slate-200"
+                >
+                  <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.05h3.9c2.28-2.1 3.64-5.2 3.64-9.14z" />
+                    <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.9-3.05c-1.08.72-2.45 1.16-4.03 1.16-3.1 0-5.73-2.1-6.67-4.93H1.28v3.15C3.3 21.36 7.37 24 12 24z" />
+                    <path fill="#FBBC05" d="M5.33 14.27c-.24-.72-.38-1.49-.38-2.27s.14-1.55.38-2.27V6.58H1.28C.46 8.21 0 10.05 0 12s.46 3.79 1.28 5.42l4.05-3.15z" />
+                    <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.37 0 3.3 2.64 1.28 6.58l4.05 3.15c.94-2.83 3.57-4.98 6.67-4.98z" />
+                  </svg>
+                  <span>Connect or Sign In with Google</span>
+                </button>
+              </div>
+            )}
 
             <div className="pt-3 border-t border-white/10 flex justify-between items-center text-xs">
               <button

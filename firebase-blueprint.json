@@ -5,24 +5,36 @@
       "description": "Registered user profile details",
       "type": "object",
       "properties": {
-        "userId": {
+        "uid": {
           "type": "string",
           "description": "Firebase Auth UID"
+        },
+        "name": {
+          "type": "string",
+          "description": "User full name"
         },
         "email": {
           "type": "string",
           "description": "User email address"
         },
-        "displayName": {
+        "photoURL": {
           "type": "string",
-          "description": "User full name"
+          "description": "User avatar / photo URL if available"
+        },
+        "provider": {
+          "type": "string",
+          "description": "Authentication provider (e.g. google.com, password)"
         },
         "createdAt": {
           "type": "string",
           "description": "Account registration timestamp"
+        },
+        "lastLoginAt": {
+          "type": "string",
+          "description": "Last sign in timestamp"
         }
       },
-      "required": ["userId", "email"]
+      "required": ["uid", "name", "email", "provider"]
     },
     "Appointment": {
       "title": "Appointment",

@@ -8,7 +8,6 @@ import { ContactSection } from './components/ContactSection';
 import { Footer } from './components/Footer';
 import { ProjectModal } from './components/ProjectModal';
 import { ClientAuthModal } from './components/ClientAuthModal';
-import { ClientDashboardDrawer } from './components/ClientDashboardDrawer';
 import { ScrollProgressBar } from './components/ScrollProgressBar';
 import { CustomCursor } from './components/CustomCursor';
 import { SectionId } from './types';
@@ -18,7 +17,6 @@ import { COMPANY_INFO } from './data/content';
 export default function App() {
   const [activeSection, setActiveSection] = useState<SectionId>('home');
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
-  const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<string>('Web Development');
 
   // Smooth scroll to target section
@@ -87,7 +85,6 @@ export default function App() {
         activeSection={activeSection}
         onNavigate={scrollToSection}
         onStartProject={() => handleOpenProjectModal()}
-        onOpenDashboard={() => setIsDashboardOpen(true)}
       />
 
       {/* Main Content Sections */}
@@ -116,7 +113,6 @@ export default function App() {
         {/* Section 4: Final CTA + Contact */}
         <ContactSection
           initialService={selectedService}
-          onOpenDashboard={() => setIsDashboardOpen(true)}
         />
       </main>
 
@@ -130,14 +126,8 @@ export default function App() {
         preSelectedService={selectedService}
       />
 
-      {/* Client Portal Authentication Modal */}
-      <ClientAuthModal onOpenDashboard={() => setIsDashboardOpen(true)} />
-
-      {/* Client Dashboard / Firestore Persistence Drawer */}
-      <ClientDashboardDrawer
-        isOpen={isDashboardOpen}
-        onClose={() => setIsDashboardOpen(false)}
-      />
+      {/* Authentication Modal */}
+      <ClientAuthModal />
 
       {/* Floating Direct WhatsApp Action */}
       <aside

@@ -133,10 +133,24 @@ authRouter.post('/signup', async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: 'Please enter a valid email address.' });
     }
 
-    if (!password || typeof password !== 'string' || password.length < 6) {
+    if (!password || typeof password !== 'string' || password.length < 8) {
       return res.status(400).json({
         success: false,
-        error: 'Password must be at least 6 characters in length.',
+        error: 'Password must be at least 8 characters in length.',
+      });
+    }
+
+    if (!/[0-9]/.test(password)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Password must contain at least one number (0-9).',
+      });
+    }
+
+    if (!/[^A-Za-z0-9]/.test(password)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Password must contain at least one special character (e.g. !@#$%^&*).',
       });
     }
 
