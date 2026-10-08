@@ -67,7 +67,7 @@ app.get('/api/health', (req: Request, res: Response) => {
     environment: process.env.NODE_ENV || 'development',
     database: {
       firestoreConfigured: true,
-      databaseId: 'ai-studio-bitsoinnovations-1856c77f-9c8b-41b7-a35d-111ea6ba4867',
+      databaseId: '(default)',
       status: 'connected',
     },
     version: '2.4.0',
@@ -349,7 +349,7 @@ async function startServer() {
   server.on('upgrade', (request, socket, head) => {
     try {
       const url = new URL(request.url || '', `http://${request.headers.host || 'localhost'}`);
-      if (url.pathname === '/ws') {
+      if (url.pathname === '/ws' || url.pathname.startsWith('/ws')) {
         wss.handleUpgrade(request, socket, head, (ws) => {
           wss.emit('connection', ws, request);
         });

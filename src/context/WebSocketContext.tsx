@@ -169,6 +169,34 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     };
   }, [connect]);
 
+  // Telemetry fallback polling if WebSocket is temporarily disconnected or restricted
+  useEffect(() => {
+    if (status !== 'connected') {
+      const poll = async () => {
+        try {
+          const res = await fetch('/api/system/status');
+          if (res.ok) {
+            const data = await res.json();
+            if (data.activeAppointmentsCount !== undefined) {
+              setSystemMetrics((prev) => ({
+                ...prev,
+                appointmentsCount: data.activeAppointmentsCount,
+                inquiriesCount: data.activeInquiriesCount,
+              }));
+              if (data.latencyMs) setLatencyMs(data.latencyMs);
+            }
+          }
+        } catch {
+          // ignore offline
+        }
+      };
+
+      poll();
+      const intervalId = window.setInterval(poll, 8000);
+      return () => window.clearInterval(intervalId);
+    }
+  }, [status]);
+
   const sendMessage = useCallback((type: string, data?: any) => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       try {

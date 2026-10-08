@@ -65,13 +65,6 @@ export default function App() {
     setIsProjectModalOpen(true);
   };
 
-  const openWhatsApp = () => {
-    const text = encodeURIComponent(
-      'Hello Bitso Innovations team! I would like to consult on a digital project.'
-    );
-    window.open(`https://wa.me/91${COMPANY_INFO.contact.rawPhones[0]}?text=${text}`, '_blank');
-  };
-
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500/20 selection:text-cyan-300 relative overflow-x-hidden">
       {/* Custom Cursor with Dissipating Glowing Particle Trail */}
@@ -134,15 +127,18 @@ export default function App() {
         aria-label="Quick WhatsApp Consultation"
         className="fixed bottom-6 right-6 z-40"
       >
-        <button
-          type="button"
-          onClick={openWhatsApp}
+        <a
+          href={`https://wa.me/91${COMPANY_INFO.contact.rawPhones[0]}?text=${encodeURIComponent(
+            'Hello Bitso Innovations team! I would like to consult on a digital project.'
+          )}`}
+          target="_blank"
+          rel="noopener noreferrer"
           className="flex items-center gap-2 p-3 sm:px-4 sm:py-3 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs sm:text-sm shadow-xl shadow-emerald-950/70 hover:scale-105 active:scale-95 transition-all cursor-pointer"
           title="Chat directly with Bitso Leadership on WhatsApp"
         >
           <MessageCircle className="w-5 h-5 shrink-0" />
           <span className="hidden sm:inline">WhatsApp</span>
-        </button>
+        </a>
       </aside>
     </div>
   );
