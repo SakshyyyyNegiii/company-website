@@ -373,7 +373,7 @@ export const ClientAuthModal: React.FC<ClientAuthModalProps> = () => {
                   d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.37 0 3.3 2.64 1.28 6.58l4.05 3.15c.94-2.83 3.57-4.98 6.67-4.98z"
                 />
               </svg>
-              <span>Continue with Google</span>
+              <span>{loading ? 'Connecting with Google...' : 'Continue with Google'}</span>
             </button>
 
             <div className="flex items-center gap-3 my-4">
@@ -501,7 +501,7 @@ export const ClientAuthModal: React.FC<ClientAuthModalProps> = () => {
                   d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.37 0 3.3 2.64 1.28 6.58l4.05 3.15c.94-2.83 3.57-4.98 6.67-4.98z"
                 />
               </svg>
-              <span>Continue with Google</span>
+              <span>{loading ? 'Connecting with Google...' : 'Continue with Google'}</span>
             </button>
 
             <div className="flex items-center gap-3 my-3">

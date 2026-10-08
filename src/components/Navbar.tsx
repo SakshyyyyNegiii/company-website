@@ -18,7 +18,6 @@ interface NavbarProps {
   activeSection: SectionId;
   onNavigate: (section: SectionId) => void;
   onStartProject: () => void;
-  onOpenDashboard?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -39,10 +38,10 @@ export const Navbar: React.FC<NavbarProps> = ({
     try {
       const res = await signInWithGooglePopup();
       if (!res.success && res.message && !res.message.includes('cancelled') && !res.message.includes('already in progress')) {
-        openAuthModal('signin');
+        openAuthModal('signin', res.message);
       }
     } catch {
-      openAuthModal('signin');
+      openAuthModal('signin', 'Google sign-in could not be completed. Please try again.');
     } finally {
       setGoogleAuthPending(false);
     }
@@ -234,7 +233,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <path fill="#FBBC05" d="M5.33 14.27c-.24-.72-.38-1.49-.38-2.27s.14-1.55.38-2.27V6.58H1.28C.46 8.21 0 10.05 0 12s.46 3.79 1.28 5.42l4.05-3.15z" />
                   <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.37 0 3.3 2.64 1.28 6.58l4.05 3.15c.94-2.83 3.57-4.98 6.67-4.98z" />
                 </svg>
-                <span>Google Sign In</span>
+                <span>{googleAuthPending ? 'Connecting...' : 'Google Sign In'}</span>
               </button>
 
               <button
@@ -373,7 +372,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <path fill="#FBBC05" d="M5.33 14.27c-.24-.72-.38-1.49-.38-2.27s.14-1.55.38-2.27V6.58H1.28C.46 8.21 0 10.05 0 12s.46 3.79 1.28 5.42l4.05-3.15z" />
                     <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.37 0 3.3 2.64 1.28 6.58l4.05 3.15c.94-2.83 3.57-4.98 6.67-4.98z" />
                   </svg>
-                  <span>Continue with Google</span>
+                  <span>{googleAuthPending ? 'Connecting...' : 'Continue with Google'}</span>
                 </button>
 
                 <div className="grid grid-cols-2 gap-2">

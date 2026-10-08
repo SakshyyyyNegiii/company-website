@@ -702,39 +702,51 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const isGoogleAuthInProgressRef = useRef(false);
 
   // -------------------------------------------------------------
-  // 6. Sign In with Google (Popup with Redirect Fallback)
+  // 6. Sign In with Google (Popup with Concurrency Lock)
   // -------------------------------------------------------------
-  const signInWithGooglePopup = async (): Promise<{ success: boolean; message?: string }> => {
+  const signInWithGooglePopup = async (preferredEmail?: string): Promise<{ success: boolean; message?: string }> => {
     if (isGoogleAuthInProgressRef.current) {
       return { success: false, message: 'Google sign-in is already in progress.' };
     }
 
     isGoogleAuthInProgressRef.current = true;
     try {
+      if (preferredEmail && preferredEmail.includes('@')) {
+        googleProvider.setCustomParameters({
+          prompt: 'select_account',
+          login_hint: preferredEmail,
+        });
+      } else {
+        googleProvider.setCustomParameters({
+          prompt: 'select_account',
+        });
+      }
+
       let result;
       try {
         result = await signInWithPopup(auth, googleProvider);
       } catch (popupErr: any) {
+        const errCode = popupErr?.code || '';
+        const errMsg = String(popupErr?.message || '');
+
         // If popup was closed or cancelled, handle cleanly without error logging
         if (
-          popupErr?.code === 'auth/cancelled-popup-request' ||
-          popupErr?.code === 'auth/popup-closed-by-user'
+          errCode === 'auth/cancelled-popup-request' ||
+          errCode === 'auth/popup-closed-by-user' ||
+          errMsg.includes('cancelled-popup-request') ||
+          errMsg.includes('popup-closed-by-user')
         ) {
           return { success: false, message: 'Sign-in was cancelled.' };
         }
 
-        // If popup was blocked by browser or restricted environment, try redirect
-        if (popupErr?.code === 'auth/popup-blocked') {
-          try {
-            await signInWithRedirect(auth, googleProvider);
-            return { success: true, message: 'Redirecting to Google Sign-In...' };
-          } catch {
-            return {
-              success: false,
-              message: 'Google Sign-In popup was blocked by your browser. Please allow popups.',
-            };
-          }
+        // If popup was blocked by browser or restricted environment
+        if (errCode === 'auth/popup-blocked' || errMsg.includes('popup-blocked')) {
+          return {
+            success: false,
+            message: 'Sign-in popup was blocked by your browser. Please allow popups for this site and try again.',
+          };
         }
+
         throw popupErr;
       }
 
@@ -744,6 +756,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         } catch {
           // ignore
         }
+        setCurrentUser(result.user);
         await syncUserProfile(result.user, { provider: 'google' });
         closeAuthModal();
         return { success: true, message: 'Google sign-in successful.' };
@@ -751,19 +764,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       return { success: false, message: 'Google sign-in could not retrieve user credentials.' };
     } catch (err: any) {
+      const errCode = err?.code || '';
+      const errMsg = String(err?.message || '');
+
       // Normal user cancellations
       if (
-        err?.code === 'auth/cancelled-popup-request' ||
-        err?.code === 'auth/popup-closed-by-user'
+        errCode === 'auth/cancelled-popup-request' ||
+        errCode === 'auth/popup-closed-by-user' ||
+        errMsg.includes('cancelled-popup-request') ||
+        errMsg.includes('popup-closed-by-user')
       ) {
         return { success: false, message: 'Sign-in was cancelled.' };
       }
 
       let friendlyMessage = 'Google sign-in failed. Please try again.';
-      switch (err?.code) {
+      switch (errCode) {
         case 'auth/popup-blocked':
           friendlyMessage =
-            'Google Sign-In popup was blocked by your browser. Please allow popups for this site.';
+            'Google Sign-In popup was blocked by your browser. Please allow popups for this site and try again.';
           break;
         case 'auth/unauthorized-domain':
           friendlyMessage =

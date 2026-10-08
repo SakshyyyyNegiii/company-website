@@ -12,11 +12,22 @@ function getValidValue(envVal: string | undefined, fallbackVal: string): string 
     trimmed === '2006' ||
     trimmed === 'undefined' ||
     trimmed === 'null' ||
-    trimmed.startsWith('MY_')
+    trimmed.startsWith('MY_') ||
+    trimmed.length < 3
   ) {
     return fallbackVal;
   }
   return trimmed;
+}
+
+// Ensure API key has authentic Firebase API key format
+function getValidApiKey(envVal: string | undefined, fallbackVal: string): string {
+  if (!envVal) return fallbackVal;
+  const trimmed = envVal.trim();
+  if (trimmed.startsWith('AIzaSy') && trimmed.length >= 25) {
+    return trimmed;
+  }
+  return fallbackVal;
 }
 
 // Read env variables safely if defined in browser or server
@@ -40,7 +51,7 @@ function getEnvVar(key: string): string | undefined {
 
 // Canonical Firebase configuration using provisioned applet credentials
 export const firebaseConfig = {
-  apiKey: getValidValue(getEnvVar('VITE_FIREBASE_API_KEY'), fallbackConfig.apiKey),
+  apiKey: getValidApiKey(getEnvVar('VITE_FIREBASE_API_KEY'), fallbackConfig.apiKey),
   authDomain: getValidValue(getEnvVar('VITE_FIREBASE_AUTH_DOMAIN'), fallbackConfig.authDomain),
   projectId: getValidValue(getEnvVar('VITE_FIREBASE_PROJECT_ID'), fallbackConfig.projectId),
   storageBucket: getValidValue(getEnvVar('VITE_FIREBASE_STORAGE_BUCKET'), fallbackConfig.storageBucket),
@@ -55,10 +66,11 @@ export const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getA
 export const auth = getAuth(app);
 
 // Initialize Cloud Firestore database
-const databaseId = getValidValue(
+const rawDatabaseId = getValidValue(
   getEnvVar('VITE_FIREBASE_FIRESTORE_DATABASE_ID'),
   fallbackConfig.firestoreDatabaseId
 );
+const databaseId = rawDatabaseId === '(default)' ? '' : rawDatabaseId;
 
 export const db = databaseId ? getFirestore(app, databaseId) : getFirestore(app);
 

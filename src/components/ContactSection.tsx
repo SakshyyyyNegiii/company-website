@@ -21,7 +21,6 @@ import { useAuth } from '../context/AuthContext';
 
 interface ContactSectionProps {
   initialService?: string;
-  onOpenDashboard?: () => void;
 }
 
 export const ContactSection: React.FC<ContactSectionProps> = ({
@@ -30,6 +29,13 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
   const { ref, isVisible } = useFadeInOnScroll();
   const { currentUser, userProfile, openAuthModal, signOutUser, signInWithGooglePopup } = useAuth();
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [preferredDate, setPreferredDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split('T')[0];
+  });
+  const [timeSlot, setTimeSlot] = useState('11:00 AM - 12:00 PM IST');
+  const [meetingType, setMeetingType] = useState<'video' | 'phone' | 'in-person'>('video');
 
   const handleGoogleAuth = async () => {
     if (googleLoading) return;
@@ -87,6 +93,12 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!currentUser) {
+      setErrorMsg('Please sign in or create an account before booking your appointment.');
+      openAuthModal('signin', 'Please sign in or create an account before booking your appointment.');
+      return;
+    }
+
     if (!fullName.trim() || !phone.trim()) {
       setErrorMsg('Please enter your name and contact phone number.');
       return;
@@ -99,10 +111,13 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
       name: fullName.trim(),
       fullName: fullName.trim(),
       phone: phone.trim(),
-      email: email.trim(),
+      email: currentUser.email || email.trim(),
       service: service,
+      appointmentDate: preferredDate,
+      timeSlot: timeSlot,
+      meetingType: meetingType,
       message: message.trim(),
-      userId: currentUser?.uid || null,
+      userId: currentUser.uid,
       createdAt: { seconds: Math.floor(Date.now() / 1000) },
     };
 
@@ -116,8 +131,42 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
     }
 
     try {
+      const rawAppts = localStorage.getItem('bitso_offline_appointments');
+      const apptList = rawAppts ? JSON.parse(rawAppts) : [];
+      apptList.unshift({
+        userId: currentUser.uid,
+        userName: fullName.trim(),
+        userEmail: currentUser.email || email.trim(),
+        userPhone: phone.trim(),
+        interest: service,
+        preferredDate: preferredDate,
+        timeSlot: timeSlot,
+        meetingType: meetingType,
+        message: message.trim(),
+        status: 'confirmed',
+        createdAt: { seconds: Math.floor(Date.now() / 1000) },
+      });
+      localStorage.setItem('bitso_offline_appointments', JSON.stringify(apptList));
+    } catch {
+      // ignore
+    }
+
+    try {
       await addDoc(collection(db, 'inquiries'), {
         ...inqData,
+        createdAt: serverTimestamp(),
+      });
+      await addDoc(collection(db, 'appointments'), {
+        userId: currentUser.uid,
+        userName: fullName.trim(),
+        userEmail: currentUser.email || email.trim(),
+        userPhone: phone.trim(),
+        interest: service,
+        preferredDate: preferredDate,
+        timeSlot: timeSlot,
+        meetingType: meetingType,
+        message: message.trim(),
+        status: 'confirmed',
         createdAt: serverTimestamp(),
       });
       setSubmitted(true);
@@ -438,17 +487,77 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                     </div>
                   </div>
 
+                  {/* Preferred Appointment Schedule */}
+                  <div className="p-4 rounded-2xl bg-slate-950/70 border border-white/10 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-mono uppercase tracking-wider text-cyan-400">
+                        Appointment Scheduling
+                      </span>
+                      <span className="text-[11px] font-mono text-slate-400">
+                        DIRECT LEADERSHIP CALENDAR
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-mono text-slate-400 mb-1">
+                          Preferred Date *
+                        </label>
+                        <input
+                          type="date"
+                          required
+                          min={new Date().toISOString().split('T')[0]}
+                          value={preferredDate}
+                          onChange={(e) => setPreferredDate(e.target.value)}
+                          className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-400"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-mono text-slate-400 mb-1">
+                          Time Slot *
+                        </label>
+                        <select
+                          value={timeSlot}
+                          onChange={(e) => setTimeSlot(e.target.value)}
+                          className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-400"
+                        >
+                          <option value="10:00 AM - 11:00 AM IST">10:00 AM - 11:00 AM IST</option>
+                          <option value="11:00 AM - 12:00 PM IST">11:00 AM - 12:00 PM IST</option>
+                          <option value="02:00 PM - 03:00 PM IST">02:00 PM - 03:00 PM IST</option>
+                          <option value="04:30 PM - 05:30 PM IST">04:30 PM - 05:30 PM IST</option>
+                          <option value="07:00 PM - 08:00 PM IST">07:00 PM - 08:00 PM IST</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-mono text-slate-400 mb-1">
+                          Format *
+                        </label>
+                        <select
+                          value={meetingType}
+                          onChange={(e) => setMeetingType(e.target.value as any)}
+                          className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-400"
+                        >
+                          <option value="video">Google Meet Video</option>
+                          <option value="phone">WhatsApp Audio</option>
+                          <option value="in-person">In-Person Technical</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <label className="block text-xs font-mono text-slate-400">
-                        Technical Scope & Notes
+                        Technical Scope & Agenda Notes
                       </label>
                       <span className="text-[10px] font-mono text-slate-500">
                         Blueprint details automatically injected
                       </span>
                     </div>
                     <textarea
-                      rows={4}
+                      rows={3}
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       placeholder="Describe your current system, performance bottlenecks, or business goals..."
@@ -456,16 +565,63 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                     />
                   </div>
 
+                  {!currentUser && (
+                    <div className="p-4 rounded-2xl bg-cyan-950/30 border border-cyan-500/30 text-xs space-y-2.5">
+                      <div className="flex items-center gap-2 text-cyan-300 font-semibold">
+                        <ShieldCheck className="w-4 h-4 text-cyan-400 shrink-0" />
+                        <span>Sign In or Sign Up Required Before Booking</span>
+                      </div>
+                      <p className="text-slate-300 text-[11px]">
+                        Please sign in with Google or your email to schedule this technical appointment and preserve your project scope.
+                      </p>
+                      <div className="flex flex-wrap items-center gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={handleGoogleAuth}
+                          disabled={googleLoading}
+                          className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs shadow transition-all cursor-pointer disabled:opacity-50"
+                        >
+                          <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.05h3.9c2.28-2.1 3.64-5.2 3.64-9.14z" />
+                            <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.9-3.05c-1.08.72-2.45 1.16-4.03 1.16-3.1 0-5.73-2.1-6.67-4.93H1.28v3.15C3.3 21.36 7.37 24 12 24z" />
+                            <path fill="#FBBC05" d="M5.33 14.27c-.24-.72-.38-1.49-.38-2.27s.14-1.55.38-2.27V6.58H1.28C.46 8.21 0 10.05 0 12s.46 3.79 1.28 5.42l4.05-3.15z" />
+                            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.37 0 3.3 2.64 1.28 6.58l4.05 3.15c.94-2.83 3.57-4.98 6.67-4.98z" />
+                          </svg>
+                          <span>{googleLoading ? 'Connecting...' : 'Sign in with Google'}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => openAuthModal('signin')}
+                          className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs border border-white/10 transition-colors cursor-pointer"
+                        >
+                          Sign In
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => openAuthModal('signup')}
+                          className="px-3 py-1.5 rounded-xl text-cyan-400 hover:text-cyan-300 font-semibold text-xs transition-colors cursor-pointer"
+                        >
+                          Create Account
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   <button
                     type="submit"
                     disabled={submitting}
                     className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm shadow-xl shadow-cyan-500/25 hover:shadow-cyan-400/35 transition-all cursor-pointer disabled:opacity-50"
                   >
                     {submitting ? (
-                      <span>Submitting Architecture Scope...</span>
+                      <span>Scheduling Appointment...</span>
+                    ) : !currentUser ? (
+                      <>
+                        <span>Sign In & Book Technical Appointment</span>
+                        <LogIn className="w-4 h-4" />
+                      </>
                     ) : (
                       <>
-                        <span>Submit Project Scope</span>
+                        <span>Confirm Technical Appointment</span>
                         <Send className="w-4 h-4" />
                       </>
                     )}
