@@ -1,10 +1,10 @@
 {
   "projectId":  "bitso-innovations",
-    "appId ": "1:897775011391:web:fa7c2730240c36ef7d9a8a",
+    "appId": "1:897775011391:web:fa7c2730240c36ef7d9a8a",
     "apiKey": "AIzaSyB1Cf8vzzfEXmf5wq6ZiR3SaBsaqpS4TOI",
-  "  authDomain": "bitso-innovations.firebaseapp.com",
+  "authDomain": "bitso-innovations.firebaseapp.com",
   "firestoreDatabaseId": "ai-studio-bitsoinnovations-1856c77f-9c8b-41b7-a35d-111ea6ba4867",
-  "  storageBucket": "bitso-innovations.firebasestorage.app",
+  "storageBucket": "bitso-innovations.firebasestorage.app",
     "messagingSenderId": "897775011391",
   "measurementId": "",
   "oAuthClientId": "897775011391-7ttoaagiedbg01a3eu6ho4j93j2mequd.apps.googleusercontent.com",
