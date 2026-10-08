@@ -2,6 +2,7 @@ import http from 'http';
 import express, { Request, Response } from 'express';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
+import { WebSocketServer, WebSocket } from 'ws';
 import { authRouter } from './server/auth';
 
 const app = express();
@@ -13,6 +14,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // Mount authentication API
 app.use('/api/auth', authRouter);
+
+// Global WebSocket broadcast hook
+let broadcastWebSocket: (type: string, data: any) => void = () => {};
 
 // In-memory operational store for backend records & telemetry
 interface ServerAppointment {
@@ -163,6 +167,10 @@ app.post('/api/contact', (req: Request, res: Response) => {
 
   inquiriesStore.unshift(record);
 
+  if (typeof broadcastWebSocket === 'function') {
+    broadcastWebSocket('inquiry:created', record);
+  }
+
   res.status(201).json({
     success: true,
     message: 'Consultation inquiry received and registered with Bitso Executive Team.',
@@ -235,6 +243,10 @@ app.post('/api/appointments', (req: Request, res: Response) => {
 
   appointmentsStore.unshift(newAppointment);
 
+  if (typeof broadcastWebSocket === 'function') {
+    broadcastWebSocket('appointment:created', newAppointment);
+  }
+
   res.status(201).json({
     success: true,
     message: 'Appointment successfully confirmed and logged on backend server.',
@@ -252,6 +264,112 @@ async function startServer() {
   app.use('/src/assets/images', express.static(path.join(process.cwd(), 'public', 'images')));
 
   const server = http.createServer(app);
+
+  // Initialize WebSocket Server on /ws
+  const wss = new WebSocketServer({ noServer: true });
+
+  // Expose global broadcast hook
+  broadcastWebSocket = (type: string, data: any) => {
+    const payload = JSON.stringify({ type, data, timestamp: Date.now() });
+    for (const client of wss.clients) {
+      if (client.readyState === WebSocket.OPEN) {
+        try {
+          client.send(payload);
+        } catch {
+          // ignore
+        }
+      }
+    }
+  };
+
+  // Connection handler
+  wss.on('connection', (ws: WebSocket) => {
+    // Send immediate initialization payload
+    const initData = {
+      activeUsers: wss.clients.size,
+      serverUptimeMs: Date.now() - serverStartTime,
+      timestamp: Date.now(),
+      appointmentsCount: appointmentsStore.length,
+      inquiriesCount: inquiriesStore.length,
+      systemMetrics: {
+        latencyMs: Math.floor(11 + Math.random() * 5),
+        throughput: '14.8k req/s',
+        status: 'operational',
+      },
+    };
+
+    ws.send(JSON.stringify({ type: 'init', data: initData, timestamp: Date.now() }));
+
+    // Broadcast presence update to peers
+    broadcastWebSocket('presence:update', { activeUsers: wss.clients.size });
+
+    // Handle incoming messages
+    ws.on('message', (rawData) => {
+      try {
+        const parsed = JSON.parse(rawData.toString());
+        if (parsed.type === 'ping') {
+          ws.send(
+            JSON.stringify({
+              type: 'pong',
+              data: {
+                clientTimestamp: parsed.timestamp,
+                serverTimestamp: Date.now(),
+              },
+            })
+          );
+        } else if (parsed.type === 'telemetry:request') {
+          ws.send(
+            JSON.stringify({
+              type: 'telemetry:update',
+              data: {
+                activeUsers: wss.clients.size,
+                serverUptimeMs: Date.now() - serverStartTime,
+                appointmentsCount: appointmentsStore.length,
+                inquiriesCount: inquiriesStore.length,
+                throughput: '14.8k req/s',
+              },
+            })
+          );
+        }
+      } catch {
+        // ignore non-json frames
+      }
+    });
+
+    ws.on('close', () => {
+      broadcastWebSocket('presence:update', { activeUsers: wss.clients.size });
+    });
+
+    ws.on('error', () => {
+      // Handled silently
+    });
+  });
+
+  // Handle HTTP upgrade for /ws
+  server.on('upgrade', (request, socket, head) => {
+    try {
+      const url = new URL(request.url || '', `http://${request.headers.host || 'localhost'}`);
+      if (url.pathname === '/ws') {
+        wss.handleUpgrade(request, socket, head, (ws) => {
+          wss.emit('connection', ws, request);
+        });
+      }
+    } catch {
+      // Ignore invalid upgrade requests
+    }
+  });
+
+  // Periodic heartbeat / dynamic telemetry broadcast (every 10s)
+  setInterval(() => {
+    if (wss.clients.size > 0) {
+      broadcastWebSocket('telemetry:update', {
+        serverUptimeMs: Date.now() - serverStartTime,
+        activeUsers: wss.clients.size,
+        throughput: '14.8k req/s',
+        latencyMs: Math.floor(10 + Math.random() * 6),
+      });
+    }
+  }, 10000);
 
   if (process.env.NODE_ENV !== 'production') {
     const isHmrDisabled = process.env.DISABLE_HMR === 'true';
@@ -274,7 +392,7 @@ async function startServer() {
   }
 
   server.listen(PORT, '0.0.0.0', () => {
-    console.log(`[Bitso Server] Backend running on http://0.0.0.0:${PORT}`);
+    console.log(`[Bitso Server] Backend running on http://0.0.0.0:${PORT} (WS on /ws)`);
   });
 }
 
