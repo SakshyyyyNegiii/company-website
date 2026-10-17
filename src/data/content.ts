@@ -170,3 +170,20 @@ export const PROCESS_STEPS: ProcessStep[] = [
     shortDesc: 'Seamless production deployment, performance optimization, and proactive support.',
   },
 ];
+
+// Official Legal & Operational Disclaimer
+export const OFFICIAL_DISCLAIMER = {
+  title: 'Disclaimer',
+  heading: 'BITSO Innovations is an independent Information Technology (IT) company',
+  subheading: 'specializing in technology solutions, software development, website development, and other IT-related services.',
+  clarification: 'We hereby clarify that our company has no association, affiliation, or involvement with cryptocurrency trading, forex trading, investment schemes, or any related financial trading activities. We do not provide trading services, investment advice, or financial brokerage services.',
+  representation: 'Any individual, organization, or third party claiming to represent our company in connection with cryptocurrency, forex trading, or investment-related activities does so without our authorization, unless explicitly stated otherwise by us in writing.',
+  operationScope: 'Our company operates solely as an IT and technology service provider. We shall not be held responsible for any financial transactions, losses, or commitments made by individuals or entities falsely using our company’s name.',
+  contactNotice: 'For official information about our services, please contact us only through our authorized communication channels.',
+  authorizedChannels: {
+    website: 'www.bitsoinnovations.com',
+    email: 'info.bitsoinnovations@gmail.com',
+    phone: '+91 99903 66072',
+    instagram: '@bitso_i.t',
+  },
+};

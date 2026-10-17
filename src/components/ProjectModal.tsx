@@ -22,6 +22,7 @@ import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 import { Appointment } from '../types';
+import { api } from '../lib/api';
 
 interface ProjectModalProps {
   isOpen: boolean;
@@ -254,6 +255,19 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
         userId: currentUser.uid,
         createdAt: serverTimestamp(),
       });
+      // Notify backend server for telemetry & WebSocket presence
+      api.bookAppointment({
+        userId: currentUser.uid,
+        userName: fullName.trim(),
+        userEmail: currentUser.email || email.trim(),
+        userPhone: phone.trim(),
+        interest: service || preSelectedService,
+        preferredDate: appointmentDate || getTomorrowDate(),
+        timeSlot: timeSlot,
+        meetingType: meetingType,
+        message: message.trim(),
+      }).catch(() => {});
+
       setBookedDetails(appointmentPayload);
       setIsSuccess(true);
       setTimeout(() => {

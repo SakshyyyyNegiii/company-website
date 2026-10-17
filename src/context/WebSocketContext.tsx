@@ -44,6 +44,12 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const reconnectAttemptsRef = useRef<number>(0);
 
   const connect = useCallback(() => {
+    // Prevent repeated connection failures if the environment blocks WebSockets
+    if (reconnectAttemptsRef.current >= 1) {
+      setStatus('disconnected');
+      return;
+    }
+
     // Clean up existing socket if any
     if (wsRef.current) {
       try {
@@ -137,16 +143,23 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           pingIntervalRef.current = null;
         }
 
-        // Auto-reconnect with exponential backoff (1s, 2s, 4s, capped at 10s)
-        const delay = Math.min(10000, Math.pow(2, reconnectAttemptsRef.current) * 1000);
-        reconnectAttemptsRef.current += 1;
-        reconnectTimeoutRef.current = window.setTimeout(() => {
-          connect();
-        }, delay);
+        // Limit to at most 1 reconnect attempt to avoid spamming the console
+        if (reconnectAttemptsRef.current < 1) {
+          reconnectAttemptsRef.current += 1;
+          reconnectTimeoutRef.current = window.setTimeout(() => {
+            connect();
+          }, 3000);
+        }
       };
 
-      ws.onerror = () => {
-        // Handled gracefully in onclose
+      ws.onerror = (e: Event) => {
+        // Prevent uncaught propagation of WebSocket connection errors
+        try {
+          e.preventDefault?.();
+          e.stopImmediatePropagation?.();
+        } catch {
+          // ignore
+        }
       };
     } catch {
       setStatus('disconnected');

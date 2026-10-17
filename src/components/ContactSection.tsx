@@ -11,6 +11,7 @@ import {
   Twitter,
   Instagram,
   ShieldCheck,
+  ShieldAlert,
   User,
   LogIn,
 } from 'lucide-react';
@@ -18,13 +19,16 @@ import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { collection, addDoc, serverTimestamp, query, where, onSnapshot } from 'firebase/firestore';
 import { useFadeInOnScroll } from '../hooks/useFadeInOnScroll';
 import { useAuth } from '../context/AuthContext';
+import { api } from '../lib/api';
 
 interface ContactSectionProps {
   initialService?: string;
+  onOpenDisclaimer?: () => void;
 }
 
 export const ContactSection: React.FC<ContactSectionProps> = ({
   initialService = '',
+  onOpenDisclaimer,
 }) => {
   const { ref, isVisible } = useFadeInOnScroll();
   const { currentUser, userProfile, openAuthModal, signOutUser, signInWithGooglePopup } = useAuth();
@@ -169,6 +173,20 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
         status: 'confirmed',
         createdAt: serverTimestamp(),
       });
+
+      // Notify backend server for telemetry & real-time updates
+      api.bookAppointment({
+        userId: currentUser.uid,
+        userName: fullName.trim(),
+        userEmail: currentUser.email || email.trim(),
+        userPhone: phone.trim(),
+        interest: service,
+        preferredDate: preferredDate,
+        timeSlot: timeSlot,
+        meetingType: meetingType,
+        message: message.trim(),
+      }).catch(() => {});
+
       setSubmitted(true);
     } catch (err) {
       handleFirestoreError(err, OperationType.CREATE, 'inquiries');
@@ -176,13 +194,6 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const openWhatsApp = () => {
-    const text = encodeURIComponent(
-      'Hello Bitso Innovations team! I would like to consult on an enterprise digital project.'
-    );
-    window.open(`https://wa.me/91${COMPANY_INFO.contact.rawPhones[0]}?text=${text}`, '_blank');
   };
 
   return (
@@ -324,14 +335,17 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
 
               {/* Direct WhatsApp Action Button */}
               <div className="mt-8 pt-6 border-t border-white/10">
-                <button
-                  type="button"
-                  onClick={openWhatsApp}
+                <a
+                  href={`https://wa.me/91${COMPANY_INFO.contact.rawPhones[0]}?text=${encodeURIComponent(
+                    'Hello Bitso Innovations team! I would like to consult on an enterprise digital project.'
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg shadow-emerald-950/50 transition-all cursor-pointer"
                 >
                   <MessageCircle className="w-4 h-4" />
                   <span>Chat on WhatsApp</span>
-                </button>
+                </a>
               </div>
             </div>
 
@@ -626,6 +640,22 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                       </>
                     )}
                   </button>
+
+                  <div className="pt-2 text-center">
+                    <p className="text-[11px] text-slate-400 flex items-center justify-center gap-1.5 flex-wrap">
+                      <ShieldAlert className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <span>BITSO Innovations is an independent IT entity (no crypto/trading activities).</span>
+                      {onOpenDisclaimer && (
+                        <button
+                          type="button"
+                          onClick={onOpenDisclaimer}
+                          className="text-cyan-400 hover:text-cyan-300 underline underline-offset-2 cursor-pointer font-mono"
+                        >
+                          View Disclaimer
+                        </button>
+                      )}
+                    </p>
+                  </div>
                 </form>
               )}
             </div>

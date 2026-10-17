@@ -267,6 +267,9 @@ async function startServer() {
 
   // Initialize WebSocket Server on /ws
   const wss = new WebSocketServer({ noServer: true });
+  wss.on('error', () => {
+    // Graceful error suppression
+  });
 
   // Expose global broadcast hook
   broadcastWebSocket = (type: string, data: any) => {
@@ -347,15 +350,22 @@ async function startServer() {
 
   // Handle HTTP upgrade for /ws
   server.on('upgrade', (request, socket, head) => {
+    socket.on('error', () => {
+      // Prevent unhandled socket errors on early disconnect
+    });
+
     try {
       const url = new URL(request.url || '', `http://${request.headers.host || 'localhost'}`);
       if (url.pathname === '/ws' || url.pathname.startsWith('/ws')) {
         wss.handleUpgrade(request, socket, head, (ws) => {
           wss.emit('connection', ws, request);
         });
+        return;
       }
+      // If upgrade was for something else, destroy cleanly
+      socket.destroy();
     } catch {
-      // Ignore invalid upgrade requests
+      socket.destroy();
     }
   });
 
@@ -372,13 +382,12 @@ async function startServer() {
   }, 10000);
 
   if (process.env.NODE_ENV !== 'production') {
-    const isHmrDisabled = process.env.DISABLE_HMR === 'true';
     const vite = await createViteServer({
       legacy: { skipWebSocketTokenCheck: true },
       server: {
         middlewareMode: true,
         allowedHosts: true,
-        hmr: isHmrDisabled ? false : { server },
+        hmr: false,
       },
       appType: 'spa',
     });

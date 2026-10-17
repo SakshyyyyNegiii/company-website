@@ -6,6 +6,7 @@ import {
   ArrowUpRight,
   User,
   ShieldCheck,
+  ShieldAlert,
   LogIn,
   UserPlus,
   LogOut,
@@ -18,12 +19,14 @@ interface NavbarProps {
   activeSection: SectionId;
   onNavigate: (section: SectionId) => void;
   onStartProject: () => void;
+  onOpenDisclaimer?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   activeSection,
   onNavigate,
   onStartProject,
+  onOpenDisclaimer,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
@@ -254,6 +257,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           )}
 
+          {onOpenDisclaimer && (
+            <button
+              onClick={onOpenDisclaimer}
+              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/25 text-amber-300 hover:text-amber-200 text-xs font-mono transition-all cursor-pointer"
+              title="Official Company Disclaimer (IT Services Only)"
+            >
+              <ShieldAlert className="w-3.5 h-3.5" />
+              <span>Disclaimer</span>
+            </button>
+          )}
+
           <button
             onClick={onStartProject}
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-sm font-bold shadow-lg shadow-cyan-500/25 hover:shadow-cyan-400/40 hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer whitespace-nowrap"
@@ -399,6 +413,19 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </button>
                 </div>
               </div>
+            )}
+
+            {onOpenDisclaimer && (
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onOpenDisclaimer();
+                }}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-semibold cursor-pointer transition-colors"
+              >
+                <ShieldAlert className="w-4 h-4" />
+                <span>Official Disclaimer (IT Entity Notice)</span>
+              </button>
             )}
 
             <button

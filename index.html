@@ -16,12 +16,21 @@
     <script>
       // Gracefully handle any transient dev-server WebSocket handshake issues in sandboxed iframes
       window.addEventListener('error', function(e) {
-        if (e && e.message && (e.message.includes('WebSocket') || e.message.includes('websocket'))) {
+        var msg = (e && (e.message || (e.error && e.error.message))) || '';
+        if (typeof msg === 'string' && (msg.toLowerCase().includes('websocket') || msg.toLowerCase().includes('ws://') || msg.toLowerCase().includes('wss://'))) {
+          e.preventDefault();
           e.stopImmediatePropagation();
+          return true;
         }
-      });
+        if (e && e.target && e.target instanceof WebSocket) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          return true;
+        }
+      }, true);
       window.addEventListener('unhandledrejection', function(e) {
-        if (e && e.reason && String(e.reason).toLowerCase().includes('websocket')) {
+        var str = String((e && e.reason) || '').toLowerCase();
+        if (str.includes('websocket') || str.includes('ws://') || str.includes('wss://')) {
           e.preventDefault();
         }
       });

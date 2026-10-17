@@ -8,6 +8,7 @@ import { ContactSection } from './components/ContactSection';
 import { Footer } from './components/Footer';
 import { ProjectModal } from './components/ProjectModal';
 import { ClientAuthModal } from './components/ClientAuthModal';
+import { DisclaimerModal } from './components/DisclaimerModal';
 import { ScrollProgressBar } from './components/ScrollProgressBar';
 import { CustomCursor } from './components/CustomCursor';
 import { SectionId } from './types';
@@ -17,6 +18,7 @@ import { COMPANY_INFO } from './data/content';
 export default function App() {
   const [activeSection, setActiveSection] = useState<SectionId>('home');
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+  const [isDisclaimerModalOpen, setIsDisclaimerModalOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<string>('Web Development');
 
   // Smooth scroll to target section
@@ -78,6 +80,7 @@ export default function App() {
         activeSection={activeSection}
         onNavigate={scrollToSection}
         onStartProject={() => handleOpenProjectModal()}
+        onOpenDisclaimer={() => setIsDisclaimerModalOpen(true)}
       />
 
       {/* Main Content Sections */}
@@ -106,11 +109,15 @@ export default function App() {
         {/* Section 4: Final CTA + Contact */}
         <ContactSection
           initialService={selectedService}
+          onOpenDisclaimer={() => setIsDisclaimerModalOpen(true)}
         />
       </main>
 
-      {/* Minimal Footer */}
-      <Footer onNavigate={scrollToSection} />
+      {/* Minimal Footer with Permanent Disclaimer Card */}
+      <Footer
+        onNavigate={scrollToSection}
+        onOpenDisclaimer={() => setIsDisclaimerModalOpen(true)}
+      />
 
       {/* Instant Project Intake Modal */}
       <ProjectModal
@@ -121,6 +128,12 @@ export default function App() {
 
       {/* Authentication Modal */}
       <ClientAuthModal />
+
+      {/* Dedicated Legal Disclaimer Modal */}
+      <DisclaimerModal
+        isOpen={isDisclaimerModalOpen}
+        onClose={() => setIsDisclaimerModalOpen(false)}
+      />
 
       {/* Floating Direct WhatsApp Action */}
       <aside
