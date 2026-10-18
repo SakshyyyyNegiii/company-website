@@ -74,6 +74,14 @@ export const SERVICES: ServiceItem[] = [
     focus: 'Design Systems · Interaction Design · User Research',
     iconName: 'Layout',
   },
+  {
+    id: 'student-projects',
+    title: 'Student & Capstone Projects',
+    category: 'software',
+    description: 'Technical mentorship, system architecture, and code guidance for final-year engineering and computer science students.',
+    focus: 'Full-Stack Mentorship · Clean Git Code · Viva Voce Prep',
+    iconName: 'GraduationCap',
+  },
 ];
 
 // Exactly 4 genuine existing projects from current website
@@ -187,11 +195,6 @@ export const LEADERSHIP_MEMBERS: LeadershipMember[] = [
     image: '/images/aman_founder.jpg',
     fallbackImage: '/images/director_portrait.jpg',
     initials: 'AM',
-    responsibilities: [
-      'Corporate Strategy & Governance',
-      'Client Solutions & Architecture',
-      'Long-Term Technology Roadmap'
-    ],
   },
   {
     id: 'jitender',
@@ -206,15 +209,10 @@ export const LEADERSHIP_MEMBERS: LeadershipMember[] = [
     image: '/images/jitender_vp.jpg',
     fallbackImage: '/images/enterprise_erp.jpg',
     initials: 'JT',
-    responsibilities: [
-      'Enterprise Client Partnerships',
-      'Strategic Commercial Growth',
-      'Market Penetration & Client Success'
-    ],
   },
   {
     id: 'tamanna',
-    name: 'Tamanna',
+    name: 'Tamanna Aggarwal',
     designation: 'Technical / IT Head',
     department: 'Engineering & Technology Operations',
     bio: 'Driving technical architecture, agile software delivery, cloud systems, and AI engineering standards across all enterprise web and mobile solutions.',
@@ -224,12 +222,7 @@ export const LEADERSHIP_MEMBERS: LeadershipMember[] = [
     linkedin: 'https://www.linkedin.com/company/bitso-innovations/?viewAsMember=true',
     image: '/images/tamanna_it_head.jpg',
     fallbackImage: '/images/smart_retail_store.jpg',
-    initials: 'TM',
-    responsibilities: [
-      'Full-Stack Architecture & Cloud Scale',
-      'IT Infrastructure & DevOps Quality',
-      'Agile Engineering Delivery'
-    ],
+    initials: 'TA',
   },
 ];
 

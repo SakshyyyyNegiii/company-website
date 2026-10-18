@@ -263,6 +263,17 @@ async function startServer() {
   app.use('/images', express.static(path.join(process.cwd(), 'public', 'images')));
   app.use('/src/assets/images', express.static(path.join(process.cwd(), 'public', 'images')));
 
+  // Technical SEO: Guaranteed XML Sitemap and Robots.txt Delivery
+  app.get('/robots.txt', (_req: Request, res: Response) => {
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.sendFile(path.join(process.cwd(), 'public', 'robots.txt'));
+  });
+
+  app.get('/sitemap.xml', (_req: Request, res: Response) => {
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+    res.sendFile(path.join(process.cwd(), 'public', 'sitemap.xml'));
+  });
+
   const server = http.createServer(app);
 
   // Initialize WebSocket Server on /ws

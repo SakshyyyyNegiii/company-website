@@ -5,7 +5,6 @@ import {
   Phone,
   MessageCircle,
   Linkedin,
-  CheckCircle2,
   Briefcase,
   ShieldCheck,
   ArrowUpRight,
@@ -96,21 +95,6 @@ export const LeadershipSection: React.FC<LeadershipSectionProps> = ({
                   <p className="mt-4 text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
                     {member.bio}
                   </p>
-                </div>
-
-                {/* Core Responsibilities */}
-                <div className="mt-6 pt-5 border-t border-white/10 space-y-2.5">
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-semibold block">
-                    Key Areas of Responsibility:
-                  </span>
-                  <ul className="space-y-2">
-                    {member.responsibilities.map((resp, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-xs text-slate-300">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                        <span>{resp}</span>
-                      </li>
-                    ))}
-                  </ul>
                 </div>
               </div>
 

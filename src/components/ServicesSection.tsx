@@ -13,6 +13,7 @@ import {
   Cpu,
   Server,
   Zap,
+  GraduationCap,
 } from 'lucide-react';
 import { useFadeInOnScroll } from '../hooks/useFadeInOnScroll';
 import { InteractiveCard } from './InteractiveCard';
@@ -59,6 +60,12 @@ const TECH_SPECS: Record<string, TechSpec> = {
     security: 'WCAG AA 4.5:1 accessible contrast & touch-target compliance',
     metric: 'Substantial boost in checkout completion & retention',
   },
+  'student-projects': {
+    frameworks: ['React 19', 'Node.js', 'Python', 'Firebase', 'PostgreSQL'],
+    architecture: 'Modular full-stack capstone with REST APIs and role-based access',
+    security: 'Clean Git history, secret encapsulation, live HTTPS cloud deploy',
+    metric: 'Top university evaluation marks & production-grade portfolio',
+  },
 };
 
 export const ServicesSection: React.FC<ServicesSectionProps> = ({
@@ -79,6 +86,8 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
         return <Smartphone className="w-6 h-6 text-cyan-400" />;
       case 'Layout':
         return <Layout className="w-6 h-6 text-cyan-400" />;
+      case 'GraduationCap':
+        return <GraduationCap className="w-6 h-6 text-cyan-400" />;
       default:
         return <Code2 className="w-6 h-6 text-cyan-400" />;
     }

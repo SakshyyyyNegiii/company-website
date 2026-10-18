@@ -94,6 +94,12 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenDisclaimer }) 
               Home
             </button>
             <button
+              onClick={() => onNavigate('about')}
+              className="hover:text-white transition-colors cursor-pointer"
+            >
+              About
+            </button>
+            <button
               onClick={() => onNavigate('services')}
               className="hover:text-white transition-colors cursor-pointer"
             >
@@ -117,6 +123,34 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenDisclaimer }) 
             >
               Contact
             </button>
+            <a
+              href="/privacy-policy"
+              onClick={(e) => {
+                e.preventDefault();
+                onNavigate('/privacy-policy' as any);
+              }}
+              className="hover:text-white transition-colors cursor-pointer"
+            >
+              Privacy Policy
+            </a>
+            <a
+              href="/terms"
+              onClick={(e) => {
+                e.preventDefault();
+                onNavigate('/terms' as any);
+              }}
+              className="hover:text-white transition-colors cursor-pointer"
+            >
+              Terms
+            </a>
+            <a
+              href="/sitemap.xml"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-cyan-400 transition-colors font-mono"
+            >
+              Sitemap
+            </a>
             {onOpenDisclaimer && (
               <button
                 onClick={onOpenDisclaimer}

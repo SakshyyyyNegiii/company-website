@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
 import { ServicesSlider } from './components/ServicesSlider';
@@ -15,30 +15,101 @@ import { CustomCursor } from './components/CustomCursor';
 import { SectionId } from './types';
 import { MessageCircle } from 'lucide-react';
 import { COMPANY_INFO } from './data/content';
+import { ServiceDetailPage } from './components/pages/ServiceDetailPage';
+import { AboutPage } from './components/pages/AboutPage';
+import { LegalPage } from './components/pages/LegalPage';
 
 export default function App() {
+  const [currentPath, setCurrentPath] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return window.location.pathname;
+    }
+    return '/';
+  });
+
   const [activeSection, setActiveSection] = useState<SectionId>('home');
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [isDisclaimerModalOpen, setIsDisclaimerModalOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<string>('Web Development');
 
-  // Smooth scroll to target section
-  const scrollToSection = (sectionId: SectionId) => {
-    setActiveSection(sectionId);
-    const element = document.getElementById(sectionId);
-    if (element) {
-      const topOffset = 70; // offset for fixed navbar
-      const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
-      window.scrollTo({
-        top: elementPosition - topOffset,
-        behavior: 'smooth',
-      });
-      window.history.replaceState(null, '', `#${sectionId}`);
-    }
-  };
-
-  // Scroll spy to update active section in navbar
+  // Handle browser back/forward buttons
   useEffect(() => {
+    const handlePopState = () => {
+      setCurrentPath(window.location.pathname);
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Universal Navigation Handler (Supports both SPA routes and Homepage sections)
+  const navigateTo = useCallback(
+    (target: string | SectionId) => {
+      const targetStr = String(target);
+
+      // Section anchors on homepage
+      if (
+        targetStr === 'home' ||
+        targetStr === 'services' ||
+        targetStr === 'work' ||
+        targetStr === 'leadership' ||
+        targetStr === 'contact'
+      ) {
+        if (targetStr === 'home') {
+          if (currentPath !== '/') {
+            window.history.pushState(null, '', '/');
+            setCurrentPath('/');
+          }
+          setActiveSection('home');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return;
+        }
+
+        // Target is an anchor on homepage
+        if (currentPath !== '/') {
+          window.history.pushState(null, '', `/#${targetStr}`);
+          setCurrentPath('/');
+          setTimeout(() => {
+            const el = document.getElementById(targetStr);
+            if (el) {
+              const topOffset = 70;
+              const pos = el.getBoundingClientRect().top + window.pageYOffset;
+              window.scrollTo({ top: pos - topOffset, behavior: 'smooth' });
+            }
+          }, 100);
+        } else {
+          const el = document.getElementById(targetStr);
+          if (el) {
+            const topOffset = 70;
+            const pos = el.getBoundingClientRect().top + window.pageYOffset;
+            window.scrollTo({ top: pos - topOffset, behavior: 'smooth' });
+            window.history.replaceState(null, '', `/#${targetStr}`);
+          }
+        }
+        setActiveSection(targetStr as SectionId);
+        return;
+      }
+
+      // Explicit route paths (e.g. /about, /services/web-development)
+      let resolvedPath = targetStr;
+      if (targetStr === 'about') resolvedPath = '/about';
+
+      if (window.location.pathname !== resolvedPath) {
+        window.history.pushState(null, '', resolvedPath);
+      }
+      setCurrentPath(resolvedPath);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      if (resolvedPath === '/about') setActiveSection('about');
+      else setActiveSection('home');
+    },
+    [currentPath]
+  );
+
+  // Scroll spy on homepage
+  useEffect(() => {
+    if (currentPath !== '/') return;
+
     const sectionIds: SectionId[] = ['home', 'services', 'work', 'leadership', 'contact'];
 
     const handleScroll = () => {
@@ -59,7 +130,7 @@ export default function App() {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [currentPath]);
 
   const handleOpenProjectModal = (serviceName?: string) => {
     if (serviceName) {
@@ -68,28 +139,107 @@ export default function App() {
     setIsProjectModalOpen(true);
   };
 
-  return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500/20 selection:text-cyan-300 relative overflow-x-hidden">
-      {/* Custom Cursor with Dissipating Glowing Particle Trail */}
-      <CustomCursor />
+  // Determine which page to render based on currentPath
+  const renderPageContent = () => {
+    // 1. Dedicated About Us Page
+    if (currentPath === '/about') {
+      return (
+        <AboutPage
+          onNavigate={navigateTo}
+          onOpenDisclaimer={() => setIsDisclaimerModalOpen(true)}
+        />
+      );
+    }
 
-      {/* Slim Fixed Progress Bar at Very Top of Screen */}
-      <ScrollProgressBar />
+    // 4. Dedicated Service Pages (/services/web-development, etc.)
+    if (currentPath.startsWith('/services/')) {
+      const serviceSlug = currentPath.replace('/services/', '').replace(/\/$/, '');
+      return (
+        <ServiceDetailPage
+          serviceSlug={serviceSlug}
+          onNavigate={navigateTo}
+          onStartProject={(s) => handleOpenProjectModal(s)}
+        />
+      );
+    }
 
-      {/* 1-Row Minimal Top Bar */}
-      <Navbar
-        activeSection={activeSection}
-        onNavigate={scrollToSection}
-        onStartProject={() => handleOpenProjectModal()}
-        onOpenDisclaimer={() => setIsDisclaimerModalOpen(true)}
-      />
+    // 5. Legal Pages
+    if (currentPath === '/privacy-policy') {
+      return <LegalPage type="privacy" onNavigate={navigateTo} />;
+    }
+    if (currentPath === '/terms') {
+      return <LegalPage type="terms" onNavigate={navigateTo} />;
+    }
 
-      {/* Main Content Sections */}
-      <main className="flex-grow flex flex-col">
+    // 6. Direct /services route or /projects route
+    if (currentPath === '/services') {
+      return (
+        <>
+          <div className="pt-20">
+            <ServicesSection
+              onSelectService={(serviceTitle) => handleOpenProjectModal(serviceTitle)}
+            />
+          </div>
+          <ContactSection
+            initialService={selectedService}
+            onOpenDisclaimer={() => setIsDisclaimerModalOpen(true)}
+          />
+        </>
+      );
+    }
+
+    if (currentPath === '/projects' || currentPath === '/work') {
+      return (
+        <>
+          <div className="pt-20">
+            <WorkSection
+              onSelectProject={(projectTitle) => handleOpenProjectModal(projectTitle)}
+            />
+          </div>
+          <ContactSection
+            initialService={selectedService}
+            onOpenDisclaimer={() => setIsDisclaimerModalOpen(true)}
+          />
+        </>
+      );
+    }
+
+    if (currentPath === '/leadership') {
+      return (
+        <>
+          <div className="pt-20">
+            <LeadershipSection
+              onContactLeadership={(leaderName) =>
+                handleOpenProjectModal(`Executive Consultation - ${leaderName}`)
+              }
+            />
+          </div>
+          <ContactSection
+            initialService={selectedService}
+            onOpenDisclaimer={() => setIsDisclaimerModalOpen(true)}
+          />
+        </>
+      );
+    }
+
+    if (currentPath === '/contact') {
+      return (
+        <div className="pt-20">
+          <ContactSection
+            initialService={selectedService}
+            onOpenDisclaimer={() => setIsDisclaimerModalOpen(true)}
+          />
+        </div>
+      );
+    }
+
+    // Default: Complete Main Homepage
+    return (
+      <>
         {/* Section 1: Hero — First Impression */}
         <HeroSection
           onStartProject={() => handleOpenProjectModal()}
-          onExploreServices={() => scrollToSection('services')}
+          onExploreServices={() => navigateTo('services')}
         />
 
         {/* Featured Solutions Animated Carousel Slider */}
@@ -119,11 +269,34 @@ export default function App() {
           initialService={selectedService}
           onOpenDisclaimer={() => setIsDisclaimerModalOpen(true)}
         />
+      </>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500/20 selection:text-cyan-300 relative overflow-x-hidden">
+      {/* Custom Cursor with Dissipating Glowing Particle Trail */}
+      <CustomCursor />
+
+      {/* Slim Fixed Progress Bar at Very Top of Screen */}
+      <ScrollProgressBar />
+
+      {/* 1-Row Minimal Top Bar */}
+      <Navbar
+        activeSection={activeSection}
+        onNavigate={navigateTo}
+        onStartProject={() => handleOpenProjectModal()}
+        onOpenDisclaimer={() => setIsDisclaimerModalOpen(true)}
+      />
+
+      {/* Main Content View */}
+      <main className="flex-grow flex flex-col">
+        {renderPageContent()}
       </main>
 
       {/* Minimal Footer with Permanent Disclaimer Card */}
       <Footer
-        onNavigate={scrollToSection}
+        onNavigate={navigateTo}
         onOpenDisclaimer={() => setIsDisclaimerModalOpen(true)}
       />
 
