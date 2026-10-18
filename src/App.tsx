@@ -4,6 +4,7 @@ import { HeroSection } from './components/HeroSection';
 import { ServicesSlider } from './components/ServicesSlider';
 import { ServicesSection } from './components/ServicesSection';
 import { WorkSection } from './components/WorkSection';
+import { LeadershipSection } from './components/LeadershipSection';
 import { ContactSection } from './components/ContactSection';
 import { Footer } from './components/Footer';
 import { ProjectModal } from './components/ProjectModal';
@@ -38,7 +39,7 @@ export default function App() {
 
   // Scroll spy to update active section in navbar
   useEffect(() => {
-    const sectionIds: SectionId[] = ['home', 'services', 'work', 'contact'];
+    const sectionIds: SectionId[] = ['home', 'services', 'work', 'leadership', 'contact'];
 
     const handleScroll = () => {
       const scrollPosition = window.scrollY + 200;
@@ -106,7 +107,14 @@ export default function App() {
           onSelectProject={(projectTitle) => handleOpenProjectModal(projectTitle)}
         />
 
-        {/* Section 4: Final CTA + Contact */}
+        {/* Section 4: Our Leadership Team */}
+        <LeadershipSection
+          onContactLeadership={(leaderName) =>
+            handleOpenProjectModal(`Executive Consultation - ${leaderName}`)
+          }
+        />
+
+        {/* Section 5: Final CTA + Contact */}
         <ContactSection
           initialService={selectedService}
           onOpenDisclaimer={() => setIsDisclaimerModalOpen(true)}

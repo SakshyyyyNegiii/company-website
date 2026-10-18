@@ -2,6 +2,7 @@ import {
   ServiceItem,
   PortfolioItem,
   ProcessStep,
+  LeadershipMember,
 } from '../types';
 
 export const COMPANY_INFO = {
@@ -168,6 +169,67 @@ export const PROCESS_STEPS: ProcessStep[] = [
     step: '04',
     title: 'Launch',
     shortDesc: 'Seamless production deployment, performance optimization, and proactive support.',
+  },
+];
+
+// Official Leadership Team
+export const LEADERSHIP_MEMBERS: LeadershipMember[] = [
+  {
+    id: 'aman',
+    name: 'Aman',
+    designation: 'Founder and President',
+    department: 'Executive Leadership & Strategy',
+    bio: 'Visionary entrepreneur directing Bitso Innovations’ technological vision, enterprise partnerships, and end-to-end digital transformation for modern businesses.',
+    phone: '+91 99903 66072',
+    rawPhone: '9990366072',
+    email: 'info.bitsoinnovations@gmail.com',
+    linkedin: 'https://www.linkedin.com/company/bitso-innovations/?viewAsMember=true',
+    image: '/images/aman_founder.jpg',
+    fallbackImage: '/images/director_portrait.jpg',
+    initials: 'AM',
+    responsibilities: [
+      'Corporate Strategy & Governance',
+      'Client Solutions & Architecture',
+      'Long-Term Technology Roadmap'
+    ],
+  },
+  {
+    id: 'jitender',
+    name: 'Jitender',
+    designation: 'Vice President of Business Development',
+    department: 'Business Development & Strategic Alliances',
+    bio: 'Leading strategic market expansion, commercial partnerships, and enterprise client relationships to scale Bitso Innovations’ digital solutions nationwide.',
+    phone: '+91 95602 03642',
+    rawPhone: '9560203642',
+    email: 'info.bitsoinnovations@gmail.com',
+    linkedin: 'https://www.linkedin.com/company/bitso-innovations/?viewAsMember=true',
+    image: '/images/jitender_vp.jpg',
+    fallbackImage: '/images/enterprise_erp.jpg',
+    initials: 'JT',
+    responsibilities: [
+      'Enterprise Client Partnerships',
+      'Strategic Commercial Growth',
+      'Market Penetration & Client Success'
+    ],
+  },
+  {
+    id: 'tamanna',
+    name: 'Tamanna',
+    designation: 'Technical / IT Head',
+    department: 'Engineering & Technology Operations',
+    bio: 'Driving technical architecture, agile software delivery, cloud systems, and AI engineering standards across all enterprise web and mobile solutions.',
+    phone: '+91 98111 04327',
+    rawPhone: '9811104327',
+    email: 'info.bitsoinnovations@gmail.com',
+    linkedin: 'https://www.linkedin.com/company/bitso-innovations/?viewAsMember=true',
+    image: '/images/tamanna_it_head.jpg',
+    fallbackImage: '/images/smart_retail_store.jpg',
+    initials: 'TM',
+    responsibilities: [
+      'Full-Stack Architecture & Cloud Scale',
+      'IT Infrastructure & DevOps Quality',
+      'Agile Engineering Delivery'
+    ],
   },
 ];
 

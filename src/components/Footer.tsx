@@ -106,6 +106,12 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenDisclaimer }) 
               Work
             </button>
             <button
+              onClick={() => onNavigate('leadership')}
+              className="hover:text-white transition-colors cursor-pointer"
+            >
+              Leadership
+            </button>
+            <button
               onClick={() => onNavigate('contact')}
               className="hover:text-white transition-colors cursor-pointer"
             >
