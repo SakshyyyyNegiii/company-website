@@ -216,8 +216,6 @@ export const LEADERSHIP_MEMBERS: LeadershipMember[] = [
     designation: 'Technical / IT Head',
     department: 'Engineering & Technology Operations',
     bio: 'Driving technical architecture, agile software delivery, cloud systems, and AI engineering standards across all enterprise web and mobile solutions.',
-    phone: '+91 98111 04327',
-    rawPhone: '9811104327',
     email: 'info.bitsoinnovations@gmail.com',
     linkedin: 'https://www.linkedin.com/company/bitso-innovations/?viewAsMember=true',
     image: '/images/tamanna_it_head.jpg',

@@ -5,6 +5,7 @@ import {
   Phone,
   MessageCircle,
   Linkedin,
+  Mail,
   Briefcase,
   ShieldCheck,
   ArrowUpRight,
@@ -102,7 +103,7 @@ export const LeadershipSection: React.FC<LeadershipSectionProps> = ({
               <div className="mt-8 pt-5 border-t border-white/10 flex flex-col gap-3">
                 {/* Direct Phone & WhatsApp Touchpoints */}
                 <div className="flex items-center gap-2">
-                  {member.phone && (
+                  {member.phone ? (
                     <a
                       href={`tel:${member.rawPhone || member.phone}`}
                       className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-semibold border border-white/10 hover:border-cyan-500/40 transition-all cursor-pointer"
@@ -110,6 +111,17 @@ export const LeadershipSection: React.FC<LeadershipSectionProps> = ({
                     >
                       <Phone className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
                       <span className="truncate">{member.phone}</span>
+                    </a>
+                  ) : (
+                    <a
+                      href={`mailto:${member.email || 'info.bitsoinnovations@gmail.com'}?subject=${encodeURIComponent(
+                        `Enterprise Technical Consultation with ${member.name}`
+                      )}`}
+                      className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-semibold border border-white/10 hover:border-cyan-500/40 transition-all cursor-pointer"
+                      title={`Email ${member.name}`}
+                    >
+                      <Mail className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                      <span className="truncate">Contact IT Office</span>
                     </a>
                   )}
 
