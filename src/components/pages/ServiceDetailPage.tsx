@@ -22,6 +22,8 @@ import {
   CheckCircle2,
   HelpCircle,
   Clock,
+  Target,
+  BookOpen,
 } from 'lucide-react';
 
 interface ServiceDetailPageProps {
@@ -72,11 +74,36 @@ export const ServiceDetailPage: React.FC<ServiceDetailPageProps> = ({
     }
   };
 
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: 'https://www.bitsoinnovations.com/',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Services',
+        item: 'https://www.bitsoinnovations.com/services',
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: service.name,
+        item: service.canonicalUrl || `https://www.bitsoinnovations.com/services/${service.slug}`,
+      },
+    ],
+  };
+
   const serviceSchema = {
     '@context': 'https://schema.org',
     '@type': 'Service',
     name: service.name,
-    serviceType: service.keywords.join(', '),
+    serviceType: service.primaryKeyword,
     description: service.metaDescription,
     provider: {
       '@type': 'Organization',
@@ -87,6 +114,11 @@ export const ServiceDetailPage: React.FC<ServiceDetailPageProps> = ({
     areaServed: {
       '@type': 'AdministrativeArea',
       name: 'Worldwide',
+    },
+    offers: {
+      '@type': 'Offer',
+      price: 'Contact for Proposal',
+      priceCurrency: 'INR',
     },
     hasOfferCatalog: {
       '@type': 'OfferCatalog',
@@ -115,14 +147,18 @@ export const ServiceDetailPage: React.FC<ServiceDetailPageProps> = ({
     })),
   };
 
+  const canonicalPath = service.canonicalUrl
+    ? service.canonicalUrl.replace('https://www.bitsoinnovations.com', '')
+    : `/services/${service.slug}`;
+
   return (
     <div className="min-h-screen py-24 sm:py-28 relative">
       <SEOHead
         title={service.metaTitle}
         description={service.metaDescription}
-        canonicalPath={`/services/${service.slug}`}
+        canonicalPath={canonicalPath}
         keywords={service.keywords}
-        schemaJson={[serviceSchema, faqSchema]}
+        schemaJson={[serviceSchema, faqSchema, breadcrumbSchema]}
       />
 
       {/* Dynamic Background Glow */}
@@ -139,9 +175,15 @@ export const ServiceDetailPage: React.FC<ServiceDetailPageProps> = ({
 
         {/* Hero Section */}
         <header className="max-w-3xl mb-16">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/25 text-cyan-400 text-xs font-mono mb-4 tracking-wider uppercase">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>{service.heroBadge}</span>
+          <div className="flex flex-wrap items-center gap-2.5 mb-4">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/25 text-cyan-400 text-xs font-mono tracking-wider uppercase">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>{service.heroBadge}</span>
+            </div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/80 border border-white/10 text-slate-300 text-xs font-mono">
+              <Target className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Intent: {service.searchIntent}</span>
+            </div>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
@@ -151,6 +193,11 @@ export const ServiceDetailPage: React.FC<ServiceDetailPageProps> = ({
           <p className="mt-5 text-base sm:text-lg text-slate-300 leading-relaxed font-sans">
             {service.subheadline}
           </p>
+
+          <div className="mt-4 flex items-center gap-2 text-xs font-mono text-slate-400">
+            <span className="text-cyan-400 font-bold">Targeted For:</span>
+            <span>{service.targetAudience}</span>
+          </div>
 
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <button
@@ -165,16 +212,26 @@ export const ServiceDetailPage: React.FC<ServiceDetailPageProps> = ({
               onClick={() => onNavigate('/contact')}
               className="px-6 py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-white/10 font-bold text-sm transition-all cursor-pointer"
             >
-              Consult with Technical Head
+              Consult with Senior Leadership
             </button>
           </div>
         </header>
 
         {/* Core Architectural Features Grid */}
         <section className="mb-20">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-8">
-            Engineering Standards & Deliverables
-          </h2>
+          <div className="flex items-center justify-between mb-8 flex-wrap gap-2">
+            <div>
+              <span className="text-xs font-mono uppercase tracking-wider text-cyan-400 font-semibold block mb-1">
+                Verified Deliverables
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                Engineering Standards & Deliverables
+              </h2>
+            </div>
+            <span className="text-xs font-mono text-slate-400">
+              Primary Capability: {service.primaryKeyword}
+            </span>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
             {service.features.map((feature, idx) => (
@@ -248,6 +305,81 @@ export const ServiceDetailPage: React.FC<ServiceDetailPageProps> = ({
             ))}
           </div>
         </section>
+
+        {/* Contextual Internal Links Section (SEO & Crawl Architecture) */}
+        {service.contextualInternalLinks && service.contextualInternalLinks.length > 0 && (
+          <section className="mb-20 p-8 sm:p-10 rounded-3xl bg-slate-900/60 border border-white/10 backdrop-blur-sm">
+            <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+              <div>
+                <span className="text-xs font-mono uppercase tracking-wider text-cyan-400 font-semibold block mb-1">
+                  Connected Knowledge & Architecture
+                </span>
+                <h2 className="text-2xl font-extrabold text-white tracking-tight">
+                  Related Technical Guides & Cost Breakdowns
+                </h2>
+              </div>
+              <span className="text-xs font-mono text-slate-400">
+                Verified Search Knowledge
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {service.contextualInternalLinks.map((link, idx) => (
+                <div
+                  key={idx}
+                  onClick={() => onNavigate(link.targetUrl)}
+                  className="p-5 rounded-2xl bg-slate-950/70 border border-white/5 hover:border-cyan-500/40 transition-all cursor-pointer group flex flex-col justify-between shadow-md"
+                >
+                  <div>
+                    <span className="text-[10px] font-mono text-cyan-400 mb-1.5 block">
+                      RESOURCE #0{idx + 1}
+                    </span>
+                    <h3 className="text-sm font-bold text-white group-hover:text-cyan-300 transition-colors mb-2">
+                      {link.label}
+                    </h3>
+                    <p className="text-xs text-slate-400 leading-relaxed font-sans line-clamp-2">
+                      {link.description}
+                    </p>
+                  </div>
+                  <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between">
+                    <span className="text-[11px] font-mono text-cyan-400 underline decoration-cyan-500/40 group-hover:decoration-cyan-400 transition-colors">
+                      {link.anchorText}
+                    </span>
+                    <ArrowUpRight className="w-3.5 h-3.5 text-cyan-400 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Explore Related IT Capabilities (Cross-Linking without Cannibalization) */}
+        {service.relatedServices && service.relatedServices.length > 0 && (
+          <section className="mb-20">
+            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight mb-6">
+              Explore Related IT Capabilities
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {service.relatedServices.map((rel) => (
+                <div
+                  key={rel.slug}
+                  onClick={() => onNavigate(`/services/${rel.slug}`)}
+                  className="p-5 rounded-2xl bg-slate-900/60 border border-white/5 hover:border-cyan-500/30 transition-all cursor-pointer group flex items-center justify-between"
+                >
+                  <div>
+                    <span className="text-[10px] font-mono text-slate-400 block mb-1">
+                      {rel.badge}
+                    </span>
+                    <h3 className="text-sm font-bold text-white group-hover:text-cyan-300 transition-colors">
+                      {rel.name}
+                    </h3>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Service FAQ */}
         <section className="mb-20">

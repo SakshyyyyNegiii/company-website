@@ -65,9 +65,24 @@ export const LeadershipSection: React.FC<LeadershipSectionProps> = ({
                 {/* Executive Header: Stylized Monogram Avatar & Department */}
                 <div className="flex items-start justify-between gap-4 mb-6">
                   {/* Executive Monogram Avatar */}
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/20 via-slate-800 to-sky-500/10 border border-cyan-400/40 text-cyan-300 font-extrabold text-xl flex items-center justify-center shadow-lg shadow-cyan-950/40 group-hover:scale-105 group-hover:border-cyan-300 transition-all duration-300 shrink-0">
-                    <span>{member.initials}</span>
-                  </div>
+                  {member.linkedin ? (
+                    <a
+                      href={member.linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/20 via-slate-800 to-sky-500/10 border border-cyan-400/40 text-cyan-300 font-extrabold text-xl flex items-center justify-center shadow-lg shadow-cyan-950/40 group-hover:scale-105 group-hover:border-cyan-300 transition-all duration-300 shrink-0 relative cursor-pointer"
+                      title={`View ${member.name} on LinkedIn`}
+                    >
+                      <span>{member.initials}</span>
+                      <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#0A66C2] text-white flex items-center justify-center border-2 border-slate-900 shadow">
+                        <Linkedin className="w-2.5 h-2.5 fill-white" />
+                      </span>
+                    </a>
+                  ) : (
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/20 via-slate-800 to-sky-500/10 border border-cyan-400/40 text-cyan-300 font-extrabold text-xl flex items-center justify-center shadow-lg shadow-cyan-950/40 group-hover:scale-105 group-hover:border-cyan-300 transition-all duration-300 shrink-0">
+                      <span>{member.initials}</span>
+                    </div>
+                  )}
 
                   {/* Verification & Department Tag */}
                   <div className="flex flex-col items-end text-right">
@@ -84,7 +99,19 @@ export const LeadershipSection: React.FC<LeadershipSectionProps> = ({
                 {/* Profile Header: Name & Designation */}
                 <div>
                   <h3 className="text-2xl font-bold text-white tracking-tight group-hover:text-cyan-300 transition-colors">
-                    {member.name}
+                    {member.linkedin ? (
+                      <a
+                        href={member.linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:underline hover:text-cyan-300 transition-colors"
+                        title={`Open ${member.name} on LinkedIn`}
+                      >
+                        {member.name}
+                      </a>
+                    ) : (
+                      member.name
+                    )}
                   </h3>
 
                   <div className="mt-1.5 inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-cyan-400 font-mono">
@@ -100,19 +127,17 @@ export const LeadershipSection: React.FC<LeadershipSectionProps> = ({
 
               {/* Contact Actions Footer */}
               <div className="mt-8 pt-5 border-t border-white/10 flex flex-col gap-3">
-                {/* Direct Phone & WhatsApp Touchpoints */}
-                {(member.phone || member.linkedin) && (
+                {/* For members with phone (Aman & Jitender): Direct Phone + WhatsApp + LinkedIn icon */}
+                {member.phone && (
                   <div className="flex items-center gap-2">
-                    {member.phone && (
-                      <a
-                        href={`tel:${member.rawPhone || member.phone}`}
-                        className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-semibold border border-white/10 hover:border-cyan-500/40 transition-all cursor-pointer"
-                        title={`Call ${member.name} directly`}
-                      >
-                        <Phone className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                        <span className="truncate">{member.phone}</span>
-                      </a>
-                    )}
+                    <a
+                      href={`tel:${member.rawPhone || member.phone}`}
+                      className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-semibold border border-white/10 hover:border-cyan-500/40 transition-all cursor-pointer"
+                      title={`Call ${member.name} directly`}
+                    >
+                      <Phone className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                      <span className="truncate">{member.phone}</span>
+                    </a>
 
                     {member.rawPhone && (
                       <a
@@ -134,19 +159,30 @@ export const LeadershipSection: React.FC<LeadershipSectionProps> = ({
                         href={member.linkedin}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={`${
-                          member.phone
-                            ? 'p-2.5 rounded-xl bg-slate-800 hover:bg-cyan-500/20 text-slate-300 hover:text-cyan-300 border border-white/10 hover:border-cyan-500/40'
-                            : 'flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-semibold border border-white/10 hover:border-cyan-500/40'
-                        } transition-all cursor-pointer shrink-0`}
+                        className="p-2.5 rounded-xl bg-slate-800 hover:bg-cyan-500/20 text-slate-300 hover:text-cyan-300 border border-white/10 hover:border-cyan-500/40 transition-all cursor-pointer shrink-0"
                         title={`Connect with ${member.name} on LinkedIn`}
                         aria-label={`${member.name} LinkedIn Profile`}
                       >
                         <Linkedin className="w-4 h-4 text-cyan-400 shrink-0" />
-                        {!member.phone && <span>LinkedIn Profile</span>}
                       </a>
                     )}
                   </div>
+                )}
+
+                {/* For members without phone (Tamanna Aggarwal): Full-Width High-Visibility LinkedIn Button */}
+                {!member.phone && member.linkedin && (
+                  <a
+                    href={member.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white font-bold text-xs sm:text-sm border border-sky-400/40 shadow-lg shadow-sky-950/50 hover:shadow-sky-500/20 hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer group/in"
+                    title={`Connect with ${member.name} on LinkedIn`}
+                    aria-label={`Connect with ${member.name} on LinkedIn`}
+                  >
+                    <Linkedin className="w-4 h-4 fill-white shrink-0 group-hover/in:rotate-3 transition-transform" />
+                    <span>Connect with {member.name.split(' ')[0]} on LinkedIn</span>
+                    <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover/in:translate-x-0.5 group-hover/in:-translate-y-0.5" />
+                  </a>
                 )}
 
                 {/* Consultation Direct Trigger */}
@@ -154,10 +190,14 @@ export const LeadershipSection: React.FC<LeadershipSectionProps> = ({
                   <button
                     type="button"
                     onClick={() => onContactLeadership(member.name)}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500 text-cyan-400 hover:text-slate-950 border border-cyan-500/30 hover:border-cyan-400 text-xs font-bold transition-all cursor-pointer group/btn"
+                    className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl transition-all cursor-pointer ${
+                      member.phone
+                        ? 'bg-cyan-500/10 hover:bg-cyan-500 text-cyan-400 hover:text-slate-950 border border-cyan-500/30 hover:border-cyan-400 text-xs font-bold group/btn'
+                        : 'bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-white/10 hover:border-cyan-500/30 text-xs font-medium'
+                    }`}
                   >
-                    <span>Connect with {member.name.split(' ')[0]}</span>
-                    <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5" />
+                    <span>{member.phone ? `Connect with ${member.name.split(' ')[0]}` : 'Book Technical Consultation'}</span>
+                    <ArrowUpRight className="w-3.5 h-3.5 transition-transform" />
                   </button>
                 )}
               </div>

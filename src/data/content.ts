@@ -217,7 +217,7 @@ export const LEADERSHIP_MEMBERS: LeadershipMember[] = [
     department: 'Engineering & Technology Operations',
     bio: 'Driving technical architecture, agile software delivery, cloud systems, and AI engineering standards across all enterprise web and mobile solutions.',
     email: 'info.bitsoinnovations@gmail.com',
-    linkedin: 'https://www.linkedin.com/company/bitso-innovations/?viewAsMember=true',
+    linkedin: 'https://www.linkedin.com/in/tamanna-aggarwal-24951b380?utm_source=share_via&utm_content=profile&utm_medium=member_ios',
     image: '/images/tamanna_it_head.jpg',
     fallbackImage: '/images/smart_retail_store.jpg',
     initials: 'TA',

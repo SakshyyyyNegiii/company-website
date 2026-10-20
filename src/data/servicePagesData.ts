@@ -3,6 +3,12 @@ export interface ServicePageData {
   name: string;
   metaTitle: string;
   metaDescription: string;
+  primaryKeyword: string;
+  secondaryKeywords: string[];
+  longTailKeywords: string[];
+  searchIntent: string;
+  targetAudience: string;
+  canonicalUrl: string;
   keywords: string[];
   heroBadge: string;
   headline: string;
@@ -28,6 +34,17 @@ export interface ServicePageData {
     question: string;
     answer: string;
   }[];
+  contextualInternalLinks: {
+    label: string;
+    targetUrl: string;
+    anchorText: string;
+    description: string;
+  }[];
+  relatedServices: {
+    slug: string;
+    name: string;
+    badge: string;
+  }[];
 }
 
 export const DEDICATED_SERVICES: Record<string, ServicePageData> = {
@@ -36,17 +53,37 @@ export const DEDICATED_SERVICES: Record<string, ServicePageData> = {
     name: 'Website Development',
     metaTitle: 'Website Development Company | Business Websites & Web Apps | Bitso Innovations',
     metaDescription: 'Bitso Innovations is a premier website development company engineering fast, modern, and conversion-focused business websites and full-stack web applications.',
+    primaryKeyword: 'website development company',
+    secondaryKeywords: [
+      'business website development',
+      'full-stack web development services',
+      'React website design',
+      'responsive web engineering',
+      'fast loading business websites',
+      'custom web application development',
+    ],
+    longTailKeywords: [
+      'hire custom website development company for corporate portal',
+      'full stack web development company in India with fast Core Web Vitals',
+      'responsive business website design and development services',
+    ],
+    searchIntent: 'Transactional',
+    targetAudience: 'Corporate Clients, E-Commerce Brands, High-Growth Startups',
+    canonicalUrl: 'https://www.bitsoinnovations.com/services/web-development',
     keywords: [
       'website development company',
       'business website development',
       'full-stack web development services',
-      'React website development',
-      'responsive web design Delhi',
-      'modern web application development',
+      'React website design',
+      'responsive web engineering',
+      'fast loading business websites',
+      'custom web application development',
+      'hire custom website development company for corporate portal',
+      'full stack web development company in India with fast Core Web Vitals',
     ],
-    heroBadge: 'PREMIER WEB ENGINEERING',
+    heroBadge: 'PREMIER WEB ENGINEERING · TRANSACTIONAL INTENT',
     headline: 'High-Performance Business Websites Built to Scale and Convert',
-    subheadline: 'We engineer blazingly fast, SEO-optimized business websites and full-stack web applications tailored to your business model, customer journey, and growth targets.',
+    subheadline: 'We engineer blazingly fast, SEO-optimized business websites and full-stack web applications tailored to your business model, customer journey, and conversion targets.',
     primaryCtaText: 'Start Your Web Project',
     features: [
       {
@@ -110,21 +147,66 @@ export const DEDICATED_SERVICES: Record<string, ServicePageData> = {
         answer: 'Absolutely. We provide ongoing maintenance SLAs covering server monitoring, SSL certificate renewals, security updates, and feature enhancements.',
       },
     ],
+    contextualInternalLinks: [
+      {
+        label: 'Technical SEO for React Websites Guide',
+        targetUrl: '/blog/technical-seo-for-react-websites',
+        anchorText: 'our in-depth technical SEO and Core Web Vitals engineering guide',
+        description: 'Learn how we optimize single-page applications for Googlebot indexing and sub-second loading.',
+      },
+      {
+        label: 'Website Development Cost in Delhi NCR',
+        targetUrl: '/blog/website-development-cost-in-delhi-ncr',
+        anchorText: 'our 2026 website development cost and scope analysis in Delhi NCR',
+        description: 'Transparent pricing, deliverables breakdown, and agency comparison for business websites.',
+      },
+      {
+        label: 'Custom Software Development Services',
+        targetUrl: '/services/software-development',
+        anchorText: 'our custom enterprise software development services',
+        description: 'Scaling beyond static sites into bespoke ERPs, dashboards, and automated cloud workflows.',
+      },
+    ],
+    relatedServices: [
+      { slug: 'software-development', name: 'Custom Software Development', badge: 'Enterprise ERPs' },
+      { slug: 'ai-automation', name: 'Enterprise AI & Automation', badge: 'Intelligent Workflows' },
+      { slug: 'student-projects', name: 'Student Project Mentorship', badge: 'Capstone Assistance' },
+    ],
   },
+
   'software-development': {
     slug: 'software-development',
     name: 'Custom Software Development',
     metaTitle: 'Custom Software Development Company | Enterprise Web & Cloud Systems | Bitso Innovations',
     metaDescription: 'Custom software development services for modern businesses. We design and build enterprise ERPs, cloud microservices, APIs, and scalable internal tools.',
-    keywords: [
-      'custom software development',
+    primaryKeyword: 'custom software development company',
+    secondaryKeywords: [
       'software development services for businesses',
-      'enterprise software development',
+      'enterprise software engineering',
+      'custom ERP systems',
+      'cloud microservices development',
+      'B2B portal development',
+      'technical issue troubleshooting',
+    ],
+    longTailKeywords: [
+      'custom software development company for small business in Delhi',
+      'enterprise custom software development services in India',
+      'bespoke software development and API microservices architecture',
+    ],
+    searchIntent: 'Transactional',
+    targetAudience: 'Enterprises, Industrial Manufacturers, Logistics & Retail Operators',
+    canonicalUrl: 'https://www.bitsoinnovations.com/services/software-development',
+    keywords: [
+      'custom software development company',
+      'software development services for businesses',
+      'enterprise software engineering',
       'custom ERP systems',
       'cloud microservices development',
       'technical issue troubleshooting',
+      'custom software development company for small business in Delhi',
+      'enterprise custom software development services in India',
     ],
-    heroBadge: 'ENTERPRISE SOFTWARE ENGINEERING',
+    heroBadge: 'ENTERPRISE SOFTWARE ENGINEERING · HIGH COMMERCIAL INTENT',
     headline: 'Custom Software Designed Around Your Business Workflows',
     subheadline: 'Eliminate manual bottlenecks with enterprise-grade software systems, real-time operational ledgers, custom ERPs, and cloud microservices engineered for zero downtime.',
     primaryCtaText: 'Request Software Consultation',
@@ -180,21 +262,65 @@ export const DEDICATED_SERVICES: Record<string, ServicePageData> = {
         answer: 'Yes. You receive 100% ownership of all source code, database schemas, deployment pipelines, and intellectual property upon project handover.',
       },
     ],
+    contextualInternalLinks: [
+      {
+        label: 'MERN Stack Development Architecture',
+        targetUrl: '/blog/mern-stack-development-architecture',
+        anchorText: 'our enterprise MERN stack development guide',
+        description: 'Decoupled service-layer patterns, PostgreSQL/MongoDB indexing, and high-concurrency API performance.',
+      },
+      {
+        label: 'Custom Software vs Off-the-Shelf SaaS',
+        targetUrl: '/blog/custom-software-vs-saas-for-business',
+        anchorText: 'our comprehensive analysis of custom software vs off-the-shelf SaaS',
+        description: 'Total cost of ownership, IP ownership, and long-term scalability advantages for scaling companies.',
+      },
+      {
+        label: 'Web Application Security & API Defense',
+        targetUrl: '/blog/web-application-security-and-cors',
+        anchorText: 'our production web application security checklist',
+        description: 'Hardening Node.js APIs, resolving CORS errors, and securing cloud databases.',
+      },
+    ],
+    relatedServices: [
+      { slug: 'web-development', name: 'Website Development', badge: 'High-Speed Web' },
+      { slug: 'ai-automation', name: 'Enterprise AI & Automation', badge: 'Intelligent Workflows' },
+      { slug: 'location-delhi-ncr', name: 'Software Development in Delhi NCR', badge: 'Regional Enterprise' },
+    ],
   },
+
   'student-projects': {
     slug: 'student-projects',
     name: 'Student Project Development Assistance',
     metaTitle: 'Student Project Development Assistance & Mentorship | Final-Year Capstone Guidance | Bitso Innovations',
     metaDescription: 'Bitso Innovations provides professional project development assistance and technical mentorship for computer science, IT, and engineering final-year student projects.',
+    primaryKeyword: 'student project development assistance',
+    secondaryKeywords: [
+      'final-year engineering project guidance',
+      'computer science capstone projects',
+      'MERN stack student projects',
+      'engineering viva voce preparation',
+      'Python AI final year projects',
+      'BTech project code guidance Delhi',
+    ],
+    longTailKeywords: [
+      'final year computer science project development assistance in Delhi',
+      'academic capstone project mentorship with live cloud deployment',
+      'BTech engineering project code guidance and viva defense preparation',
+    ],
+    searchIntent: 'Commercial / Academic',
+    targetAudience: 'B.Tech, BCA, MCA, B.Sc & M.Tech Computer Science Students',
+    canonicalUrl: 'https://www.bitsoinnovations.com/services/student-projects',
     keywords: [
       'student project development assistance',
       'final-year engineering project guidance',
       'computer science capstone projects',
       'MERN stack student projects',
-      'Python AI final year projects',
       'engineering viva voce preparation',
+      'Python AI final year projects',
+      'final year computer science project development assistance in Delhi',
     ],
-    heroBadge: 'ACADEMIC & TECHNICAL MENTORSHIP',
+    heroBadge: 'ACADEMIC & TECHNICAL MENTORSHIP · ACCREDITED CODE',
     headline: 'Practical Final-Year Engineering Project Guidance & Code Mentorship',
     subheadline: 'Turn your capstone concept into a fully functional, live-deployed full-stack web application. We mentor students on modern architectures, clean Git code, and viva voce defense.',
     primaryCtaText: 'Get Project Guidance',
@@ -254,20 +380,56 @@ export const DEDICATED_SERVICES: Record<string, ServicePageData> = {
         answer: 'Yes. We guide you through deploying your completed project to a live public cloud URL with HTTPS so evaluators can test the system on their own devices.',
       },
     ],
+    contextualInternalLinks: [
+      {
+        label: 'MERN Stack Architecture Guide',
+        targetUrl: '/blog/mern-stack-development-architecture',
+        anchorText: 'our step-by-step MERN stack architecture guide',
+        description: 'Master full-stack React and Node.js concepts for your final-year college project viva.',
+      },
+      {
+        label: 'Technical SEO & Performance Guide',
+        targetUrl: '/blog/technical-seo-for-react-websites',
+        anchorText: 'our guide on deploying and optimizing React web applications',
+        description: 'Deploy your academic project to live cloud infrastructure and showcase working live demos to examiners.',
+      },
+    ],
+    relatedServices: [
+      { slug: 'web-development', name: 'Website Development', badge: 'Production Web' },
+      { slug: 'software-development', name: 'Custom Software Development', badge: 'Enterprise Systems' },
+    ],
   },
+
   'ai-automation': {
     slug: 'ai-automation',
     name: 'Enterprise Cloud AI & Automation',
     metaTitle: 'Enterprise Cloud AI & Automation Solutions | Intelligent Workflows | Bitso Innovations',
     metaDescription: 'Harness practical generative AI, machine learning pipelines, and autonomous workflow automation to accelerate enterprise business operations.',
-    keywords: [
-      'AI solutions company',
-      'cloud AI automation',
-      'business process automation',
-      'generative AI for enterprise',
-      'intelligent workflows',
+    primaryKeyword: 'enterprise AI development and automation company',
+    secondaryKeywords: [
+      'business process automation using AI',
+      'cloud AI automation services',
+      'generative AI integration India',
+      'smart data extraction systems',
+      'intelligent workflow bots',
     ],
-    heroBadge: 'INTELLIGENT CLOUD AUTOMATION',
+    longTailKeywords: [
+      'custom AI development and business automation company in Delhi NCR',
+      'hire AI developers for enterprise workflow automation in India',
+      'integrating generative AI and LLMs into company internal software',
+    ],
+    searchIntent: 'Transactional',
+    targetAudience: 'Chief Information Officers (CIOs), Operations Directors, Managing Directors',
+    canonicalUrl: 'https://www.bitsoinnovations.com/services/ai-automation',
+    keywords: [
+      'enterprise AI development and automation company',
+      'business process automation using AI',
+      'cloud AI automation services',
+      'generative AI integration India',
+      'smart data extraction systems',
+      'custom AI development and business automation company in Delhi NCR',
+    ],
+    heroBadge: 'INTELLIGENT CLOUD AUTOMATION · INNOVATION STACK',
     headline: 'Transform Manual Workflows with Practical Business AI & Automation',
     subheadline: 'Integrate custom language models, autonomous data extractors, intelligent routing agents, and real-time analytics to supercharge business productivity.',
     primaryCtaText: 'Explore AI Solutions',
@@ -323,19 +485,55 @@ export const DEDICATED_SERVICES: Record<string, ServicePageData> = {
         answer: 'We architect strict server-side proxy environments where private customer data is never used to train public models, and all interactions are encrypted in transit and at rest.',
       },
     ],
+    contextualInternalLinks: [
+      {
+        label: 'Business Process Automation with AI Guide',
+        targetUrl: '/blog/business-process-automation-using-ai',
+        anchorText: 'our practical tutorial on business process automation using AI',
+        description: 'How to automate manual document parsing, lead qualification, and customer support with LLMs.',
+      },
+      {
+        label: 'Custom Software Engineering',
+        targetUrl: '/services/software-development',
+        anchorText: 'our custom software and backend database integration services',
+        description: 'Connecting autonomous AI models with enterprise ERPs and PostgreSQL databases.',
+      },
+    ],
+    relatedServices: [
+      { slug: 'software-development', name: 'Custom Software Development', badge: 'Enterprise ERPs' },
+      { slug: 'web-development', name: 'Website Development', badge: 'High-Speed Web' },
+    ],
   },
+
   'location-delhi-laxmi-nagar': {
     slug: 'location-delhi-laxmi-nagar',
     name: 'Website Development in Laxmi Nagar, Delhi',
     metaTitle: 'Website Development Company in Laxmi Nagar East Delhi | Bitso Innovations',
-    metaDescription: 'Premier website development company in Laxmi Nagar, East Delhi. We build fast, mobile-friendly business websites, e-commerce stores, and custom software for local enterprises.',
+    metaDescription: 'Looking for a reliable website development company in Laxmi Nagar, East Delhi? Bitso Innovations builds fast, responsive business websites and custom software solutions.',
+    primaryKeyword: 'website development company in Laxmi Nagar Delhi',
+    secondaryKeywords: [
+      'web design Laxmi Nagar East Delhi',
+      'IT services company Laxmi Nagar',
+      'software development Laxmi Nagar Delhi',
+      'ecommerce website design East Delhi',
+      'website developer near Laxmi Nagar metro',
+      'best web development firm East Delhi',
+    ],
+    longTailKeywords: [
+      'best website development company in Laxmi Nagar East Delhi for small businesses',
+      'custom software and web design agency in Laxmi Nagar New Delhi',
+      'website design and local business SEO services in Laxmi Nagar 110092',
+    ],
+    searchIntent: 'Local Commercial',
+    targetAudience: 'Local Business Owners, Retail Stores, Traders in East Delhi',
+    canonicalUrl: 'https://www.bitsoinnovations.com/services/location-delhi-laxmi-nagar',
     keywords: [
       'website development company in Laxmi Nagar Delhi',
       'web design Laxmi Nagar East Delhi',
       'IT services company Laxmi Nagar',
       'software development Laxmi Nagar Delhi',
       'ecommerce website design East Delhi',
-      'website developer near Laxmi Nagar metro',
+      'best website development company in Laxmi Nagar East Delhi for small businesses',
     ],
     heroBadge: 'LOCAL IT PARTNER · LAXMI NAGAR, EAST DELHI',
     headline: 'Premier Website Development & IT Solutions in Laxmi Nagar, East Delhi',
@@ -344,7 +542,7 @@ export const DEDICATED_SERVICES: Record<string, ServicePageData> = {
     features: [
       {
         title: 'Accessible Local Engineering Team',
-        description: 'Our physical presence in Laxmi Nagar, New Delhi 110092 enables face-to-face architectural reviews and direct accountability with executive leadership.',
+        description: 'Our physical presence in Laxmi Nagar, New Delhi 110092 enables face-to-face architectural reviews and direct accountability with senior engineering leadership.',
         icon: 'users',
       },
       {
@@ -393,18 +591,55 @@ export const DEDICATED_SERVICES: Record<string, ServicePageData> = {
         answer: 'Yes! We configure local business Schema.org microdata, location landing pages, mobile speed optimization, and Google Search Console indexing to help you dominate local search queries.',
       },
     ],
+    contextualInternalLinks: [
+      {
+        label: 'Full-Service Web Development Packages',
+        targetUrl: '/services/web-development',
+        anchorText: 'our comprehensive business website development services',
+        description: 'Explore our full range of enterprise web engineering and responsive website design packages.',
+      },
+      {
+        label: 'Website Development Cost in Delhi NCR',
+        targetUrl: '/blog/website-development-cost-in-delhi-ncr',
+        anchorText: 'our transparent website development pricing guide for Delhi NCR',
+        description: 'Understand cost breakdowns, server hosting, domain setup, and ongoing maintenance.',
+      },
+    ],
+    relatedServices: [
+      { slug: 'web-development', name: 'Website Development', badge: 'Core Web' },
+      { slug: 'location-delhi-ncr', name: 'Software Development in Delhi NCR', badge: 'Regional Tech' },
+    ],
   },
+
   'location-delhi-ncr': {
     slug: 'location-delhi-ncr',
     name: 'Custom Software Development in Delhi NCR',
     metaTitle: 'Custom Software Development Company in Delhi NCR | Bitso Innovations',
     metaDescription: 'Leading custom software development and IT consulting company in Delhi NCR. Bitso Innovations delivers enterprise ERPs, cloud platforms, and full-stack web applications.',
+    primaryKeyword: 'custom software development company in Delhi NCR',
+    secondaryKeywords: [
+      'IT consulting services Delhi NCR',
+      'MERN stack developers Delhi',
+      'enterprise web app development Delhi',
+      'software development agency Gurgaon Noida Delhi',
+      'cloud DevOps consultants Delhi NCR',
+      'custom ERP development Delhi',
+    ],
+    longTailKeywords: [
+      'top custom software development company in Delhi NCR for startups and enterprises',
+      'custom ERP and web application developers in Delhi NCR India',
+      'hire reliable software development agency in Delhi NCR with dedicated SLAs',
+    ],
+    searchIntent: 'Local Commercial',
+    targetAudience: 'Mid-sized Enterprises, Startups, Corporate Hubs across Delhi, Noida, Gurgaon',
+    canonicalUrl: 'https://www.bitsoinnovations.com/services/location-delhi-ncr',
     keywords: [
       'custom software development company in Delhi NCR',
       'IT consulting services Delhi NCR',
       'MERN stack developers Delhi',
       'enterprise software development Delhi',
       'software development agency Gurgaon Noida Delhi',
+      'top custom software development company in Delhi NCR for startups and enterprises',
     ],
     heroBadge: 'ENTERPRISE TECH PARTNER · DELHI NCR',
     headline: 'Enterprise Custom Software Development & IT Consulting in Delhi NCR',
@@ -423,7 +658,7 @@ export const DEDICATED_SERVICES: Record<string, ServicePageData> = {
       },
       {
         title: 'Dedicated Senior Engineering SLAs',
-        description: 'Direct executive oversight from Founder & President Aman and Technical / IT Head Tamanna Aggarwal with guaranteed response SLAs.',
+        description: 'Direct executive oversight from senior technical leadership with guaranteed response SLAs and transparent communication.',
         icon: 'award',
       },
       {
@@ -461,6 +696,24 @@ export const DEDICATED_SERVICES: Record<string, ServicePageData> = {
         question: 'What technologies do your software engineers specialize in?',
         answer: 'Our core stack includes React 19, TypeScript, Node.js, Express, Python, PostgreSQL, Google Firebase, Redis, Docker, and modern Cloud infrastructure.',
       },
+    ],
+    contextualInternalLinks: [
+      {
+        label: 'Custom Software Development Services',
+        targetUrl: '/services/software-development',
+        anchorText: 'our custom enterprise software development capabilities',
+        description: 'Explore our microservice architectures, cloud databases, and bespoke business automation.',
+      },
+      {
+        label: 'Custom Software vs Off-the-Shelf SaaS',
+        targetUrl: '/blog/custom-software-vs-saas-for-business',
+        anchorText: 'our enterprise guide on custom software vs SaaS for Indian enterprises',
+        description: 'Why mid-market companies in Delhi NCR choose proprietary codebases over recurring SaaS fees.',
+      },
+    ],
+    relatedServices: [
+      { slug: 'software-development', name: 'Custom Software Development', badge: 'Core Engineering' },
+      { slug: 'location-delhi-laxmi-nagar', name: 'Website Development in Laxmi Nagar', badge: 'East Delhi Office' },
     ],
   },
 };

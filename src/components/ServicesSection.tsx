@@ -20,6 +20,7 @@ import { InteractiveCard } from './InteractiveCard';
 
 interface ServicesSectionProps {
   onSelectService: (serviceName: string) => void;
+  onNavigate?: (href: string) => void;
 }
 
 interface TechSpec {
@@ -70,6 +71,7 @@ const TECH_SPECS: Record<string, TechSpec> = {
 
 export const ServicesSection: React.FC<ServicesSectionProps> = ({
   onSelectService,
+  onNavigate,
 }) => {
   const { ref, isVisible } = useFadeInOnScroll();
   const [expandedServiceId, setExpandedServiceId] = useState<string | null>(null);
@@ -248,17 +250,39 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
                   )}
                 </div>
 
-                <div className="pt-4 border-t border-white/5 flex items-center justify-between">
-                  <div className="text-[11px] font-mono text-slate-400 tracking-wide truncate max-w-[180px]">
+                <div className="pt-4 border-t border-white/5 flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={(e) => toggleExpand(e, service.id)}
+                      className="flex items-center gap-1 text-[11px] font-mono text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer"
+                    >
+                      <span>{isExpanded ? 'Hide Specs' : 'Tech Specs'}</span>
+                      {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                    </button>
+                    {onNavigate && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const slugMap: Record<string, string> = {
+                            'web-dev': '/services/web-development',
+                            'software-dev': '/services/software-development',
+                            'ai-automation': '/services/ai-automation',
+                            'student-projects': '/services/student-projects',
+                          };
+                          const target = slugMap[service.id] || '/services/web-development';
+                          onNavigate(target);
+                        }}
+                        className="text-[11px] font-mono text-slate-300 hover:text-cyan-300 underline decoration-cyan-500/40 hover:decoration-cyan-400 transition-colors inline-flex items-center gap-1 cursor-pointer"
+                      >
+                        <span>Dedicated Page</span>
+                        <ArrowUpRight className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+                  <div className="text-[10px] font-mono text-slate-500 tracking-wide truncate max-w-[140px]">
                     {service.focus}
                   </div>
-                  <button
-                    onClick={(e) => toggleExpand(e, service.id)}
-                    className="flex items-center gap-1 text-[11px] font-mono text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer"
-                  >
-                    <span>{isExpanded ? 'Hide Specs' : 'Tech Specs'}</span>
-                    {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                  </button>
                 </div>
               </InteractiveCard>
             );

@@ -222,6 +222,7 @@ export default function App() {
           <div className="pt-20">
             <ServicesSection
               onSelectService={(serviceTitle) => handleOpenProjectModal(serviceTitle)}
+              onNavigate={navigateTo}
             />
           </div>
           <ContactSection
@@ -294,6 +295,7 @@ export default function App() {
         {/* Section 2: Services + Why Bitso (Combined) */}
         <ServicesSection
           onSelectService={(serviceTitle) => handleOpenProjectModal(serviceTitle)}
+          onNavigate={navigateTo}
         />
 
         {/* Section 3: Work + Process (Combined) */}

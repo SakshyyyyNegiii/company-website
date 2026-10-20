@@ -15,6 +15,7 @@ import {
   ExternalLink,
   Target,
   Sparkles,
+  ShieldCheck,
 } from 'lucide-react';
 
 interface BlogPostPageProps {
@@ -57,9 +58,9 @@ export const BlogPostPage: React.FC<BlogPostPageProps> = ({
     datePublished: post.publishedDate,
     dateModified: post.modifiedDate,
     author: {
-      '@type': 'Person',
-      name: post.author.name,
-      jobTitle: post.author.role,
+      '@type': 'Organization',
+      name: 'Bitso Innovations Technical Team',
+      url: 'https://www.bitsoinnovations.com',
     },
     publisher: {
       '@type': 'Organization',
@@ -106,7 +107,7 @@ export const BlogPostPage: React.FC<BlogPostPageProps> = ({
         ogType="article"
         publishedTime={post.publishedDate}
         modifiedTime={post.modifiedDate}
-        authorName={post.author.name}
+        authorName="Bitso Innovations Technical Team"
         schemaJson={combinedSchema}
       />
 
@@ -177,15 +178,15 @@ export const BlogPostPage: React.FC<BlogPostPageProps> = ({
             </div>
           </div>
 
-          {/* Author Badge & Share Button */}
+          {/* Editorial Attribution & Verification */}
           <div className="mt-8 pt-6 border-t border-white/10 flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 font-extrabold flex items-center justify-center text-sm shadow-md">
-                {post.author.initials}
+                <ShieldCheck className="w-5 h-5 text-cyan-400" />
               </div>
               <div>
-                <span className="text-sm font-bold text-white block">{post.author.name}</span>
-                <span className="text-xs font-mono text-slate-400">{post.author.role}</span>
+                <span className="text-sm font-bold text-white block">Bitso Innovations Engineering Team</span>
+                <span className="text-xs font-mono text-slate-400">Verified Technical Architecture Guide</span>
               </div>
             </div>
 

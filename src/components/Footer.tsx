@@ -74,8 +74,112 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenDisclaimer }) 
           )}
         </section>
 
+        {/* Primary Service Landing Pages & Regional Solutions (SEO Crawl Hub) */}
+        <div className="pt-6 border-t border-white/10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 text-xs">
+          <div>
+            <span className="font-mono uppercase tracking-wider text-cyan-400 font-semibold block mb-3 text-[11px]">
+              Core IT Services
+            </span>
+            <ul className="space-y-2 text-slate-300">
+              <li>
+                <a
+                  href="/services/web-development"
+                  onClick={(e) => { e.preventDefault(); onNavigate('/services/web-development' as any); }}
+                  className="hover:text-cyan-300 transition-colors"
+                >
+                  Website Development Company
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/services/software-development"
+                  onClick={(e) => { e.preventDefault(); onNavigate('/services/software-development' as any); }}
+                  className="hover:text-cyan-300 transition-colors"
+                >
+                  Custom Software Development
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/services/ai-automation"
+                  onClick={(e) => { e.preventDefault(); onNavigate('/services/ai-automation' as any); }}
+                  className="hover:text-cyan-300 transition-colors"
+                >
+                  Enterprise AI & Automation
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <span className="font-mono uppercase tracking-wider text-cyan-400 font-semibold block mb-3 text-[11px]">
+              Specialized Guidance
+            </span>
+            <ul className="space-y-2 text-slate-300">
+              <li>
+                <a
+                  href="/services/student-projects"
+                  onClick={(e) => { e.preventDefault(); onNavigate('/services/student-projects' as any); }}
+                  className="hover:text-cyan-300 transition-colors"
+                >
+                  Student Project Assistance & Mentorship
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/blog"
+                  onClick={(e) => { e.preventDefault(); onNavigate('blog'); }}
+                  className="hover:text-cyan-300 transition-colors"
+                >
+                  Technical Architecture Blog & Guides
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/work"
+                  onClick={(e) => { e.preventDefault(); onNavigate('work'); }}
+                  className="hover:text-cyan-300 transition-colors"
+                >
+                  Enterprise Case Studies & Deployments
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <span className="font-mono uppercase tracking-wider text-cyan-400 font-semibold block mb-3 text-[11px]">
+              Regional Service Centers
+            </span>
+            <ul className="space-y-2 text-slate-300">
+              <li>
+                <a
+                  href="/services/location-delhi-laxmi-nagar"
+                  onClick={(e) => { e.preventDefault(); onNavigate('/services/location-delhi-laxmi-nagar' as any); }}
+                  className="hover:text-cyan-300 transition-colors"
+                >
+                  Web Development in Laxmi Nagar, East Delhi
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/services/location-delhi-ncr"
+                  onClick={(e) => { e.preventDefault(); onNavigate('/services/location-delhi-ncr' as any); }}
+                  className="hover:text-cyan-300 transition-colors"
+                >
+                  Custom Software in Delhi NCR (Noida & Gurgaon)
+                </a>
+              </li>
+              <li className="pt-1">
+                <span className="text-slate-500 font-mono text-[11px] block">
+                  Office: Laxmi Nagar, New Delhi 110092
+                </span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
         {/* Bottom Navigation & Brand Row */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-2">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-4 border-t border-white/5">
           {/* Authentic Bitso Innovations Brand Logo */}
           <button
             onClick={() => onNavigate('home')}

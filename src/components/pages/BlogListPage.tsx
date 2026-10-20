@@ -12,6 +12,7 @@ import {
   Terminal,
   Target,
   Compass,
+  ShieldCheck,
 } from 'lucide-react';
 
 interface BlogListPageProps {
@@ -61,8 +62,9 @@ export const BlogListPage: React.FC<BlogListPageProps> = ({ onNavigate, onOpenCo
       datePublished: post.publishedDate,
       dateModified: post.modifiedDate,
       author: {
-        '@type': 'Person',
-        name: post.author.name,
+        '@type': 'Organization',
+        name: 'Bitso Innovations Technical Editorial',
+        url: 'https://www.bitsoinnovations.com/blog',
       },
     })),
   };
@@ -198,11 +200,11 @@ export const BlogListPage: React.FC<BlogListPageProps> = ({ onNavigate, onOpenCo
                 <div className="mt-8 pt-6 border-t border-white/10 flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 text-xs font-bold flex items-center justify-center">
-                      {featuredPost.author.initials}
+                      <ShieldCheck className="w-4 h-4 text-cyan-400" />
                     </div>
                     <div>
-                      <span className="text-xs font-bold text-white block">{featuredPost.author.name}</span>
-                      <span className="text-[10px] font-mono text-slate-400">{featuredPost.author.role}</span>
+                      <span className="text-xs font-bold text-white block">Bitso Innovations Editorial</span>
+                      <span className="text-[10px] font-mono text-slate-400">Verified Technical Publication</span>
                     </div>
                   </div>
 
@@ -262,9 +264,10 @@ export const BlogListPage: React.FC<BlogListPageProps> = ({ onNavigate, onOpenCo
               </div>
 
               <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between">
-                <span className="text-[11px] font-mono text-slate-500">
-                  By {post.author.name.split(' ')[0]}
-                </span>
+                <div className="flex items-center gap-1.5 text-[11px] font-mono text-slate-400">
+                  <Calendar className="w-3 h-3 text-cyan-400/70" />
+                  <span>{new Date(post.publishedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                </div>
                 <span className="text-xs font-bold text-cyan-400 inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
                   <span>Read Guide</span>
                   <ArrowRight className="w-3.5 h-3.5" />

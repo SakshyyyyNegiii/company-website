@@ -16,6 +16,7 @@ export interface EnrichedBlogArticle {
     name: string;
     role: string;
     initials: string;
+    linkedin?: string;
   };
   publishedDate: string;
   modifiedDate: string;
@@ -72,9 +73,9 @@ export const ENRICHED_BLOG_ARTICLES: EnrichedBlogArticle[] = [
     ],
     searchIntent: 'Informational',
     author: {
-      name: 'Tamanna Aggarwal',
-      role: 'Technical / IT Head, Bitso Innovations',
-      initials: 'TA',
+      name: 'Bitso Engineering Team',
+      role: 'Technical Architecture & Research',
+      initials: 'BI',
     },
     publishedDate: '2026-10-14',
     modifiedDate: '2026-10-20',
@@ -172,9 +173,9 @@ export class OrderService {
     ],
     searchIntent: 'Informational',
     author: {
-      name: 'Tamanna Aggarwal',
-      role: 'Technical / IT Head, Bitso Innovations',
-      initials: 'TA',
+      name: 'Bitso Engineering Team',
+      role: 'Technical Architecture & Research',
+      initials: 'BI',
     },
     publishedDate: '2026-10-16',
     modifiedDate: '2026-10-20',
@@ -252,9 +253,9 @@ export class OrderService {
     ],
     searchIntent: 'Informational',
     author: {
-      name: 'Aman',
-      role: 'Founder & President, Bitso Innovations',
-      initials: 'AM',
+      name: 'Bitso Engineering Team',
+      role: 'Cybersecurity & Infrastructure',
+      initials: 'BI',
     },
     publishedDate: '2026-10-17',
     modifiedDate: '2026-10-20',
@@ -334,9 +335,9 @@ app.use((req, res, next) => {
     ],
     searchIntent: 'Informational',
     author: {
-      name: 'Aman',
-      role: 'Founder & President, Bitso Innovations',
-      initials: 'AM',
+      name: 'Bitso Engineering Team',
+      role: 'Enterprise AI & Automation',
+      initials: 'BI',
     },
     publishedDate: '2026-10-18',
     modifiedDate: '2026-10-20',
@@ -401,9 +402,9 @@ app.use((req, res, next) => {
     ],
     searchIntent: 'Commercial Investigation',
     author: {
-      name: 'Jitender',
-      role: 'VP of Business Development, Bitso Innovations',
-      initials: 'JT',
+      name: 'Bitso Innovations Research Team',
+      role: 'Enterprise Solutions & Strategy',
+      initials: 'BI',
     },
     publishedDate: '2026-10-19',
     modifiedDate: '2026-10-20',
@@ -465,9 +466,9 @@ app.use((req, res, next) => {
     ],
     searchIntent: 'Commercial Investigation',
     author: {
-      name: 'Jitender',
-      role: 'VP of Business Development, Bitso Innovations',
-      initials: 'JT',
+      name: 'Bitso Innovations Research Team',
+      role: 'Enterprise Solutions & Strategy',
+      initials: 'BI',
     },
     publishedDate: '2026-10-20',
     modifiedDate: '2026-10-20',
