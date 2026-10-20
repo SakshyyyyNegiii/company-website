@@ -11,6 +11,7 @@ import {
   UserPlus,
   LogOut,
   ChevronDown,
+  Sliders,
 } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
 import { useAuth } from '../context/AuthContext';
@@ -74,6 +75,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'services', label: 'Services' },
     { id: 'work', label: 'Work' },
     { id: 'leadership', label: 'Leadership' },
+    { id: 'blog', label: 'Blog' },
     { id: 'contact', label: 'Contact' },
   ];
 
@@ -185,6 +187,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                     >
                       <User className="w-4 h-4 text-cyan-400" />
                       <span>Profile</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setProfileDropdownOpen(false);
+                        onNavigate('seo-dashboard');
+                      }}
+                      className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-slate-300 hover:text-white hover:bg-slate-800/80 transition-colors cursor-pointer text-left"
+                    >
+                      <Sliders className="w-4 h-4 text-cyan-400" />
+                      <span>SEO Dashboard</span>
                     </button>
 
                     {userProfile?.provider !== 'google' && (

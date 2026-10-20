@@ -18,6 +18,10 @@ import { COMPANY_INFO } from './data/content';
 import { ServiceDetailPage } from './components/pages/ServiceDetailPage';
 import { AboutPage } from './components/pages/AboutPage';
 import { LegalPage } from './components/pages/LegalPage';
+import { BlogListPage } from './components/pages/BlogListPage';
+import { BlogPostPage } from './components/pages/BlogPostPage';
+import { SeoDashboard } from './components/admin/SeoDashboard';
+import { ENRICHED_BLOG_ARTICLES } from './data/enhancedBlogData';
 
 export default function App() {
   const [currentPath, setCurrentPath] = useState<string>(() => {
@@ -90,9 +94,11 @@ export default function App() {
         return;
       }
 
-      // Explicit route paths (e.g. /about, /services/web-development)
+      // Explicit route paths (e.g. /about, /blog, /admin/seo, /services/web-development)
       let resolvedPath = targetStr;
       if (targetStr === 'about') resolvedPath = '/about';
+      if (targetStr === 'blog') resolvedPath = '/blog';
+      if (targetStr === 'seo-dashboard') resolvedPath = '/admin/seo';
 
       if (window.location.pathname !== resolvedPath) {
         window.history.pushState(null, '', resolvedPath);
@@ -101,6 +107,8 @@ export default function App() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
       if (resolvedPath === '/about') setActiveSection('about');
+      else if (resolvedPath === '/blog' || resolvedPath.startsWith('/blog/')) setActiveSection('blog');
+      else if (resolvedPath === '/admin/seo') setActiveSection('seo-dashboard');
       else setActiveSection('home');
     },
     [currentPath]
@@ -141,12 +149,48 @@ export default function App() {
 
   // Determine which page to render based on currentPath
   const renderPageContent = () => {
+    // 0. SEO Strategy & Keyword Control Dashboard
+    if (currentPath === '/admin/seo') {
+      return <SeoDashboard onNavigate={navigateTo} />;
+    }
+
     // 1. Dedicated About Us Page
     if (currentPath === '/about') {
       return (
         <AboutPage
           onNavigate={navigateTo}
           onOpenDisclaimer={() => setIsDisclaimerModalOpen(true)}
+        />
+      );
+    }
+
+    // 2. Blog Index Page
+    if (currentPath === '/blog' || currentPath === '/blog/') {
+      return (
+        <BlogListPage
+          onNavigate={navigateTo}
+          onOpenConsultation={(s) => handleOpenProjectModal(s)}
+        />
+      );
+    }
+
+    // 3. Single Blog Post Page
+    if (currentPath.startsWith('/blog/')) {
+      const slug = currentPath.replace('/blog/', '').replace(/\/$/, '');
+      const post = ENRICHED_BLOG_ARTICLES.find((p) => p.slug === slug);
+      if (post) {
+        return (
+          <BlogPostPage
+            post={post}
+            onNavigate={navigateTo}
+            onStartProject={(s) => handleOpenProjectModal(s)}
+          />
+        );
+      }
+      return (
+        <BlogListPage
+          onNavigate={navigateTo}
+          onOpenConsultation={(s) => handleOpenProjectModal(s)}
         />
       );
     }

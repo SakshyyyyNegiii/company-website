@@ -118,6 +118,18 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenDisclaimer }) 
               Leadership
             </button>
             <button
+              onClick={() => onNavigate('blog')}
+              className="hover:text-white transition-colors cursor-pointer"
+            >
+              Blog
+            </button>
+            <button
+              onClick={() => onNavigate('seo-dashboard')}
+              className="text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer font-mono"
+            >
+              SEO Dashboard
+            </button>
+            <button
               onClick={() => onNavigate('contact')}
               className="hover:text-white transition-colors cursor-pointer"
             >

@@ -324,4 +324,143 @@ export const DEDICATED_SERVICES: Record<string, ServicePageData> = {
       },
     ],
   },
+  'location-delhi-laxmi-nagar': {
+    slug: 'location-delhi-laxmi-nagar',
+    name: 'Website Development in Laxmi Nagar, Delhi',
+    metaTitle: 'Website Development Company in Laxmi Nagar East Delhi | Bitso Innovations',
+    metaDescription: 'Premier website development company in Laxmi Nagar, East Delhi. We build fast, mobile-friendly business websites, e-commerce stores, and custom software for local enterprises.',
+    keywords: [
+      'website development company in Laxmi Nagar Delhi',
+      'web design Laxmi Nagar East Delhi',
+      'IT services company Laxmi Nagar',
+      'software development Laxmi Nagar Delhi',
+      'ecommerce website design East Delhi',
+      'website developer near Laxmi Nagar metro',
+    ],
+    heroBadge: 'LOCAL IT PARTNER · LAXMI NAGAR, EAST DELHI',
+    headline: 'Premier Website Development & IT Solutions in Laxmi Nagar, East Delhi',
+    subheadline: 'Empowering East Delhi businesses, retailers, and startups with high-speed, SEO-optimized business websites, custom software, and responsive e-commerce portals with dedicated local support.',
+    primaryCtaText: 'Schedule In-Person Consultation',
+    features: [
+      {
+        title: 'Accessible Local Engineering Team',
+        description: 'Our physical presence in Laxmi Nagar, New Delhi 110092 enables face-to-face architectural reviews and direct accountability with executive leadership.',
+        icon: 'users',
+      },
+      {
+        title: 'Local SEO & Google Maps Synergy',
+        description: 'Built-in local schema, geo-coordinates, and on-page optimization designed to rank your business for East Delhi and Delhi NCR search intent.',
+        icon: 'search',
+      },
+      {
+        title: 'Fast Mobile Core Web Vitals',
+        description: 'Lightning-fast loading on mobile networks (sub-second LCP) so local customers never drop off due to slow pages.',
+        icon: 'zap',
+      },
+      {
+        title: 'Turnkey Maintenance & Support',
+        description: 'Local emergency support, domain renewals, security monitoring, and regular backups handled by our in-house engineering team.',
+        icon: 'shield',
+      },
+    ],
+    process: [
+      { step: '01', title: 'Consultation in Laxmi Nagar', desc: 'Meet our team at our East Delhi office to discuss your business goals and technical specifications.' },
+      { step: '02', title: 'Custom UI/UX & Architecture', desc: 'Crafting responsive Figma wireframes with clear conversion funnels and WhatsApp integration.' },
+      { step: '03', title: 'Clean Full-Stack Build', desc: 'Developing with React, TypeScript, and modern backend APIs with automated testing.' },
+      { step: '04', title: 'Launch & Google Business Sync', desc: 'Deploying to high-speed cloud infrastructure with complete Google Search Console indexing.' },
+    ],
+    useCases: [
+      {
+        title: 'Retail Stores & Wholesale Traders in East Delhi',
+        tag: 'Local Commercial',
+        description: 'Omnichannel inventory sync and digital catalog portals for businesses in Laxmi Nagar, Gandhi Nagar, and Preet Vihar.',
+        metric: '98+ Mobile PageSpeed Score',
+      },
+      {
+        title: 'Professional Service Firms & Clinics',
+        tag: 'Service Providers',
+        description: 'Appointment scheduling websites with instant WhatsApp notification triggers and Google Calendar sync.',
+        metric: '3x More Online Client Inquiries',
+      },
+    ],
+    faq: [
+      {
+        question: 'Where is Bitso Innovations located in Laxmi Nagar?',
+        answer: 'Bitso Innovations is headquartered in Laxmi Nagar, New Delhi 110092. You can schedule an in-person meeting with our technical leadership team or connect via phone at +91 99903 66072.',
+      },
+      {
+        question: 'Can you help our local business rank on Google in East Delhi?',
+        answer: 'Yes! We configure local business Schema.org microdata, location landing pages, mobile speed optimization, and Google Search Console indexing to help you dominate local search queries.',
+      },
+    ],
+  },
+  'location-delhi-ncr': {
+    slug: 'location-delhi-ncr',
+    name: 'Custom Software Development in Delhi NCR',
+    metaTitle: 'Custom Software Development Company in Delhi NCR | Bitso Innovations',
+    metaDescription: 'Leading custom software development and IT consulting company in Delhi NCR. Bitso Innovations delivers enterprise ERPs, cloud platforms, and full-stack web applications.',
+    keywords: [
+      'custom software development company in Delhi NCR',
+      'IT consulting services Delhi NCR',
+      'MERN stack developers Delhi',
+      'enterprise software development Delhi',
+      'software development agency Gurgaon Noida Delhi',
+    ],
+    heroBadge: 'ENTERPRISE TECH PARTNER · DELHI NCR',
+    headline: 'Enterprise Custom Software Development & IT Consulting in Delhi NCR',
+    subheadline: 'Engineering scalable cloud software, custom ERPs, and high-concurrency web systems for businesses across New Delhi, Gurgaon, Noida, and Faridabad.',
+    primaryCtaText: 'Request Executive Proposal',
+    features: [
+      {
+        title: 'High-Concurrency Cloud Architecture',
+        description: 'Microservices and Kubernetes architectures built for auto-scaling and high availability across distributed regional hubs.',
+        icon: 'server',
+      },
+      {
+        title: 'Custom ERP & Logistics Engines',
+        description: 'Unified supply chain ledgers, automated GST invoice reconciliation, and real-time inventory management for Delhi NCR enterprises.',
+        icon: 'database',
+      },
+      {
+        title: 'Dedicated Senior Engineering SLAs',
+        description: 'Direct executive oversight from Founder & President Aman and Technical / IT Head Tamanna Aggarwal with guaranteed response SLAs.',
+        icon: 'award',
+      },
+      {
+        title: 'Bank-Grade Cybersecurity Protocols',
+        description: 'Zero-trust IAM, role-based access control (RBAC), and automated vulnerability scans safeguarding proprietary corporate data.',
+        icon: 'shield',
+      },
+    ],
+    process: [
+      { step: '01', title: 'Executive Discovery & Feasibility', desc: 'Analyzing existing enterprise software bottlenecks, data flow schemas, and compliance requirements.' },
+      { step: '02', title: 'System Architecture Specification', desc: 'Designing OpenAPI contracts, relational database schemas, and microservice topologies.' },
+      { step: '03', title: 'Agile Milestone Sprints', desc: 'Two-week development sprints with live staging deployments and client feedback loops.' },
+      { step: '04', title: 'Zero-Downtime Rollout & Support', desc: 'Production deployment with 24/7 telemetry monitoring, database backups, and maintenance SLAs.' },
+    ],
+    useCases: [
+      {
+        title: 'Delhi NCR Supply Chain & Logistics Network',
+        tag: 'B2B Enterprise',
+        description: 'Multi-warehouse dispatch routing, automated E-Way bill generation, and live fleet telemetry across the NCR region.',
+        metric: '100% Automated GST Reconciliation',
+      },
+      {
+        title: 'Corporate Financial & Advisory Portals',
+        tag: 'Financial Services',
+        description: 'Encrypted document vaults, role-based client review workflows, and instant multi-party audit trails.',
+        metric: 'Sub-second API Query Execution',
+      },
+    ],
+    faq: [
+      {
+        question: 'Do you serve clients across all of Delhi NCR including Noida and Gurgaon?',
+        answer: 'Yes! Bitso Innovations works with mid-market businesses, startups, and large enterprises across New Delhi, Gurgaon, Noida, Greater Noida, and Faridabad.',
+      },
+      {
+        question: 'What technologies do your software engineers specialize in?',
+        answer: 'Our core stack includes React 19, TypeScript, Node.js, Express, Python, PostgreSQL, Google Firebase, Redis, Docker, and modern Cloud infrastructure.',
+      },
+    ],
+  },
 };

@@ -1,4 +1,4 @@
-export type SectionId = 'home' | 'services' | 'work' | 'leadership' | 'about' | 'contact';
+export type SectionId = 'home' | 'services' | 'work' | 'leadership' | 'about' | 'blog' | 'seo-dashboard' | 'contact';
 export type SlideId = SectionId; // Backwards-compatible alias
 
 export interface LeadershipMember {
