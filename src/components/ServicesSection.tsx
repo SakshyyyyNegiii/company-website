@@ -268,6 +268,8 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
                             'web-dev': '/services/web-development',
                             'software-dev': '/services/software-development',
                             'ai-automation': '/services/ai-automation',
+                            'app-dev': '/services/mobile-app-development',
+                            'ui-ux': '/services/ui-ux-design',
                             'student-projects': '/services/student-projects',
                           };
                           const target = slugMap[service.id] || '/services/web-development';

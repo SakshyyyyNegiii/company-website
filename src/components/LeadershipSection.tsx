@@ -127,7 +127,7 @@ export const LeadershipSection: React.FC<LeadershipSectionProps> = ({
 
               {/* Contact Actions Footer */}
               <div className="mt-8 pt-5 border-t border-white/10 flex flex-col gap-3">
-                {/* For members with phone (Aman & Jitender): Direct Phone + WhatsApp + LinkedIn icon */}
+                {/* For members with phone (Ch. Aman & Jitendra Singh): Direct Phone + WhatsApp + LinkedIn icon */}
                 {member.phone && (
                   <div className="flex items-center gap-2">
                     <a
@@ -180,7 +180,7 @@ export const LeadershipSection: React.FC<LeadershipSectionProps> = ({
                     aria-label={`Connect with ${member.name} on LinkedIn`}
                   >
                     <Linkedin className="w-4 h-4 fill-white shrink-0 group-hover/in:rotate-3 transition-transform" />
-                    <span>Connect with {member.name.split(' ')[0]} on LinkedIn</span>
+                    <span>Connect with {member.name.startsWith('Ch. ') ? member.name : member.name.split(' ')[0]} on LinkedIn</span>
                     <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover/in:translate-x-0.5 group-hover/in:-translate-y-0.5" />
                   </a>
                 )}
@@ -196,7 +196,7 @@ export const LeadershipSection: React.FC<LeadershipSectionProps> = ({
                         : 'bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-white/10 hover:border-cyan-500/30 text-xs font-medium'
                     }`}
                   >
-                    <span>{member.phone ? `Connect with ${member.name.split(' ')[0]}` : 'Book Technical Consultation'}</span>
+                    <span>{member.phone ? `Connect with ${member.name.startsWith('Ch. ') ? member.name : member.name.split(' ')[0]}` : 'Book Technical Consultation'}</span>
                     <ArrowUpRight className="w-3.5 h-3.5 transition-transform" />
                   </button>
                 )}

@@ -69,6 +69,8 @@ export const ServiceDetailPage: React.FC<ServiceDetailPageProps> = ({
         return <MessageCircle className="w-5 h-5 text-cyan-400" />;
       case 'trendingUp':
         return <TrendingUp className="w-5 h-5 text-cyan-400" />;
+      case 'target':
+        return <Target className="w-5 h-5 text-cyan-400" />;
       default:
         return <Zap className="w-5 h-5 text-cyan-400" />;
     }

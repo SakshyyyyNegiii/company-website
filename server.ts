@@ -312,6 +312,8 @@ async function startServer() {
       },
     };
 
+    // Send immediate connected acknowledgement and initialization payload
+    ws.send(JSON.stringify({ type: 'connected' }));
     ws.send(JSON.stringify({ type: 'init', data: initData, timestamp: Date.now() }));
 
     // Broadcast presence update to peers
@@ -359,22 +361,16 @@ async function startServer() {
     });
   });
 
-  // Handle HTTP upgrade for /ws
+  // Cleanly handle all HTTP WebSocket upgrades across /ws, /, and Vite ping
   server.on('upgrade', (request, socket, head) => {
     socket.on('error', () => {
       // Prevent unhandled socket errors on early disconnect
     });
 
     try {
-      const url = new URL(request.url || '', `http://${request.headers.host || 'localhost'}`);
-      if (url.pathname === '/ws' || url.pathname.startsWith('/ws')) {
-        wss.handleUpgrade(request, socket, head, (ws) => {
-          wss.emit('connection', ws, request);
-        });
-        return;
-      }
-      // If upgrade was for something else, destroy cleanly
-      socket.destroy();
+      wss.handleUpgrade(request, socket, head, (ws) => {
+        wss.emit('connection', ws, request);
+      });
     } catch {
       socket.destroy();
     }

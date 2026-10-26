@@ -184,7 +184,7 @@ export const PROCESS_STEPS: ProcessStep[] = [
 export const LEADERSHIP_MEMBERS: LeadershipMember[] = [
   {
     id: 'aman',
-    name: 'Aman',
+    name: 'Ch. Aman',
     designation: 'Founder and President',
     department: 'Executive Leadership & Strategy',
     bio: 'Visionary entrepreneur directing Bitso Innovations’ technological vision, enterprise partnerships, and end-to-end digital transformation for modern businesses.',
@@ -194,11 +194,11 @@ export const LEADERSHIP_MEMBERS: LeadershipMember[] = [
     linkedin: 'https://www.linkedin.com/company/bitso-innovations/?viewAsMember=true',
     image: '/images/aman_founder.jpg',
     fallbackImage: '/images/director_portrait.jpg',
-    initials: 'AM',
+    initials: 'CA',
   },
   {
-    id: 'jitender',
-    name: 'Jitender',
+    id: 'jitendra',
+    name: 'Jitendra Singh',
     designation: 'Vice President of Business Development',
     department: 'Business Development & Strategic Alliances',
     bio: 'Leading strategic market expansion, commercial partnerships, and enterprise client relationships to scale Bitso Innovations’ digital solutions nationwide.',
@@ -208,7 +208,7 @@ export const LEADERSHIP_MEMBERS: LeadershipMember[] = [
     linkedin: 'https://www.linkedin.com/company/bitso-innovations/?viewAsMember=true',
     image: '/images/jitender_vp.jpg',
     fallbackImage: '/images/enterprise_erp.jpg',
-    initials: 'JT',
+    initials: 'JS',
   },
   {
     id: 'tamanna',

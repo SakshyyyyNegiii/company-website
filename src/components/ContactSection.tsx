@@ -97,11 +97,6 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentUser) {
-      setErrorMsg('Please sign in or create an account before booking your appointment.');
-      openAuthModal('signin', 'Please sign in or create an account before booking your appointment.');
-      return;
-    }
 
     if (!fullName.trim() || !phone.trim()) {
       setErrorMsg('Please enter your name and contact phone number.');
@@ -111,17 +106,20 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
     setSubmitting(true);
     setErrorMsg('');
 
+    const effectiveUserId = currentUser?.uid || 'guest';
+    const effectiveEmail = currentUser?.email || email.trim() || 'inquiry@bitsoinnovations.com';
+
     const inqData = {
       name: fullName.trim(),
       fullName: fullName.trim(),
       phone: phone.trim(),
-      email: currentUser.email || email.trim(),
+      email: effectiveEmail,
       service: service,
       appointmentDate: preferredDate,
       timeSlot: timeSlot,
       meetingType: meetingType,
       message: message.trim(),
-      userId: currentUser.uid,
+      userId: effectiveUserId,
       createdAt: { seconds: Math.floor(Date.now() / 1000) },
     };
 
@@ -138,9 +136,9 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
       const rawAppts = localStorage.getItem('bitso_offline_appointments');
       const apptList = rawAppts ? JSON.parse(rawAppts) : [];
       apptList.unshift({
-        userId: currentUser.uid,
+        userId: effectiveUserId,
         userName: fullName.trim(),
-        userEmail: currentUser.email || email.trim(),
+        userEmail: effectiveEmail,
         userPhone: phone.trim(),
         interest: service,
         preferredDate: preferredDate,
@@ -161,9 +159,9 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
         createdAt: serverTimestamp(),
       });
       await addDoc(collection(db, 'appointments'), {
-        userId: currentUser.uid,
+        userId: effectiveUserId,
         userName: fullName.trim(),
-        userEmail: currentUser.email || email.trim(),
+        userEmail: effectiveEmail,
         userPhone: phone.trim(),
         interest: service,
         preferredDate: preferredDate,
@@ -176,9 +174,9 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
 
       // Notify backend server for telemetry & real-time updates
       api.bookAppointment({
-        userId: currentUser.uid,
+        userId: effectiveUserId,
         userName: fullName.trim(),
-        userEmail: currentUser.email || email.trim(),
+        userEmail: effectiveEmail,
         userPhone: phone.trim(),
         interest: service,
         preferredDate: preferredDate,

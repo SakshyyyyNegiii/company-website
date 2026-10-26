@@ -138,7 +138,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate, onOpenDisclaim
           <div>
             <h2 className="text-xl font-bold text-white">Meet Our Leadership Team</h2>
             <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-xl">
-              Learn more about Founder & President Aman, Vice President of Business Development Jitender, and Technical / IT Head Tamanna Aggarwal.
+              Learn more about Founder & President Ch. Aman, Vice President of Business Development Jitendra Singh, and Technical / IT Head Tamanna Aggarwal.
             </p>
           </div>
           <button

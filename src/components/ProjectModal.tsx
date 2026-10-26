@@ -180,10 +180,6 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
   // -------------------------------------------------------------
   const handleSubmitAppointment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentUser) {
-      setAuthError('Please sign in or sign up before booking your appointment.');
-      return;
-    }
 
     if (!fullName.trim() || !phone.trim()) {
       setErrorMsg('Please provide your contact name and phone number.');
@@ -193,10 +189,13 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
     setSubmitting(true);
     setErrorMsg('');
 
+    const effectiveUserId = currentUser?.uid || 'guest';
+    const effectiveEmail = currentUser?.email || email.trim() || 'inquiry@bitsoinnovations.com';
+
     const appointmentPayload: Appointment = {
-      userId: currentUser.uid,
+      userId: effectiveUserId,
       userName: fullName.trim(),
-      userEmail: currentUser.email || email.trim(),
+      userEmail: effectiveEmail,
       userPhone: phone.trim(),
       interest: service || preSelectedService,
       preferredDate: appointmentDate || getTomorrowDate(),
@@ -225,10 +224,10 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
         name: fullName.trim(),
         fullName: fullName.trim(),
         phone: phone.trim(),
-        email: currentUser.email || email.trim(),
+        email: effectiveEmail,
         service: service || preSelectedService,
         message: `[Appointment: ${appointmentDate} at ${timeSlot} via ${meetingType}] ${message.trim()}`,
-        userId: currentUser.uid,
+        userId: effectiveUserId,
         createdAt: { seconds: Math.floor(Date.now() / 1000) },
       });
       localStorage.setItem('bitso_local_inquiries', JSON.stringify(inqList));
@@ -246,20 +245,20 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
         name: fullName.trim(),
         fullName: fullName.trim(),
         phone: phone.trim(),
-        email: currentUser.email || email.trim(),
+        email: effectiveEmail,
         service: service || preSelectedService,
         appointmentDate,
         timeSlot,
         meetingType,
         message: message.trim(),
-        userId: currentUser.uid,
+        userId: effectiveUserId,
         createdAt: serverTimestamp(),
       });
       // Notify backend server for telemetry & WebSocket presence
       api.bookAppointment({
-        userId: currentUser.uid,
+        userId: effectiveUserId,
         userName: fullName.trim(),
-        userEmail: currentUser.email || email.trim(),
+        userEmail: effectiveEmail,
         userPhone: phone.trim(),
         interest: service || preSelectedService,
         preferredDate: appointmentDate || getTomorrowDate(),
@@ -359,275 +358,52 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
               Done
             </button>
           </div>
-        ) : !currentUser ? (
-          /* STEP 1: Sign In / Sign Up Before Appointment */
-          <div className="space-y-4">
-            <div className="text-center pb-2">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-[11px] font-mono uppercase tracking-wider mb-2">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span>STEP 1: USER AUTHENTICATION</span>
-              </div>
-              <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                Sign In to Schedule Appointment
-              </h3>
-              <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
-                Please sign in or create an account to book your technical appointment and preserve your project specifications.
-              </p>
-            </div>
-
-            {authError && (
-              <div className="p-3 rounded-xl bg-rose-950/70 border border-rose-500/40 text-rose-300 text-xs flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
-                <span>{authError}</span>
-              </div>
-            )}
-
-            {/* Quick 1-Click Google Sign In */}
-            <button
-              type="button"
-              onClick={handleGoogleAuth}
-              disabled={authLoading}
-              className="w-full flex items-center justify-center gap-3 py-3 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs sm:text-sm shadow-md transition-all cursor-pointer disabled:opacity-50"
-            >
-              <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.05h3.9c2.28-2.1 3.64-5.2 3.64-9.14z" />
-                <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.9-3.05c-1.08.72-2.45 1.16-4.03 1.16-3.1 0-5.73-2.1-6.67-4.93H1.28v3.15C3.3 21.36 7.37 24 12 24z" />
-                <path fill="#FBBC05" d="M5.33 14.27c-.24-.72-.38-1.49-.38-2.27s.14-1.55.38-2.27V6.58H1.28C.46 8.21 0 10.05 0 12s.46 3.79 1.28 5.42l4.05-3.15z" />
-                <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.37 0 3.3 2.64 1.28 6.58l4.05 3.15c.94-2.83 3.57-4.98 6.67-4.98z" />
-              </svg>
-              <span>{authLoading ? 'Connecting with Google...' : 'Continue with Google'}</span>
-            </button>
-
-            <div className="flex items-center gap-3 my-2">
-              <div className="flex-grow h-px bg-white/10" />
-              <span className="text-[10px] font-mono text-slate-500 uppercase">OR WITH EMAIL</span>
-              <div className="flex-grow h-px bg-white/10" />
-            </div>
-
-            {/* Toggle Sign In / Sign Up */}
-            <div className="grid grid-cols-2 p-1 rounded-xl bg-slate-950 border border-white/10 text-xs">
-              <button
-                type="button"
-                onClick={() => {
-                  setAuthTab('signin');
-                  setAuthError('');
-                }}
-                className={`py-2 rounded-lg font-semibold transition-all cursor-pointer ${
-                  authTab === 'signin'
-                    ? 'bg-slate-800 text-cyan-400 shadow'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                Sign In
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setAuthTab('signup');
-                  setAuthError('');
-                }}
-                className={`py-2 rounded-lg font-semibold transition-all cursor-pointer ${
-                  authTab === 'signup'
-                    ? 'bg-slate-800 text-cyan-400 shadow'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                Create Account
-              </button>
-            </div>
-
-            {authTab === 'signin' ? (
-              /* Inline Sign In Form */
-              <form onSubmit={handleInlineSignIn} className="space-y-3">
-                <div>
-                  <label className="block text-[11px] font-mono text-slate-400 mb-1">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={authEmail}
-                    onChange={(e) => setAuthEmail(e.target.value)}
-                    placeholder="name@company.com"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-400 placeholder:text-slate-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-mono text-slate-400 mb-1">
-                    Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      required
-                      value={authPassword}
-                      onChange={(e) => setAuthPassword(e.target.value)}
-                      placeholder="Enter password"
-                      className="w-full px-3.5 py-2.5 pr-10 rounded-xl bg-slate-950 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-400 placeholder:text-slate-600"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors cursor-pointer"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex justify-end text-xs">
-                  <button
-                    type="button"
-                    onClick={() => openAuthModal('forgot')}
-                    className="text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer"
-                  >
-                    Forgot Password?
-                  </button>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={authLoading}
-                  className="w-full py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {authLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Signing In...</span>
-                    </>
-                  ) : (
-                    <>
-                      <LogIn className="w-4 h-4" />
-                      <span>Sign In & Continue to Appointment</span>
-                    </>
-                  )}
-                </button>
-              </form>
-            ) : (
-              /* Inline Sign Up Form */
-              <form onSubmit={handleInlineSignUp} className="space-y-3">
-                <div>
-                  <label className="block text-[11px] font-mono text-slate-400 mb-1">
-                    Full Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={signupName}
-                    onChange={(e) => setSignupName(e.target.value)}
-                    placeholder="e.g. Vikram Singhania"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-400 placeholder:text-slate-600"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  <div>
-                    <label className="block text-[11px] font-mono text-slate-400 mb-1">
-                      Email Address *
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      value={authEmail}
-                      onChange={(e) => setAuthEmail(e.target.value)}
-                      placeholder="name@company.com"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-400 placeholder:text-slate-600"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-mono text-slate-400 mb-1">
-                      Phone / WhatsApp
-                    </label>
-                    <input
-                      type="tel"
-                      value={signupPhone}
-                      onChange={(e) => setSignupPhone(e.target.value)}
-                      placeholder="+91 99903 66072"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-400 placeholder:text-slate-600"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-mono text-slate-400 mb-1">
-                    Password (min 8 chars) *
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      required
-                      minLength={8}
-                      value={authPassword}
-                      onChange={(e) => setAuthPassword(e.target.value)}
-                      placeholder="Create secure password"
-                      className="w-full px-3.5 py-2.5 pr-10 rounded-xl bg-slate-950 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-400 placeholder:text-slate-600"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors cursor-pointer"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={authLoading}
-                  className="w-full py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {authLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Creating Account...</span>
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus className="w-4 h-4" />
-                      <span>Register & Continue to Appointment</span>
-                    </>
-                  )}
-                </button>
-              </form>
-            )}
-          </div>
         ) : (
-          /* STEP 2: Appointment Details & Scope */
+          /* Consultation & Appointment Scheduling Form */
           <form onSubmit={handleSubmitAppointment} className="space-y-4">
             <div>
               <div className="flex items-center justify-between mb-1">
                 <span className="text-[11px] font-mono uppercase tracking-widest text-cyan-400">
-                  STEP 2: APPOINTMENT SCHEDULE
+                  EXECUTIVE CONSULTATION
                 </span>
-                <span className="text-[10px] font-mono text-emerald-400 flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  AUTHENTICATED
-                </span>
+                {currentUser ? (
+                  <span className="text-[10px] font-mono text-emerald-400 flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    CLIENT ACCOUNT
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => openAuthModal('signin')}
+                    className="text-[11px] font-mono text-cyan-400 hover:text-cyan-300 underline cursor-pointer"
+                  >
+                    Have an account? Sign In
+                  </button>
+                )}
               </div>
               <h3 className="text-xl font-bold text-white tracking-tight">
                 Schedule Technical Consultation
               </h3>
             </div>
 
-            {/* Authenticated user banner */}
-            <div className="p-3 rounded-xl bg-slate-950/80 border border-white/10 flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2 text-slate-300 truncate">
-                <UserIcon className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                <span className="truncate">
-                  Booking as <strong className="text-white">{currentUser.displayName || currentUser.email}</strong>
-                </span>
+            {/* Authenticated user banner if logged in */}
+            {currentUser && (
+              <div className="p-3 rounded-xl bg-slate-950/80 border border-white/10 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2 text-slate-300 truncate">
+                  <UserIcon className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                  <span className="truncate">
+                    Booking as <strong className="text-white">{currentUser.displayName || currentUser.email}</strong>
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => signOutUser()}
+                  className="text-[11px] text-slate-400 hover:text-rose-400 underline shrink-0 cursor-pointer ml-2"
+                >
+                  Switch
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => signOutUser()}
-                className="text-[11px] text-slate-400 hover:text-rose-400 underline shrink-0 cursor-pointer ml-2"
-              >
-                Switch
-              </button>
-            </div>
+            )}
 
             {errorMsg && (
               <div className="p-3 rounded-xl bg-rose-950/70 border border-rose-500/40 text-rose-300 text-xs">
@@ -738,6 +514,19 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
                   className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-400 placeholder:text-slate-600"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-mono text-slate-400 mb-1">
+                Email Address (optional)
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@company.com"
+                className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-400 placeholder:text-slate-600"
+              />
             </div>
 
             {/* Discussion Agenda */}
